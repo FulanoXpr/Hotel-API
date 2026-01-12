@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Key Manager | PRTC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #a855f7;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.15) 0, transparent 50%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            height: 700px;
+        }
+
+        .card-header {
+            margin-bottom: 1.5rem;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .list-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .list-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .list-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .item {
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid transparent;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateX(4px);
+        }
+
+        .item.active {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: var(--primary);
+        }
+
+        .item-info {
+            flex-grow: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .item-key {
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        .badge {
+            padding: 0.25rem 0.6rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-mapped { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        .badge-unmapped { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-link { background: var(--primary); color: white; }
+        .btn-link:hover { background: #4f46e5; }
+        
+        .btn-unlink { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .btn-unlink:hover { background: rgba(239, 68, 68, 0.3); }
+
+        .placeholder-text {
+            color: var(--text-dim);
+            text-align: center;
+            margin-top: 4rem;
+            font-style: italic;
+        }
+
+        .selected-hotel-banner {
+            background: rgba(99, 102, 241, 0.1);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .api-result {
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .api-result-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .api-result-location {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .loading-spinner {
+            display: none;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hotel Key Manager</h1>
+            <p class="subtitle">Match PRTC Endorsed Hotels with TripAdvisor/Xotelo Keys</p>
+        </header>
+
+        <div class="grid">
+            <!-- Left Panel: Excel Hotels -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>📋 Excel Hotel List</h2>
+                    <div class="search-box">
+                        <input type="text" id="excel-search" placeholder="Filter hotels from Excel...">
+                    </div>
+                </div>
+                <div class="list-container" id="excel-list">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+
+            <!-- Right Panel: API Search -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>🔍 Xotelo API Search</h2>
+                    <div id="selected-info">
+                        <p class="placeholder-text" style="margin: 0; padding: 1rem;">Select a hotel from the left to start mapping</p>
+                    </div>
+                </div>
+                
+                <div id="mapping-controls" style="display: none;">
+                    <div class="search-box">
+                        <input type="text" id="api-search" placeholder="Search TripAdvisor database...">
+                    </div>
+                    <div class="loading-spinner" id="loader">
+                        <div class="spinner"></div>
+                    </div>
+                    <div class="list-container" id="api-results">
+                        <!-- Loaded via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allHotels = [];
+        let selectedHotel = null;
+
+        async function fetchHotels() {
+            const resp = await fetch('/api/hotels');
+            allHotels = await resp.json();
+            renderExcelList();
+        }
+
+        function renderExcelList() {
+            const container = document.getElementById('excel-list');
+            const filter = document.getElementById('excel-search').value.toLowerCase();
+            container.innerHTML = '';
+
+            allHotels.filter(h => h.name.toLowerCase().includes(filter))
+                .forEach(hotel => {
+                    const div = document.createElement('div');
+                    div.className = `item ${selectedHotel?.name === hotel.name ? 'active' : ''}`;
+                    div.innerHTML = `
+                        <div class="item-info">
+                            <div class="item-name">${hotel.name}</div>
+                            <div class="item-key">${hotel.key || 'No key mapped'}</div>
+                        </div>
+                        <div class="badge ${hotel.status === 'mapped' ? 'badge-mapped' : 'badge-unmapped'}">
+                            ${hotel.status}
+                        </div>
+                    `;
+                    div.onclick = () => selectHotel(hotel);
+                    container.appendChild(div);
+                });
+        }
+
+        function selectHotel(hotel) {
+            selectedHotel = hotel;
+            renderExcelList();
+            
+            const info = document.getElementById('selected-info');
+            const controls = document.getElementById('mapping-controls');
+            const searchInput = document.getElementById('api-search');
+            
+            info.innerHTML = `
+                <div class="selected-hotel-banner">
+                    <p style="font-size: 0.8rem; opacity: 0.7;">Currently Mapping:</p>
+                    <p style="font-weight: 700; font-size: 1.1rem;">${hotel.name}</p>
+                    ${hotel.key ? `<button class="btn btn-unlink" style="margin-top: 0.5rem;" onclick="unmap()">Unlink Key</button>` : ''}
+                </div>
+            `;
+            
+            controls.style.display = 'block';
+            searchInput.value = hotel.name.split('(')[0].trim();
+            searchAPI(searchInput.value);
+        }
+
+        let debounceTimer;
+        document.getElementById('api-search').oninput = (e) => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => searchAPI(e.target.value), 400);
+        };
+
+        document.getElementById('excel-search').oninput = () => renderExcelList();
+
+        async function searchAPI(query) {
+            if (!query || query.length < 3) return;
+            
+            const loader = document.getElementById('loader');
+            const resultsBox = document.getElementById('api-results');
+            
+            loader.style.display = 'flex';
+            resultsBox.innerHTML = '';
+            
+            try {
+                const resp = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const results = await resp.json();
+                
+                loader.style.display = 'none';
+                
+                if (results.length === 0) {
+                    resultsBox.innerHTML = '<p class="placeholder-text">No results found on Xotelo</p>';
+                    return;
+                }
+
+                results.forEach(res => {
+                    const div = document.createElement('div');
+                    div.className = 'api-result';
+                    div.innerHTML = `
+                        <div class="api-result-title">${res.name}</div>
+                        <div class="api-result-location">${res.short_place_name || ''}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <code style="font-size: 0.75rem; color: var(--text-dim);">${res.hotel_key}</code>
+                            <button class="btn btn-link" onclick="mapTo('${res.hotel_key}')">Link this Key</button>
+                        </div>
+                    `;
+                    resultsBox.appendChild(div);
+                });
+            } catch (e) {
+                loader.style.display = 'none';
+                resultsBox.innerHTML = '<p class="placeholder-text" style="color: #f87171;">Error connecting to API</p>';
+            }
+        }
+
+        async function mapTo(key) {
+            if (!selectedHotel) return;
+            
+            await fetch('/api/map', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ excel_name: selectedHotel.name, api_key: key })
+            });
+            
+            // Refresh
+            await fetchHotels();
+            // Re-select to update banner
+            const updated = allHotels.find(h => h.name === selectedHotel.name);
+            selectHotel(updated);
+        }
+
+        async function unmap() {
+            if (!selectedHotel) return;
+            
+            await fetch('/api/unmap', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ excel_name: selectedHotel.name })
+            });
+            
+            await fetchHotels();
+            const updated = allHotels.find(h => h.name === selectedHotel.name);
+            selectHotel(updated);
+        }
+
+        // Init
+        fetchHotels();
+    </script>
+</body>
+</html>
