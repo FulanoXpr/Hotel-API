@@ -1,70 +1,132 @@
 # Running Hotel API Scripts in Microsoft Fabric
 
-Yes, you can run these scripts in **Microsoft Fabric** without any issues. Fabric provides an ideal environment for execution, automation, and integration with other data sources.
+This guide explains how to deploy the Hotel Price Updater in **Microsoft Fabric** for cloud execution and monthly automation.
 
-## Implementation Details
+## Quick Start
 
-### 1. Execution Environment
-The most efficient way to run these scripts is using **Fabric Notebooks**.
-*   **Language:** Python (Standard or PySpark).
-*   **Storage:** Excel files should be uploaded to a **Fabric Lakehouse** (inside the "Files" section).
+### Required Files for Fabric
+Upload these to your Lakehouse `Files` folder:
+- `xotelo_price_updater.py` - Main script
+- `hotel_keys_db.json` - Hotel key mappings (149 hotels)
+- `PRTC Endorsed Hotels (12.25).xlsx` - Source data
 
-## Migration Steps
+## Implementation Steps
 
-### A. Prepare the Environment (Lakehouse)
-1.  Create a **Lakehouse** in your Fabric Workspace.
-2.  Upload your Excel files (e.g., `PRTC Endorsed Hotels (12.25).xlsx`) to the **Files** folder within the Lakehouse.
+### 1. Create Lakehouse
+1. Create a **Lakehouse** in your Fabric Workspace
+2. Upload all required files to the **Files** folder
 
-### B. Create the Notebook
-1.  Create a new **Notebook** in Fabric.
-2.  Attach it to the Lakehouse you created.
-3.  Install dependencies in the first cell:
-    ```python
-    %pip install openpyxl requests
-    ```
+### 2. Create Notebook
+1. Create a new **Notebook** in Fabric
+2. Attach it to your Lakehouse
+3. Install dependencies:
+   ```python
+   %pip install openpyxl requests
+   ```
 
-### C. Adjust File Paths
-In your local scripts, paths are relative (e.g., `PRTC Endorsed Hotels (12.25).xlsx`). In Fabric, you must use Lakehouse paths:
-*   **Local Path:** `EXCEL_FILE = "PRTC Endorsed Hotels (12.25).xlsx"`
-*   **Fabric Path:** `EXCEL_FILE = "/lakehouse/default/Files/PRTC Endorsed Hotels (12.25).xlsx"`
-
-### D. Handling .py Files
-You have two main ways to use your existing `.py` scripts in Fabric:
-
-#### Option 1: Upload to Lakehouse and Run (Recommended)
-1.  In the Lakehouse explorer, right-click the **Files** folder -> **Upload** -> **Files**.
-2.  Upload `hotel_price_updater.py`.
-3.  In your Notebook, run it using the magic command:
-    ```python
-    %run /lakehouse/default/Files/hotel_price_updater.py
-    ```
-
-#### Option 2: Direct Spark Job
-If you don't need the interactive notebook interface:
-1.  Create a new **Spark Job Definition** in your workspace.
-2.  Upload the `.py` file as the **Main definition file**.
-3.  Upload your Excel files as **Reference files**.
-
-### E. Secret Management (Recommended)
-Instead of hardcoding the `RAPIDAPI_KEY`, use Fabric's security features or Workspace environment variables to store sensitive information.
-
-## Advantages of Using Microsoft Fabric
-
-1.  **Automation (Pipelines):** You can create a "Data Factory Pipeline" to run the script automatically on a schedule (e.g., weekly) to update prices without manual intervention.
-2.  **Scalability:** If you need to process thousands of hotels, Fabric can scale easily using Spark.
-3.  **Visualization:** Once the Excel is updated, you can convert the data into a **Lakehouse Table** and connect it directly to **Power BI** for real-time price monitoring dashboards.
-
-## Environment-Aware Code Example
-
-You can modify your scripts to automatically detect if they are running in Fabric:
+### 3. Modify Script Paths
+The script needs Fabric-compatible paths. Add this code at the top:
 
 ```python
 import os
 
-# Detect if running in Fabric to adjust paths
+# Auto-detect Fabric environment
 is_fabric = os.path.exists('/lakehouse/default/Files/')
 base_path = '/lakehouse/default/Files/' if is_fabric else './'
 
 EXCEL_FILE = f"{base_path}PRTC Endorsed Hotels (12.25).xlsx"
-OUTPUT_FILE = f"{base_path}PRTC Endorsed Hotels - Updated Prices.xlsx"
+HOTEL_KEYS_DB = f"{base_path}hotel_keys_db.json"
+# Output will include date: PRTC_Hotels_Prices_2026-01-12.xlsx
 ```
+
+### 4. Run in Automatic Mode
+In your Fabric Notebook, execute the script with `--auto` flag:
+
+```python
+import sys
+sys.argv = ['xotelo_price_updater.py', '--auto']
+%run /lakehouse/default/Files/xotelo_price_updater.py
+```
+
+Or import and run directly:
+```python
+# Set auto mode
+import sys
+sys.argv = ['script', '--auto']
+
+# Run the updater
+exec(open('/lakehouse/default/Files/xotelo_price_updater.py').read())
+```
+
+## Monthly Automation with Pipelines
+
+### Option 1: Data Factory Pipeline
+1. Go to your Workspace → **New** → **Data Pipeline**
+2. Add a **Notebook** activity
+3. Select your price updater notebook
+4. Set **Schedule trigger**: Monthly (e.g., 1st of each month)
+
+### Option 2: Spark Job Definition
+1. Create **Spark Job Definition** in workspace
+2. Upload `xotelo_price_updater.py` as main file
+3. Set arguments: `--auto`
+4. Schedule monthly execution
+
+## Output Files
+
+Each run creates a dated output file:
+```
+PRTC_Hotels_Prices_2026-01-12.xlsx
+PRTC_Hotels_Prices_2026-02-01.xlsx
+...
+```
+
+These accumulate in your Lakehouse for historical analysis.
+
+## Power BI Integration
+
+To create price monitoring dashboards:
+
+1. Convert Excel outputs to **Lakehouse Table**:
+   ```python
+   import pandas as pd
+   from datetime import datetime
+   
+   # Read latest prices
+   df = pd.read_excel(f'{base_path}PRTC_Hotels_Prices_{datetime.now().strftime("%Y-%m-%d")}.xlsx')
+   
+   # Write to Lakehouse table
+   spark_df = spark.createDataFrame(df)
+   spark_df.write.mode('append').saveAsTable('hotel_prices_history')
+   ```
+
+2. Connect Power BI to the `hotel_prices_history` table
+
+3. Build dashboards showing:
+   - Price trends over time
+   - Provider comparison
+   - Regional pricing analysis
+
+## Advantages of Fabric Deployment
+
+| Feature | Benefit |
+|---------|---------|
+| **Scheduled Pipelines** | Automatic monthly price collection |
+| **Lakehouse Storage** | Historical data preservation |
+| **Power BI Integration** | Real-time dashboards |
+| **Scalability** | Handle larger hotel lists easily |
+| **No Local Machine** | Runs in cloud, no manual intervention |
+
+## Troubleshooting
+
+### Common Issues
+
+**File not found errors:**
+- Ensure all files are in `/lakehouse/default/Files/`
+- Check file names match exactly (case-sensitive)
+
+**Module not found:**
+- Run `%pip install openpyxl requests` in first notebook cell
+
+**API timeout:**
+- Fabric may need longer timeouts; increase `TIMEOUT = 60` in script
