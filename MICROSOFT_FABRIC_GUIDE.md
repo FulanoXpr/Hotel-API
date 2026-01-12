@@ -28,7 +28,24 @@ In your local scripts, paths are relative (e.g., `PRTC Endorsed Hotels (12.25).x
 *   **Local Path:** `EXCEL_FILE = "PRTC Endorsed Hotels (12.25).xlsx"`
 *   **Fabric Path:** `EXCEL_FILE = "/lakehouse/default/Files/PRTC Endorsed Hotels (12.25).xlsx"`
 
-### D. Secret Management (Recommended)
+### D. Handling .py Files
+You have two main ways to use your existing `.py` scripts in Fabric:
+
+#### Option 1: Upload to Lakehouse and Run (Recommended)
+1.  In the Lakehouse explorer, right-click the **Files** folder -> **Upload** -> **Files**.
+2.  Upload `hotel_price_updater.py`.
+3.  In your Notebook, run it using the magic command:
+    ```python
+    %run /lakehouse/default/Files/hotel_price_updater.py
+    ```
+
+#### Option 2: Direct Spark Job
+If you don't need the interactive notebook interface:
+1.  Create a new **Spark Job Definition** in your workspace.
+2.  Upload the `.py` file as the **Main definition file**.
+3.  Upload your Excel files as **Reference files**.
+
+### E. Secret Management (Recommended)
 Instead of hardcoding the `RAPIDAPI_KEY`, use Fabric's security features or Workspace environment variables to store sensitive information.
 
 ## Advantages of Using Microsoft Fabric
