@@ -15,6 +15,7 @@ from price_providers.base import PriceProvider, PriceResult
 from price_providers.xotelo import XoteloProvider
 from price_providers.serpapi import SerpApiProvider
 from price_providers.apify import ApifyProvider
+from price_providers.amadeus import AmadeusProvider
 
 
 class TestPriceResult:
@@ -259,3 +260,146 @@ class TestApifyProvider:
         }
         price = provider._extract_price(item)
         assert price == 300.0
+
+
+class TestAmadeusProvider:
+    """Tests for AmadeusProvider."""
+
+    def test_get_name(self):
+        """Test provider name."""
+        provider = AmadeusProvider()
+        assert provider.get_name() == "amadeus"
+
+    def test_is_available_without_credentials(self):
+        """Should not be available without credentials."""
+        with patch.dict(os.environ, {}, clear=True):
+            provider = AmadeusProvider(client_id="", client_secret="")
+            assert provider.is_available() is False
+
+    def test_is_available_with_partial_credentials(self):
+        """Should not be available with only one credential."""
+        with patch.dict(os.environ, {"AMADEUS_CLIENT_ID": "", "AMADEUS_CLIENT_SECRET": ""}, clear=False):
+            provider = AmadeusProvider(client_id="test_id", client_secret="")
+            assert provider.is_available() is False
+
+    def test_is_available_with_credentials(self):
+        """Should be available with both credentials."""
+        provider = AmadeusProvider(client_id="test_id", client_secret="test_secret")
+        try:
+            from amadeus import Client
+            assert provider.is_available() is True
+        except ImportError:
+            assert provider.is_available() is False
+
+    @patch('price_providers.amadeus.AMADEUS_AVAILABLE', True)
+    def test_find_best_match_exact(self):
+        """Test name matching with exact match."""
+        provider = AmadeusProvider(client_id="test", client_secret="test")
+        hotels = [
+            {"name": "Other Hotel", "hotelId": "H1"},
+            {"name": "Condado Vanderbilt Hotel", "hotelId": "H2"},
+            {"name": "Another Place", "hotelId": "H3"}
+        ]
+        result = provider._find_best_match("Condado Vanderbilt Hotel", hotels)
+        assert result is not None
+        assert result["hotelId"] == "H2"
+
+    @patch('price_providers.amadeus.AMADEUS_AVAILABLE', True)
+    def test_find_best_match_partial(self):
+        """Test name matching with partial match."""
+        provider = AmadeusProvider(client_id="test", client_secret="test")
+        hotels = [
+            {"name": "Some Other Hotel", "hotelId": "H1"},
+            {"name": "Hilton San Juan Resort", "hotelId": "H2"}
+        ]
+        result = provider._find_best_match("Hilton San Juan", hotels)
+        assert result is not None
+        assert result["hotelId"] == "H2"
+
+    @patch('price_providers.amadeus.AMADEUS_AVAILABLE', True)
+    def test_find_best_match_word_overlap(self):
+        """Test name matching with word overlap scoring."""
+        provider = AmadeusProvider(client_id="test", client_secret="test")
+        hotels = [
+            {"name": "Hotel Plaza San Juan", "hotelId": "H1"},
+            {"name": "Caribe Hilton", "hotelId": "H2"}
+        ]
+        result = provider._find_best_match("Plaza Hotel San Juan PR", hotels)
+        assert result is not None
+        assert result["hotelId"] == "H1"
+
+    @patch('price_providers.amadeus.AMADEUS_AVAILABLE', True)
+    def test_find_best_match_no_match(self):
+        """Test name matching when no good match exists."""
+        provider = AmadeusProvider(client_id="test", client_secret="test")
+        hotels = [
+            {"name": "Hotel ABC", "hotelId": "H1"},
+            {"name": "Resort XYZ", "hotelId": "H2"}
+        ]
+        result = provider._find_best_match("Completely Different Name", hotels)
+        assert result is None
+
+    @patch('price_providers.amadeus.AMADEUS_AVAILABLE', True)
+    def test_extract_best_price(self):
+        """Test price extraction from offers."""
+        provider = AmadeusProvider(client_id="test", client_secret="test")
+        offers_data = [
+            {
+                "hotel": {"chainCode": "HI"},
+                "offers": [
+                    {"price": {"total": "250.00"}},
+                    {"price": {"total": "275.00"}}
+                ]
+            }
+        ]
+        price, provider_name = provider._extract_best_price(offers_data)
+        assert price == 250.0
+        assert "HI" in provider_name
+
+    @patch('price_providers.amadeus.AMADEUS_AVAILABLE', True)
+    def test_extract_best_price_multiple_hotels(self):
+        """Test price extraction picks lowest from multiple hotels."""
+        provider = AmadeusProvider(client_id="test", client_secret="test")
+        offers_data = [
+            {
+                "hotel": {"chainCode": "HI"},
+                "offers": [{"price": {"total": "300.00"}}]
+            },
+            {
+                "hotel": {"chainCode": "MR"},
+                "offers": [{"price": {"total": "200.00"}}]
+            }
+        ]
+        price, provider_name = provider._extract_best_price(offers_data)
+        assert price == 200.0
+        assert "MR" in provider_name
+
+    @patch('price_providers.amadeus.AMADEUS_AVAILABLE', True)
+    def test_extract_best_price_empty(self):
+        """Test price extraction with no offers."""
+        provider = AmadeusProvider(client_id="test", client_secret="test")
+        price, provider_name = provider._extract_best_price([])
+        assert price is None
+
+    @patch('price_providers.amadeus.AMADEUS_AVAILABLE', True)
+    def test_hotel_cache(self):
+        """Test that hotel IDs are cached."""
+        provider = AmadeusProvider(client_id="test", client_secret="test")
+        # Manually populate cache
+        provider._hotel_cache["test hotel"] = "HTEST123"
+
+        # Cache should be used
+        cached_id = provider._hotel_cache.get("test hotel")
+        assert cached_id == "HTEST123"
+
+    def test_get_price_not_available(self):
+        """Test get_price returns None when provider is not available."""
+        with patch.dict(os.environ, {}, clear=True):
+            provider = AmadeusProvider(client_id="", client_secret="")
+            result = provider.get_price(
+                hotel_name="Test Hotel",
+                hotel_key=None,
+                check_in="2026-03-01",
+                check_out="2026-03-02"
+            )
+            assert result is None

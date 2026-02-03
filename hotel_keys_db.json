@@ -45,14 +45,16 @@
   },
   "Embassy Suites by Hilton Dorado del Mar Beach Resort": {
     "xotelo": "g147319-d209618",
-    "booking_url": "https://www.booking.com/hotel/pr/embassy-suites-dorado-del-mar-beach-golf-resort.html"
+    "booking_url": "https://www.booking.com/hotel/pr/embassy-suites-dorado-del-mar-beach-golf-resort.html",
+    "amadeus": "ESSJU201"
   },
   "La Concha Renaissance San Juan Resort": {
     "xotelo": "g147319-d9602805"
   },
   "Wyndham Grand Rio Mar Rainforest Beach and Golf Resort": {
     "xotelo": "g147319-d148598",
-    "booking_url": "https://www.booking.com/hotel/pr/wyndham-grand-rio-mar-beach-resort-amp-spa.html"
+    "booking_url": "https://www.booking.com/hotel/pr/wyndham-grand-rio-mar-beach-resort-amp-spa.html",
+    "amadeus": "WYSJUPAL"
   },
   "Copamarina Beach Resort & Spa": {
     "xotelo": "g147319-d148807",

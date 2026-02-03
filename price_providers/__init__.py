@@ -13,6 +13,7 @@ from .base import PriceProvider, PriceResult
 from .xotelo import XoteloProvider
 from .serpapi import SerpApiProvider
 from .apify import ApifyProvider
+from .amadeus import AmadeusProvider
 from .cascade import CascadePriceProvider
 from .cache import PriceCache
 
@@ -22,6 +23,7 @@ __all__ = [
     "XoteloProvider",
     "SerpApiProvider",
     "ApifyProvider",
+    "AmadeusProvider",
     "CascadePriceProvider",
     "PriceCache",
 ]

@@ -45,6 +45,7 @@ Cascade Pipeline (--cascade):
   2. Xotelo (free, ~64% coverage)
   3. SerpApi (Google Hotels, 250/month free)
   4. Apify (Booking.com, $5/month free)
+  5. Amadeus (GDS, 500/month free)
 ```
 
 **Core Modules:**
@@ -52,13 +53,14 @@ Cascade Pipeline (--cascade):
 - `config.py` - Environment variables with defaults. Loads `.env` if present. All settings are `Final` typed.
 - `price_providers/` - Cascade pipeline package:
   - `base.py` - `PriceProvider` ABC and `PriceResult` dataclass
-  - `xotelo.py`, `serpapi.py`, `apify.py` - Individual provider implementations
+  - `xotelo.py`, `serpapi.py`, `apify.py`, `amadeus.py` - Individual provider implementations
   - `cascade.py` - `CascadePriceProvider` orchestrates fallback order
   - `cache.py` - `PriceCache` with configurable TTL
 
 **Scripts:**
 - `xotelo_price_updater.py` - Main CLI tool. Calls `api.wait()` after each hotel, including in `--multi-date` mode.
 - `booking_url_finder.py` - Populate Booking.com URLs in hotel_keys_db.json
+- `amadeus_id_finder.py` - Find and validate Amadeus hotel IDs for the cascade pipeline
 - `key_manager.py` - Flask web UI for hotel key management (port 5000)
 - `xotelo_price_fixer.py` - Retry failed lookups. Supports `--check-in/--check-out` or `--days-ahead/--nights` for flexible date handling.
 
@@ -68,7 +70,11 @@ Cascade Pipeline (--cascade):
 ```json
 {
   "Hotel A": "g147319-d123",
-  "Hotel B": {"xotelo": "g147319-d456", "booking_url": "https://www.booking.com/hotel/pr/..."}
+  "Hotel B": {
+    "xotelo": "g147319-d456",
+    "booking_url": "https://www.booking.com/hotel/pr/...",
+    "amadeus": "ESSJU201"
+  }
 }
 ```
 
@@ -78,8 +84,11 @@ Cascade Pipeline (--cascade):
 
 ```bash
 # .env file for cascade mode
-SERPAPI_KEY=your_key      # serpapi.com (250 free/month)
-APIFY_TOKEN=your_token    # apify.com ($5 free/month)
+SERPAPI_KEY=your_key              # serpapi.com (250 free/month)
+APIFY_TOKEN=your_token            # apify.com ($5 free/month)
+AMADEUS_CLIENT_ID=your_id         # developers.amadeus.com (500 free/month, test env)
+AMADEUS_CLIENT_SECRET=your_secret
+AMADEUS_USE_PRODUCTION=false      # true requires Amadeus production approval
 CASCADE_ENABLED=true
 CACHE_TTL_HOURS=24
 ```

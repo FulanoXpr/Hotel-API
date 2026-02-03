@@ -50,6 +50,13 @@ SERPAPI_KEY: Final[str] = os.getenv("SERPAPI_KEY", "")
 # Free tier: $5/month in credits (~1,700 results)
 APIFY_TOKEN: Final[str] = os.getenv("APIFY_TOKEN", "")
 
+# Amadeus Configuration (GDS hotel search)
+# Get credentials at: https://developers.amadeus.com/register
+# Free tier: 500 calls/month
+AMADEUS_CLIENT_ID: Final[str] = os.getenv("AMADEUS_CLIENT_ID", "")
+AMADEUS_CLIENT_SECRET: Final[str] = os.getenv("AMADEUS_CLIENT_SECRET", "")
+AMADEUS_USE_PRODUCTION: Final[bool] = os.getenv("AMADEUS_USE_PRODUCTION", "false").lower() == "true"
+
 # Cascade Pipeline Settings
 CASCADE_ENABLED: Final[bool] = os.getenv("CASCADE_ENABLED", "true").lower() == "true"
 CACHE_TTL_HOURS: Final[int] = int(os.getenv("CACHE_TTL_HOURS", "24"))

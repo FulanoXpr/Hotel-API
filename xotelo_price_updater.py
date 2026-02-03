@@ -36,6 +36,7 @@ try:
         XoteloProvider,
         SerpApiProvider,
         ApifyProvider,
+        AmadeusProvider,
         PriceResult
     )
     CASCADE_AVAILABLE = True
@@ -290,6 +291,7 @@ class HotelKeyData(TypedDict, total=False):
     """Type definition for hotel key data (new format)."""
     xotelo: str
     booking_url: str
+    amadeus: str
 
 
 def load_hotel_keys() -> Dict[str, Any]:
@@ -327,6 +329,13 @@ def get_booking_url(hotel_data: Any) -> Optional[str]:
     """Extract Booking URL from hotel data."""
     if isinstance(hotel_data, dict):
         return hotel_data.get("booking_url")
+    return None
+
+
+def get_amadeus_id(hotel_data: Any) -> Optional[str]:
+    """Extract Amadeus hotel ID from hotel data."""
+    if isinstance(hotel_data, dict):
+        return hotel_data.get("amadeus")
     return None
 
 
@@ -515,6 +524,14 @@ def main() -> None:
         else:
             print("   [3] Apify: SKIP (no APIFY_TOKEN)")
 
+        # 4. Amadeus (GDS)
+        amadeus = AmadeusProvider()
+        if amadeus.is_available():
+            providers.append(amadeus)
+            print("   [4] Amadeus: OK (GDS)")
+        else:
+            print("   [4] Amadeus: SKIP (no AMADEUS credentials)")
+
         # Initialize cache
         cache = PriceCache(
             cache_file=config.CACHE_FILE,
@@ -570,6 +587,7 @@ def main() -> None:
         hotel_data = hotel_keys.get(hotel_name)
         hotel_key = get_xotelo_key(hotel_data)
         booking_url = get_booking_url(hotel_data)
+        amadeus_id = get_amadeus_id(hotel_data)
 
         # CASCADE MODE
         if args.cascade and cascade_provider:
@@ -578,9 +596,11 @@ def main() -> None:
             if hotel_key:
                 print(f"    Key: {hotel_key}")
             else:
-                print("    Key: None (will try SerpApi/Apify)")
+                print("    Key: None (will try SerpApi/Apify/Amadeus)")
             if booking_url:
                 print(f"    Booking URL: {booking_url[:50]}...")
+            if amadeus_id:
+                print(f"    Amadeus ID: {amadeus_id}")
 
             result = cascade_provider.get_price(
                 hotel_name,
@@ -589,7 +609,8 @@ def main() -> None:
                 search_params['chk_out'],
                 search_params['rooms'],
                 search_params['adults'],
-                booking_url=booking_url
+                booking_url=booking_url,
+                amadeus_id=amadeus_id
             )
 
             if result:
