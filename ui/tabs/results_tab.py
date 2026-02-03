@@ -312,12 +312,19 @@ class ResultsTab(ctk.CTkFrame):
             anchor="w",
         ).pack(side="left", padx=5, pady=6)
 
-        # Precio
+        # Precio (con manejo de errores para formatos inesperados)
         precio = resultado.get("precio")
-        precio_texto = f"${precio:.2f}" if precio else "-"
-        precio_color = (
-            self.tema["estados"]["exito"] if precio else self.tema["texto_secundario"]
-        )
+        try:
+            if precio is not None:
+                precio_num = float(precio)
+                precio_texto = f"${precio_num:.2f}"
+                precio_color = self.tema["estados"]["exito"]
+            else:
+                precio_texto = "-"
+                precio_color = self.tema["texto_secundario"]
+        except (ValueError, TypeError):
+            precio_texto = str(precio) if precio else "-"
+            precio_color = self.tema["texto_secundario"]
 
         ctk.CTkLabel(
             fila,
@@ -382,28 +389,38 @@ class ResultsTab(ctk.CTkFrame):
         Args:
             resultados: Lista de diccionarios con resultados.
         """
-        self._resultados = resultados
+        # Asegurar que tenemos una lista válida
+        self._resultados = resultados if resultados else []
         self._aplicar_filtro()
         self._actualizar_metricas()
         self._actualizar_barras_proveedores()
 
     def _aplicar_filtro(self) -> None:
         """Aplica el filtro actual y actualiza la tabla."""
-        filtro = self.var_filtro.get()
-        self._filtro_actual = filtro
+        try:
+            filtro = self.var_filtro.get()
+            self._filtro_actual = filtro
 
-        if filtro == "con_precio":
-            self._resultados_filtrados = [
-                r for r in self._resultados if r.get("precio")
-            ]
-        elif filtro == "sin_precio":
-            self._resultados_filtrados = [
-                r for r in self._resultados if not r.get("precio")
-            ]
-        else:
-            self._resultados_filtrados = self._resultados.copy()
+            # Asegurar que _resultados es una lista válida
+            if not self._resultados:
+                self._resultados_filtrados = []
+            elif filtro == "con_precio":
+                self._resultados_filtrados = [
+                    r for r in self._resultados if r and r.get("precio")
+                ]
+            elif filtro == "sin_precio":
+                self._resultados_filtrados = [
+                    r for r in self._resultados if r and not r.get("precio")
+                ]
+            else:
+                self._resultados_filtrados = [r for r in self._resultados if r]
 
-        self._actualizar_tabla()
+            self._actualizar_tabla()
+        except Exception as e:
+            # En caso de error, mostrar mensaje y resetear
+            print(f"Error al aplicar filtro: {e}")
+            self._resultados_filtrados = []
+            self._actualizar_tabla()
 
     def _ordenar_por(self, columna: str) -> None:
         """Ordena los resultados por una columna."""
@@ -430,76 +447,111 @@ class ResultsTab(ctk.CTkFrame):
 
     def _actualizar_tabla(self) -> None:
         """Actualiza la visualización de la tabla."""
-        # Limpiar filas existentes
-        for widget in self.scroll_frame.winfo_children():
-            widget.destroy()
+        try:
+            # Limpiar filas existentes
+            for widget in self.scroll_frame.winfo_children():
+                widget.destroy()
 
-        if not self._resultados_filtrados:
-            self.label_sin_resultados = ctk.CTkLabel(
-                self.scroll_frame,
-                text="No hay resultados para mostrar.",
-                font=FUENTES.get("normal", ("Segoe UI", 12)),
-                text_color=self.tema["texto_secundario"],
-            )
-            self.label_sin_resultados.pack(pady=50)
-            return
+            if not self._resultados_filtrados:
+                self.label_sin_resultados = ctk.CTkLabel(
+                    self.scroll_frame,
+                    text="No hay resultados para mostrar.",
+                    font=FUENTES.get("normal", ("Segoe UI", 12)),
+                    text_color=self.tema["texto_secundario"],
+                )
+                self.label_sin_resultados.pack(pady=50)
+                return
 
-        # Crear filas
-        for idx, resultado in enumerate(self._resultados_filtrados):
-            fila = self._crear_fila(idx, resultado)
-            fila.pack(fill="x", pady=1)
+            # Crear filas
+            for idx, resultado in enumerate(self._resultados_filtrados):
+                if resultado is None:
+                    continue
+                try:
+                    fila = self._crear_fila(idx, resultado)
+                    fila.pack(fill="x", pady=1)
+                except Exception as e:
+                    print(f"Error al crear fila {idx}: {e}")
+                    continue
+        except Exception as e:
+            print(f"Error al actualizar tabla: {e}")
 
     def _actualizar_metricas(self) -> None:
         """Actualiza las métricas del resumen."""
-        total = len(self._resultados)
-        con_precio = sum(1 for r in self._resultados if r.get("precio"))
-        sin_precio = total - con_precio
+        try:
+            if not self._resultados:
+                self._labels_metricas["total"].configure(text="0")
+                self._labels_metricas["con_precio"].configure(text="0")
+                self._labels_metricas["sin_precio"].configure(text="0")
+                self._labels_metricas["precio_min"].configure(text="$0.00")
+                self._labels_metricas["precio_max"].configure(text="$0.00")
+                return
 
-        precios = [r.get("precio") for r in self._resultados if r.get("precio")]
-        precio_min = min(precios) if precios else 0
-        precio_max = max(precios) if precios else 0
+            total = len(self._resultados)
+            con_precio = sum(1 for r in self._resultados if r and r.get("precio"))
+            sin_precio = total - con_precio
 
-        self._labels_metricas["total"].configure(text=str(total))
-        self._labels_metricas["con_precio"].configure(text=str(con_precio))
-        self._labels_metricas["sin_precio"].configure(text=str(sin_precio))
-        self._labels_metricas["precio_min"].configure(text=f"${precio_min:.2f}")
-        self._labels_metricas["precio_max"].configure(text=f"${precio_max:.2f}")
+            precios = []
+            for r in self._resultados:
+                if r and r.get("precio"):
+                    try:
+                        precios.append(float(r.get("precio")))
+                    except (ValueError, TypeError):
+                        pass
+
+            precio_min = min(precios) if precios else 0
+            precio_max = max(precios) if precios else 0
+
+            self._labels_metricas["total"].configure(text=str(total))
+            self._labels_metricas["con_precio"].configure(text=str(con_precio))
+            self._labels_metricas["sin_precio"].configure(text=str(sin_precio))
+            self._labels_metricas["precio_min"].configure(text=f"${precio_min:.2f}")
+            self._labels_metricas["precio_max"].configure(text=f"${precio_max:.2f}")
+        except Exception as e:
+            print(f"Error al actualizar métricas: {e}")
 
     def _actualizar_barras_proveedores(self) -> None:
         """Actualiza las barras de distribución por proveedor."""
-        # Limpiar barras existentes
-        for widget in self._frame_barras_proveedores.winfo_children():
-            widget.destroy()
+        try:
+            # Limpiar barras existentes
+            for widget in self._frame_barras_proveedores.winfo_children():
+                widget.destroy()
 
-        # Contar por proveedor
-        conteo: Dict[str, int] = {}
-        for r in self._resultados:
-            proveedor = r.get("proveedor")
-            if proveedor:
-                conteo[proveedor.lower()] = conteo.get(proveedor.lower(), 0) + 1
+            if not self._resultados:
+                return
 
-        total_con_precio = sum(conteo.values())
-        if total_con_precio == 0:
-            return
+            # Contar por proveedor
+            conteo: Dict[str, int] = {}
+            for r in self._resultados:
+                if r and r.get("proveedor"):
+                    proveedor = str(r.get("proveedor")).lower()
+                    conteo[proveedor] = conteo.get(proveedor, 0) + 1
 
-        # Crear barras proporcionales
-        for proveedor, cantidad in conteo.items():
-            proporcion = cantidad / total_con_precio
-            color = self.COLORES_PROVEEDORES.get(proveedor, self.tema["acento"])
+            total_con_precio = sum(conteo.values())
+            if total_con_precio == 0:
+                return
 
-            barra = ctk.CTkFrame(
-                self._frame_barras_proveedores,
-                fg_color=color,
-                corner_radius=0,
-            )
-            barra.place(
-                relwidth=proporcion,
-                relheight=1.0,
-                relx=sum(
-                    conteo.get(p, 0) / total_con_precio
-                    for p in list(conteo.keys())[: list(conteo.keys()).index(proveedor)]
-                ),
-            )
+            # Crear barras proporcionales
+            proveedores_lista = list(conteo.keys())
+            relx_actual = 0.0
+
+            for proveedor in proveedores_lista:
+                cantidad = conteo[proveedor]
+                proporcion = cantidad / total_con_precio
+                color = self.COLORES_PROVEEDORES.get(proveedor, self.tema["acento"])
+
+                barra = ctk.CTkFrame(
+                    self._frame_barras_proveedores,
+                    fg_color=color,
+                    corner_radius=0,
+                )
+                barra.place(
+                    relwidth=proporcion,
+                    relheight=1.0,
+                    relx=relx_actual,
+                )
+                relx_actual += proporcion
+        except Exception as e:
+            print(f"Error al actualizar barras de proveedores: {e}")
 
     def _exportar_excel(self) -> None:
         """Exporta los resultados a un archivo Excel."""

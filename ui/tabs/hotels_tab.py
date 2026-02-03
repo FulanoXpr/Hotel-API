@@ -327,13 +327,24 @@ class HotelsTab(ctk.CTkFrame):
         )
         self.btn_limpiar.pack(side="left", padx=5, pady=5)
 
-        # Botón Buscar Keys (a la derecha)
-        self.btn_buscar_keys = ctk.CTkButton(
+        # Botón Buscar Keys de seleccionados (a la derecha)
+        self.btn_buscar_keys_sel = ctk.CTkButton(
             self.barra_herramientas,
-            text="🔍 Buscar Keys Faltantes",
+            text="🔍 Buscar Keys (Selección)",
             width=160,
             fg_color="green",
             hover_color="darkgreen",
+            command=self._buscar_keys_seleccionados,
+        )
+        self.btn_buscar_keys_sel.pack(side="right", padx=5, pady=5)
+
+        # Botón Buscar Keys de todos los faltantes
+        self.btn_buscar_keys = ctk.CTkButton(
+            self.barra_herramientas,
+            text="🔍 Buscar Todos",
+            width=120,
+            fg_color="gray50",
+            hover_color="gray40",
             command=self._buscar_keys_faltantes,
         )
         self.btn_buscar_keys.pack(side="right", padx=5, pady=5)
@@ -469,20 +480,43 @@ class HotelsTab(ctk.CTkFrame):
         if not ruta:
             return
 
-        try:
-            hoteles = self.excel_handler.cargar_excel(ruta)
-            self.tabla.cargar_hoteles(hoteles)
-            self._actualizar_contador()
-            self.label_busqueda.configure(
-                text=f"✅ Cargados {len(hoteles)} hoteles desde {os.path.basename(ruta)}",
-                text_color="green",
-            )
-        except FileNotFoundError as e:
-            messagebox.showerror("Error", f"Archivo no encontrado: {e}")
-        except ValueError as e:
-            messagebox.showerror("Error", str(e))
-        except Exception as e:
-            messagebox.showerror("Error", f"Error al cargar archivo: {e}")
+        # Deshabilitar botón y mostrar estado de carga
+        self.btn_cargar.configure(state="disabled", text="⏳ Cargando...")
+        self.label_busqueda.configure(
+            text=f"Cargando {os.path.basename(ruta)}...", text_color="gray"
+        )
+        self.update_idletasks()
+
+        def cargar_en_background() -> None:
+            try:
+                hoteles = self.excel_handler.cargar_excel(ruta)
+                # Actualizar UI en el thread principal
+                self.after(0, lambda: self._excel_cargado(hoteles, ruta))
+            except FileNotFoundError as e:
+                self.after(0, lambda: self._excel_error(f"Archivo no encontrado: {e}"))
+            except ValueError as e:
+                self.after(0, lambda: self._excel_error(str(e)))
+            except Exception as e:
+                self.after(0, lambda: self._excel_error(f"Error al cargar archivo: {e}"))
+
+        thread = threading.Thread(target=cargar_en_background, daemon=True)
+        thread.start()
+
+    def _excel_cargado(self, hoteles: List[HotelData], ruta: str) -> None:
+        """Callback cuando el Excel se cargó exitosamente."""
+        self.tabla.cargar_hoteles(hoteles)
+        self._actualizar_contador()
+        self.btn_cargar.configure(state="normal", text="📂 Cargar Excel")
+        self.label_busqueda.configure(
+            text=f"✅ Cargados {len(hoteles)} hoteles desde {os.path.basename(ruta)}",
+            text_color="green",
+        )
+
+    def _excel_error(self, mensaje: str) -> None:
+        """Callback cuando hay error al cargar Excel."""
+        self.btn_cargar.configure(state="normal", text="📂 Cargar Excel")
+        self.label_busqueda.configure(text="", text_color="gray")
+        messagebox.showerror("Error", mensaje)
 
     def _guardar_excel(self) -> None:
         """Guarda la lista de hoteles a un archivo Excel."""
@@ -615,6 +649,37 @@ class HotelsTab(ctk.CTkFrame):
             text=f"✅ Hotel '{nombre}' agregado", text_color="green"
         )
 
+    def _buscar_keys_seleccionados(self) -> None:
+        """Busca keys de Xotelo solo para los hoteles seleccionados."""
+        if not self.api:
+            messagebox.showerror("Error", "API de Xotelo no disponible.")
+            return
+
+        seleccionados = self.tabla.obtener_seleccionados()
+
+        if not seleccionados:
+            messagebox.showinfo("Info", "Seleccione los hoteles para buscar keys.")
+            return
+
+        # Filtrar solo los que no tienen key
+        sin_key = [h for h in seleccionados if not h.get("xotelo_key")]
+
+        if not sin_key:
+            messagebox.showinfo("Info", "Todos los hoteles seleccionados ya tienen key.")
+            return
+
+        confirmacion = messagebox.askyesno(
+            "Confirmar",
+            f"¿Buscar keys para {len(sin_key)} hotel(es) seleccionado(s)?\n"
+            f"({len(seleccionados)} seleccionados, {len(sin_key)} sin key)",
+        )
+
+        if not confirmacion:
+            return
+
+        self.btn_buscar_keys_sel.configure(state="disabled", text="Buscando...")
+        self._ejecutar_busqueda_keys(seleccionados, self.btn_buscar_keys_sel, "🔍 Buscar Keys (Selección)")
+
     def _buscar_keys_faltantes(self) -> None:
         """Busca keys de Xotelo para todos los hoteles sin key."""
         if not self.api:
@@ -630,7 +695,7 @@ class HotelsTab(ctk.CTkFrame):
 
         confirmacion = messagebox.askyesno(
             "Confirmar",
-            f"¿Buscar keys para {len(sin_key)} hotel(es)?\n"
+            f"¿Buscar keys para TODOS los {len(sin_key)} hotel(es) sin key?\n"
             "Esto puede tomar varios minutos.",
         )
 
@@ -638,27 +703,52 @@ class HotelsTab(ctk.CTkFrame):
             return
 
         self.btn_buscar_keys.configure(state="disabled", text="Buscando...")
+        self._ejecutar_busqueda_keys(hoteles, self.btn_buscar_keys, "🔍 Buscar Todos")
+
+    def _ejecutar_busqueda_keys(
+        self,
+        hoteles_a_buscar: List[HotelData],
+        boton: ctk.CTkButton,
+        texto_boton_original: str,
+    ) -> None:
+        """
+        Ejecuta la búsqueda de keys en background.
+
+        Args:
+            hoteles_a_buscar: Lista de hoteles donde buscar.
+            boton: Botón que inició la acción (para actualizar estado).
+            texto_boton_original: Texto original del botón para restaurar.
+        """
+        # Obtener todos los hoteles para encontrar índices correctos
+        todos_hoteles = self.tabla.obtener_hoteles()
+
+        # Crear mapa de nombre a índice
+        nombre_a_indice = {h.get("nombre", ""): idx for idx, h in enumerate(todos_hoteles)}
 
         def buscar_todos() -> None:
             encontrados = 0
-            total_sin_key = len([h for h in hoteles if not h.get("xotelo_key")])
+            sin_key = [h for h in hoteles_a_buscar if not h.get("xotelo_key")]
+            total_sin_key = len(sin_key)
             procesados = 0
 
-            for idx, hotel in enumerate(hoteles):
+            for hotel in hoteles_a_buscar:
                 if hotel.get("xotelo_key"):
                     continue
 
                 procesados += 1
+                nombre = hotel.get("nombre", "")
+                idx = nombre_a_indice.get(nombre)
 
                 try:
-                    resultado = self.api.search_hotel(hotel.get("nombre", ""))
+                    resultado = self.api.search_hotel(nombre)
                     if resultado:
                         hotel["xotelo_key"] = resultado["key"]
                         encontrados += 1
                         # Actualizar UI
-                        self.after(
-                            0, lambda i=idx, h=hotel: self.tabla.actualizar_hotel(i, h)
-                        )
+                        if idx is not None:
+                            self.after(
+                                0, lambda i=idx, h=hotel: self.tabla.actualizar_hotel(i, h)
+                            )
                 except Exception:
                     pass
 
@@ -666,21 +756,33 @@ class HotelsTab(ctk.CTkFrame):
                 self.after(
                     0,
                     lambda p=procesados, t=total_sin_key: (
-                        self.btn_buscar_keys.configure(text=f"Buscando... ({p}/{t})")
+                        boton.configure(text=f"Buscando... ({p}/{t})")
                     ),
                 )
 
+                # Esperar entre requests
+                if self.api:
+                    self.api.wait()
+
             # Finalizar
             self.after(
-                0, lambda: self._busqueda_masiva_completada(encontrados, total_sin_key)
+                0, lambda: self._busqueda_masiva_completada(
+                    encontrados, total_sin_key, boton, texto_boton_original
+                )
             )
 
         thread = threading.Thread(target=buscar_todos, daemon=True)
         thread.start()
 
-    def _busqueda_masiva_completada(self, encontrados: int, total: int) -> None:
+    def _busqueda_masiva_completada(
+        self,
+        encontrados: int,
+        total: int,
+        boton: ctk.CTkButton,
+        texto_boton_original: str,
+    ) -> None:
         """Callback cuando termina la búsqueda masiva de keys."""
-        self.btn_buscar_keys.configure(state="normal", text="🔍 Buscar Keys Faltantes")
+        boton.configure(state="normal", text=texto_boton_original)
         self._actualizar_contador()
         self.label_busqueda.configure(
             text=f"✅ Búsqueda completada: {encontrados}/{total} keys encontradas",

@@ -58,6 +58,16 @@ class ExcelHandler:
         "clave xotelo",
         "id_xotelo",
         "xotelo_id",
+        "key_id",
+        "keyid",
+        "keys_id",
+        "id",
+        "hotel_id",
+        "tripadvisor_key",
+        "tripadvisor_id",
+        "ta_key",
+        "ta_id",
+        "xotelo",
     ]
 
     # Posibles nombres de columnas para URLs de Booking
