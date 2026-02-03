@@ -25,7 +25,8 @@
   },
   "Sheraton Puerto Rico Resort & Casino": {
     "xotelo": "g147319-d1423064",
-    "booking_url": "https://www.booking.com/hotel/pr/sheraton-puerto-rico-convention-center-casino.html"
+    "booking_url": "https://www.booking.com/hotel/pr/sheraton-puerto-rico-convention-center-casino.html",
+    "amadeus": "SISJU523"
   },
   "Fairmont El San Juan Hotel": {
     "xotelo": "g147319-d155800",
@@ -58,7 +59,8 @@
   },
   "Copamarina Beach Resort & Spa": {
     "xotelo": "g147319-d148807",
-    "booking_url": "https://www.booking.com/hotel/pr/copamarina-beach-resort.html"
+    "booking_url": "https://www.booking.com/hotel/pr/copamarina-beach-resort.html",
+    "amadeus": "WVPSE399"
   },
   "Condado Ocean Club": {
     "xotelo": "g147319-d12522646",
@@ -89,7 +91,8 @@
     "xotelo": "g147319-d242220"
   },
   "Courtyard by Marriott Isla Verde Beach Resort": {
-    "xotelo": "g147319-d268430"
+    "xotelo": "g147319-d268430",
+    "amadeus": "CYSJUIVC"
   },
   "Margaritaville Vacation Club by Wyndham Rio Mar": {
     "xotelo": "g147319-d16659689",
@@ -108,7 +111,8 @@
     "xotelo": "g264369-d151980"
   },
   "AC Hotel San Juan Condado by Marriott": {
-    "xotelo": "g147319-d12349375"
+    "xotelo": "g147319-d12349375",
+    "amadeus": "MCSJUPRM"
   },
   "Hotel Decanter": {
     "xotelo": "g147319-d8618734"
@@ -129,7 +133,8 @@
     "xotelo": "g147319-d264386"
   },
   "Residence Inn by Marriott San Juan Isla Verde": {
-    "xotelo": "g147319-d23924461"
+    "xotelo": "g147319-d23924461",
+    "amadeus": "MCSJUPRM"
   },
   "Verdanza Hotel (Hyatt Centric)": {
     "xotelo": "g644389-d3355962"
@@ -145,7 +150,8 @@
     "xotelo": "g147319-d1232094"
   },
   "Four Points by Sheraton Caguas Real Hotel & Casino": {
-    "xotelo": "g147319-d534897"
+    "xotelo": "g147319-d534897",
+    "amadeus": "SISJU548"
   },
   "Hotel El Convento": {
     "xotelo": "g147319-d148043"
@@ -157,7 +163,8 @@
     "xotelo": "g147319-d254380"
   },
   "Courtyard by Marriott Aguadilla": {
-    "xotelo": "g147319-d858414"
+    "xotelo": "g147319-d858414",
+    "amadeus": "CYBQNCYC"
   },
   "TRYP by Wyndham Isla Verde": {
     "xotelo": "g147319-d151806"
@@ -200,10 +207,12 @@
     "xotelo": "g147319-d24800269"
   },
   "Courtyard by Marriott San Juan Miramar": {
-    "xotelo": "g147319-d600604"
+    "xotelo": "g147319-d600604",
+    "amadeus": "CYSJUMRC"
   },
   "Hampton Inn & Suites by Hilton San Juan": {
-    "xotelo": "g147319-d150241"
+    "xotelo": "g147319-d150241",
+    "amadeus": "HXSJUGN8"
   },
   "Hotel Miramar": {
     "xotelo": "g147319-d253693"
@@ -259,7 +268,8 @@
     "xotelo": "g147319-d21502214"
   },
   "Holiday Inn Ponce & El Tropical Casino an IHG Hotel": {
-    "xotelo": "g147319-d151797"
+    "xotelo": "g147319-d151797",
+    "amadeus": "HIPSE678"
   },
   "Casa de Amistad & Casa Isa": {
     "xotelo": "g147319-d280418"
@@ -269,7 +279,8 @@
   },
   "Parador Villas Del Mar Hau": {
     "xotelo": "g147319-d275180",
-    "booking_url": "https://www.booking.com/hotel/pr/parador-villas-del-mar-hau.html"
+    "booking_url": "https://www.booking.com/hotel/pr/parador-villas-del-mar-hau.html",
+    "amadeus": "TABQN466"
   },
   "Hotel Puerto Valdós": {
     "xotelo": "g147319-d23482969"
@@ -285,7 +296,8 @@
   },
   "Casa Verde Hotel": {
     "xotelo": "g147319-d668014",
-    "booking_url": "https://www.booking.com/hotel/pr/casa-verde.html"
+    "booking_url": "https://www.booking.com/hotel/pr/casa-verde.html",
+    "amadeus": "ILBQN413"
   },
   "Holiday Inn Express San Juan Condado": {
     "xotelo": "g147319-d151941"
@@ -303,7 +315,8 @@
     "xotelo": "g147319-d2481661"
   },
   "Hostería Del Mar": {
-    "xotelo": "g147319-d148560"
+    "xotelo": "g147319-d148560",
+    "amadeus": "ILSJU221"
   },
   "Caribe Hotel Ponce": {
     "xotelo": "g147319-d149921"
@@ -330,7 +343,8 @@
     "xotelo": "g147319-d27184349"
   },
   "At Wind Chimes Boutique Hotel": {
-    "xotelo": "g147319-d151679"
+    "xotelo": "g147319-d151679",
+    "amadeus": "TASJU005"
   },
   "Hacienda Tamarindo": {
     "xotelo": "g147319-d147798",
@@ -340,7 +354,8 @@
     "xotelo": "g147319-d485475"
   },
   "Coconut Palms Inn on the Beach": {
-    "xotelo": "g147319-d267552"
+    "xotelo": "g147319-d267552",
+    "amadeus": "ILSJU008"
   },
   "Nautilus by La Jamaca Hotels": {
     "xotelo": "g147319-d3310458"
@@ -366,13 +381,16 @@
   },
   "Casa Sol Bed & Breakfast": {
     "xotelo": "g147319-d5964475",
-    "booking_url": "https://www.booking.com/hotel/pr/casa-sol-bed-and-breakfast.html"
+    "booking_url": "https://www.booking.com/hotel/pr/casa-sol-bed-and-breakfast.html",
+    "amadeus": "TASJU472"
   },
   "Parador Boquemar": {
-    "xotelo": "g147319-d151667"
+    "xotelo": "g147319-d151667",
+    "amadeus": "TAMAZ475"
   },
   "Parador Villa Parguera": {
-    "xotelo": "g147319-d151670"
+    "xotelo": "g147319-d151670",
+    "amadeus": "TAMAZ462"
   },
   "Tamboo Hotel & Restaurant": {
     "xotelo": "g147319-d293708"
@@ -405,7 +423,8 @@
     "xotelo": "g147319-d9463907"
   },
   "Casa Campo Bed & Breakfast": {
-    "xotelo": "g147319-d13373035"
+    "xotelo": "g147319-d13373035",
+    "amadeus": "TASJU472"
   },
   "La Jamaca Hotel y Restaurante (Estancia)": {
     "xotelo": "g147319-d151966"
