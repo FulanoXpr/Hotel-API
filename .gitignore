@@ -35,3 +35,18 @@ Thumbs.db
 
 # Excel temp files
 ~$*.xlsx
+
+# Environment secrets
+.env
+
+# Price cache
+cache/
+
+# Pytest
+.pytest_cache/
+
+# Output files (generated)
+PRTC_Hotels_Prices_*.xlsx
+
+# Logs
+logs/

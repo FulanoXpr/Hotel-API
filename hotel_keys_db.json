@@ -1,151 +1,464 @@
 {
-  "The St. Regis Bahí­a Beach Resort": "g147319-d1837036",
-  "Dorado Beach a Ritz Carlton Reserve": "g147319-d3518813",
-  "Condado Vanderbilt Hotel": "g147319-d6691692",
-  "San Juan Marriott Resort & Stellaris Casino": "g147319-d149920",
-  "Dorado Beach Hotel Plantation Village (Condo-Hotel)": "g147322-d3877676",
-  "Royal Isabela Golf Course": "g147319-d3333177",
-  "El Conquistador Resort": "g147319-d148045",
-  "Sheraton Puerto Rico Resort & Casino": "g147319-d1423064",
-  "Fairmont El San Juan Hotel": "g147319-d155800",
-  "Royal Sonesta San Juan": "g147319-d150446",
-  "Villa Montaña Beach Resort": "g147319-d224196",
-  "O:LV Fifty Five": "g147319-d13969946",
-  "Embassy Suites by Hilton Dorado del Mar Beach Resort": "g147319-d209618",
-  "La Concha Renaissance San Juan Resort": "g147319-d9602805",
-  "Wyndham Grand Rio Mar Rainforest Beach and Golf Resort": "g147319-d148598",
-  "Copamarina Beach Resort & Spa": "g147319-d148807",
-  "Condado Ocean Club": "g147319-d12522646",
-  "O:Live Boutique Hotel": "g147319-d3152780",
-  "The Condado Plaza Hotel": "g147319-d150443",
-  "Hyatt Regency Grand Reserve Puerto Rico": "g147319-d284987",
-  "Casa Costera Apartments by Marriott Bonvoy": "g147319-d26878084",
-  "Embassy Suites by Hilton San Juan Hotel & Casino": "g147319-d151713",
-  "Mayagüez Resort & Casino": "g147319-d297785",
-  "Condado Palm Inn San Juan, Tapestry Collection by Hilton": "g147319-d242220",
-  "Courtyard by Marriott Isla Verde Beach Resort": "g147319-d268430",
-  "Margaritaville Vacation Club by Wyndham Rio Mar": "g147319-d16659689",
-  "Ciqala Luxury Home Suites": "g147320-d2179878",
-  "DoubleTree by Hilton Hotel San Juan": "g147319-d151682",
-  "Hotel Rumbao": "g147320-d26857069",
-  "Villa Cofresá­ Hotel & Restaurant (Rincón de la Villa Inc)": "g264369-d151980",
-  "AC Hotel San Juan Condado by Marriott": "g147319-d12349375",
-  "Hotel Decanter": "g147319-d8618734",
-  "Caribe Hilton": "g147319-d149921",
-  "Rincón Beach Resort": "g147319-d242226",
-  "Boho Beach Club": "g147319-d13324163",
-  "Hotel Palacio Provincial": "g147320-d23130157",
-  "Rincón of the Seas Grand Caribbean Hotel": "g147319-d264386",
-  "Residence Inn by Marriott San Juan Isla Verde": "g147319-d23924461",
-  "Verdanza Hotel (Hyatt Centric)": "g644389-d3355962",
-  "Rainforest Inn": "g147319-d503287",
-  "Wyndham Palmas Beach and Golf Boutique Resort": "g147319-d310451",
-  "Aquarius Vacation Club at Boquerán Beach Resort": "g147319-d1232094",
-  "Four Points by Sheraton Caguas Real Hotel & Casino": "g147319-d534897",
-  "Hotel El Convento": "g147319-d148043",
-  "Aquarius Vacation Club Golden Sand Villas": "g147319-d1232094",
-  "Hyatt Vacation Club At Hacienda Del Mar": "g147319-d254380",
-  "Courtyard by Marriott Aguadilla": "g147319-d858414",
-  "TRYP by Wyndham Isla Verde": "g147319-d151806",
-  "Hilton Ponce Golf & Casino Resort": "g147319-d151671",
-  "Fairfield by Marriott Luquillo Beach": "g147319-d26627285",
-  "Hyatt Place Bayamon Hotel & Tropical Casino": "g147319-d5274354",
-  "Aïre de O:live": "g147319-d30767613",
-  "Punta Borinquen Resort Aguadilla": "g147319-d12220946",
-  "Hilton Garden Inn San Juan Condado": "g147319-d26555257",
-  "Hyatt Place San Juan City Center": "g147319-d9602805",
-  "Club Seabourne": "g147319-d151840",
-  "Fajardo Inn": "g147319-d155796",
-  "Malecán House A Vieques Boutique Hotel": "g147326-d1569786",
-  "Holiday Inn Mayagüez & Tropical Casino, an IHG Hotel": "g147319-d151796",
-  "TRYP by Wyndham Mayagüez": "g147319-d24800269",
-  "Courtyard by Marriott San Juan Miramar": "g147319-d600604",
-  "Hampton Inn & Suites by Hilton San Juan": "g147319-d150241",
-  "Hotel Miramar": "g147319-d253693",
-  "Hyatt House San Juan": "g147319-d6892975",
-  "Hyatt Place Manati & Casino Atlantico": "g147319-d5598171",
-  "The Tryst Beachfront Hotel": "g147319-d26629555",
-  "Aqua Marina Beach Club": "g147319-d623904",
-  "Don Rafa Boutique Hotel & Residences": "g147319-d25178239",
-  "Hotel Villa del Sol": "g147319-d151808",
-  "Ponce Plaza Hotel & Casino": "g147319-d6847423",
-  "La Terraza de San Juan Boutique Hotel": "g147319-d1988329",
-  "The Wave Hotel Condado": "g147319-d10195804",
-  "352 Guest House Hotel Boutique": "g147319-d15141926",
-  "Abitta Boutique Hotel, Ascend Hotel Collection": "g147320-d249485",
-  "HiBird - Apartment and Suites Hotel": "g147319-d25247369",
-  "Acacia Boutique Hotel": "g147319-d151832",
-  "San Juan Airport Hotel": "g147319-d498911",
-  "Aloft San Juan": "g147319-d20116315",
-  "Aloft Ponce": "g147319-d21502214",
-  "Holiday Inn Ponce & El Tropical Casino an IHG Hotel": "g147319-d151797",
-  "Casa de Amistad & Casa Isa": "g147319-d280418",
-  "Casa Wilson Inn": "g147319-d17741745",
-  "Parador Villas Del Mar Hau": "g147319-d275180",
-  "Hotel Puerto Valdós": "g147319-d23482969",
-  "Villa Herencia (Historic Boutique Hotel)": "g147319-d1048165",
-  "Hix Island House": "g147319-d147790",
-  "Park Royal Homestay Club Cala": "g147319-d6161031",
-  "Casa Verde Hotel": "g147319-d668014",
-  "Holiday Inn Express San Juan Condado": "g147319-d151941",
-  "Hotel Nest": "g147319-d23865228",
-  "Hotel Hacienda El Jibarito (Complejo Agroturá­stico)": "g609121-d60096",
-  "CasaBlanca Hotel": "g147319-d1456033",
-  "Dream Inn Puerto Rico": "g147319-d2481661",
-  "Hostería Del Mar": "g147319-d148560",
-  "Caribe Hotel Ponce": "g147319-d149921",
-  "Hotel El Guajataca": "g147319-d150417",
-  "Hotel Mayaguez Plaza, BW Signature Collection": "g147319-d575670",
-  "The Lazy Parrot Inn": "g147319-d148789",
-  "Coral Princess Hotel": "g147319-d268429",
-  "Dream's Hotel": "g147319-d7316138",
-  "Dreams Hotel Miramar": "g147319-d14943546",
-  "The Looking Glass Hotel": "g147319-d27184349",
-  "At Wind Chimes Boutique Hotel": "g147319-d151679",
-  "Hacienda Tamarindo": "g147319-d147798",
-  "SeaGate Hotel": "g147319-d485475",
-  "Coconut Palms Inn on the Beach": "g147319-d267552",
-  "Nautilus by La Jamaca Hotels": "g147319-d3310458",
-  "Rocamar Resort & Restaurant": "g147319-d2058980",
-  "Hotel Punta Maracayo Resort": "g147319-d1391914",
-  "Costa Bahí­a Hotel & Convention Center": "g147319-d251396",
-  "Hacienda Gripiñas": "g147319-d151668",
-  "Parador MaunaCaribe": "g147319-d1681896",
-  "The Serene House Bed & Breakfast": "g147319-d26723746",
-  "Casa Sol Bed & Breakfast": "g147319-d5964475",
-  "Parador Boquemar": "g147319-d151667",
-  "Parador Villa Parguera": "g147319-d151670",
-  "Tamboo Hotel & Restaurant": "g147319-d293708",
-  "Ficus Hotel": "g147319-d25456741",
-  "Tapia Haus 103": "g147319-d20243623",
-  "Parador El Buen Café (Hotel Parador El Buen Café)": "g147319-d251395",
-  "Marina de Salinas": "g147319-d2066940",
-  "Casa Coral Luquillo (Hostel)": "g147319-d14920354",
-  "Dos Aguas Bed & Breakfast": "g147319-d291146",
-  "Luquillo Sunrise Beach Inn": "g147319-d649104",
-  "Casa Isabel B&B": "g147319-d9463907",
-  "Casa Campo Bed & Breakfast": "g147319-d13373035",
-  "La Jamaca Hotel y Restaurante (Estancia)": "g147319-d151966",
-  "Parador El Faro": "g147319-d268433",
-  "Parador Guánica 1929": "g147319-d590083",
-  "Posada Hotel Colonial": "g147319-d1007145",
-  "Rincón Plaza Hotel": "g147319-d10730993",
-  "San Sebastián Bed & Breakfast": "g147319-d7720672",
-  "The Village Inn": "g147319-d8522359",
-  "Villa Verde Inn": "g147319-d267488",
-  "Comfort Inn & Suites": "g147319-d1151081",
-  "Canario Boutique Hotel (Canario Inn) & Casa del Caribe Inn": "g147319-d150242",
-  "Canyon Boutique Hotel": "g147319-d150242",
-  "Hotel Media Luna": "g147319-d7137980",
-  "Dos Ángeles Del Mar Bed and Breakfast": "g147319-d291146",
-  "La Casa Azul B&B": "g147319-d9463907",
-  "Parador Turtle Bay Inn": "g147319-d1593115",
-  "4 Casitas": "g147319-d15856029",
-  "Hospedería Villa Alegre": "g147319-d1984406",
-  "Pitahaya Glamping Eco Retreat": "g147319-d15585165",
-  "Red Flamboyán Guesthouse Restaurant and Bar": "g147319-d681285",
-  "Caño Tiburones Guest House": "g147319-d636068",
-  "A2 Tiempos AyS, Bed and Breakfast": "g147319-d14037453",
-  "Conturce Boutique Hostel": "g147319-d12379060",
-  "Námada Urban Beach Hostel (Calle Loiza)": "g147319-d12640390"
+  "The St. Regis Bahí­a Beach Resort": {
+    "xotelo": "g147319-d1837036"
+  },
+  "Dorado Beach a Ritz Carlton Reserve": {
+    "xotelo": "g147319-d3518813",
+    "booking_url": "https://www.booking.com/hotel/pr/residences-at-dorado-beach-a-ritz-carlton-reserve.html"
+  },
+  "Condado Vanderbilt Hotel": {
+    "xotelo": "g147319-d6691692",
+    "booking_url": "https://www.booking.com/hotel/pr/condado-vanderbilt-san-juan2.html"
+  },
+  "San Juan Marriott Resort & Stellaris Casino": {
+    "xotelo": "g147319-d149920",
+    "booking_url": "https://www.booking.com/hotel/pr/san-juan-marriott-resort-and-stellaris-casino.html"
+  },
+  "Dorado Beach Hotel Plantation Village (Condo-Hotel)": {
+    "xotelo": "g147322-d3877676"
+  },
+  "Royal Isabela Golf Course": {
+    "xotelo": "g147319-d3333177"
+  },
+  "El Conquistador Resort": {
+    "xotelo": "g147319-d148045"
+  },
+  "Sheraton Puerto Rico Resort & Casino": {
+    "xotelo": "g147319-d1423064",
+    "booking_url": "https://www.booking.com/hotel/pr/sheraton-puerto-rico-convention-center-casino.html"
+  },
+  "Fairmont El San Juan Hotel": {
+    "xotelo": "g147319-d155800",
+    "booking_url": "https://www.booking.com/hotel/pr/el-san-juan-casino.html"
+  },
+  "Royal Sonesta San Juan": {
+    "xotelo": "g147319-d150446",
+    "booking_url": "https://www.booking.com/hotel/pr/royal-sonesta-san-juan.html"
+  },
+  "Villa Montaña Beach Resort": {
+    "xotelo": "g147319-d224196",
+    "booking_url": "https://www.booking.com/hotel/pr/villa-montana-beach-resort.html"
+  },
+  "O:LV Fifty Five": {
+    "xotelo": "g147319-d13969946",
+    "booking_url": "https://www.booking.com/hotel/pr/o-lv.html"
+  },
+  "Embassy Suites by Hilton Dorado del Mar Beach Resort": {
+    "xotelo": "g147319-d209618",
+    "booking_url": "https://www.booking.com/hotel/pr/embassy-suites-dorado-del-mar-beach-golf-resort.html"
+  },
+  "La Concha Renaissance San Juan Resort": {
+    "xotelo": "g147319-d9602805"
+  },
+  "Wyndham Grand Rio Mar Rainforest Beach and Golf Resort": {
+    "xotelo": "g147319-d148598",
+    "booking_url": "https://www.booking.com/hotel/pr/wyndham-grand-rio-mar-beach-resort-amp-spa.html"
+  },
+  "Copamarina Beach Resort & Spa": {
+    "xotelo": "g147319-d148807",
+    "booking_url": "https://www.booking.com/hotel/pr/copamarina-beach-resort.html"
+  },
+  "Condado Ocean Club": {
+    "xotelo": "g147319-d12522646",
+    "booking_url": "https://www.booking.com/hotel/pr/serafina-beach.html"
+  },
+  "O:Live Boutique Hotel": {
+    "xotelo": "g147319-d3152780",
+    "booking_url": "https://www.booking.com/hotel/pr/olive-boutique.html"
+  },
+  "The Condado Plaza Hotel": {
+    "xotelo": "g147319-d150443",
+    "booking_url": "https://www.booking.com/hotel/pr/condado-plaza-hilton.html"
+  },
+  "Hyatt Regency Grand Reserve Puerto Rico": {
+    "xotelo": "g147319-d284987",
+    "booking_url": "https://www.booking.com/hotel/pr/hyatt-regency-coco-beach.html"
+  },
+  "Casa Costera Apartments by Marriott Bonvoy": {
+    "xotelo": "g147319-d26878084"
+  },
+  "Embassy Suites by Hilton San Juan Hotel & Casino": {
+    "xotelo": "g147319-d151713"
+  },
+  "Mayagüez Resort & Casino": {
+    "xotelo": "g147319-d297785"
+  },
+  "Condado Palm Inn San Juan, Tapestry Collection by Hilton": {
+    "xotelo": "g147319-d242220"
+  },
+  "Courtyard by Marriott Isla Verde Beach Resort": {
+    "xotelo": "g147319-d268430"
+  },
+  "Margaritaville Vacation Club by Wyndham Rio Mar": {
+    "xotelo": "g147319-d16659689"
+  },
+  "Ciqala Luxury Home Suites": {
+    "xotelo": "g147320-d2179878"
+  },
+  "DoubleTree by Hilton Hotel San Juan": {
+    "xotelo": "g147319-d151682"
+  },
+  "Hotel Rumbao": {
+    "xotelo": "g147320-d26857069"
+  },
+  "Villa Cofresá­ Hotel & Restaurant (Rincón de la Villa Inc)": {
+    "xotelo": "g264369-d151980"
+  },
+  "AC Hotel San Juan Condado by Marriott": {
+    "xotelo": "g147319-d12349375"
+  },
+  "Hotel Decanter": {
+    "xotelo": "g147319-d8618734"
+  },
+  "Caribe Hilton": {
+    "xotelo": "g147319-d149921"
+  },
+  "Rincón Beach Resort": {
+    "xotelo": "g147319-d242226"
+  },
+  "Boho Beach Club": {
+    "xotelo": "g147319-d13324163"
+  },
+  "Hotel Palacio Provincial": {
+    "xotelo": "g147320-d23130157"
+  },
+  "Rincón of the Seas Grand Caribbean Hotel": {
+    "xotelo": "g147319-d264386"
+  },
+  "Residence Inn by Marriott San Juan Isla Verde": {
+    "xotelo": "g147319-d23924461"
+  },
+  "Verdanza Hotel (Hyatt Centric)": {
+    "xotelo": "g644389-d3355962"
+  },
+  "Rainforest Inn": {
+    "xotelo": "g147319-d503287"
+  },
+  "Wyndham Palmas Beach and Golf Boutique Resort": {
+    "xotelo": "g147319-d310451"
+  },
+  "Aquarius Vacation Club at Boquerán Beach Resort": {
+    "xotelo": "g147319-d1232094"
+  },
+  "Four Points by Sheraton Caguas Real Hotel & Casino": {
+    "xotelo": "g147319-d534897"
+  },
+  "Hotel El Convento": {
+    "xotelo": "g147319-d148043"
+  },
+  "Aquarius Vacation Club Golden Sand Villas": {
+    "xotelo": "g147319-d1232094"
+  },
+  "Hyatt Vacation Club At Hacienda Del Mar": {
+    "xotelo": "g147319-d254380"
+  },
+  "Courtyard by Marriott Aguadilla": {
+    "xotelo": "g147319-d858414"
+  },
+  "TRYP by Wyndham Isla Verde": {
+    "xotelo": "g147319-d151806"
+  },
+  "Hilton Ponce Golf & Casino Resort": {
+    "xotelo": "g147319-d151671"
+  },
+  "Fairfield by Marriott Luquillo Beach": {
+    "xotelo": "g147319-d26627285"
+  },
+  "Hyatt Place Bayamon Hotel & Tropical Casino": {
+    "xotelo": "g147319-d5274354"
+  },
+  "Aïre de O:live": {
+    "xotelo": "g147319-d30767613"
+  },
+  "Punta Borinquen Resort Aguadilla": {
+    "xotelo": "g147319-d12220946"
+  },
+  "Hilton Garden Inn San Juan Condado": {
+    "xotelo": "g147319-d26555257"
+  },
+  "Hyatt Place San Juan City Center": {
+    "xotelo": "g147319-d9602805"
+  },
+  "Club Seabourne": {
+    "xotelo": "g147319-d151840"
+  },
+  "Fajardo Inn": {
+    "xotelo": "g147319-d155796"
+  },
+  "Malecán House A Vieques Boutique Hotel": {
+    "xotelo": "g147326-d1569786"
+  },
+  "Holiday Inn Mayagüez & Tropical Casino, an IHG Hotel": {
+    "xotelo": "g147319-d151796"
+  },
+  "TRYP by Wyndham Mayagüez": {
+    "xotelo": "g147319-d24800269"
+  },
+  "Courtyard by Marriott San Juan Miramar": {
+    "xotelo": "g147319-d600604"
+  },
+  "Hampton Inn & Suites by Hilton San Juan": {
+    "xotelo": "g147319-d150241"
+  },
+  "Hotel Miramar": {
+    "xotelo": "g147319-d253693"
+  },
+  "Hyatt House San Juan": {
+    "xotelo": "g147319-d6892975"
+  },
+  "Hyatt Place Manati & Casino Atlantico": {
+    "xotelo": "g147319-d5598171"
+  },
+  "The Tryst Beachfront Hotel": {
+    "xotelo": "g147319-d26629555"
+  },
+  "Aqua Marina Beach Club": {
+    "xotelo": "g147319-d623904"
+  },
+  "Don Rafa Boutique Hotel & Residences": {
+    "xotelo": "g147319-d25178239"
+  },
+  "Hotel Villa del Sol": {
+    "xotelo": "g147319-d151808"
+  },
+  "Ponce Plaza Hotel & Casino": {
+    "xotelo": "g147319-d6847423"
+  },
+  "La Terraza de San Juan Boutique Hotel": {
+    "xotelo": "g147319-d1988329"
+  },
+  "The Wave Hotel Condado": {
+    "xotelo": "g147319-d10195804"
+  },
+  "352 Guest House Hotel Boutique": {
+    "xotelo": "g147319-d15141926"
+  },
+  "Abitta Boutique Hotel, Ascend Hotel Collection": {
+    "xotelo": "g147320-d249485"
+  },
+  "HiBird - Apartment and Suites Hotel": {
+    "xotelo": "g147319-d25247369"
+  },
+  "Acacia Boutique Hotel": {
+    "xotelo": "g147319-d151832"
+  },
+  "San Juan Airport Hotel": {
+    "xotelo": "g147319-d498911"
+  },
+  "Aloft San Juan": {
+    "xotelo": "g147319-d20116315"
+  },
+  "Aloft Ponce": {
+    "xotelo": "g147319-d21502214"
+  },
+  "Holiday Inn Ponce & El Tropical Casino an IHG Hotel": {
+    "xotelo": "g147319-d151797"
+  },
+  "Casa de Amistad & Casa Isa": {
+    "xotelo": "g147319-d280418"
+  },
+  "Casa Wilson Inn": {
+    "xotelo": "g147319-d17741745"
+  },
+  "Parador Villas Del Mar Hau": {
+    "xotelo": "g147319-d275180"
+  },
+  "Hotel Puerto Valdós": {
+    "xotelo": "g147319-d23482969"
+  },
+  "Villa Herencia (Historic Boutique Hotel)": {
+    "xotelo": "g147319-d1048165"
+  },
+  "Hix Island House": {
+    "xotelo": "g147319-d147790"
+  },
+  "Park Royal Homestay Club Cala": {
+    "xotelo": "g147319-d6161031"
+  },
+  "Casa Verde Hotel": {
+    "xotelo": "g147319-d668014"
+  },
+  "Holiday Inn Express San Juan Condado": {
+    "xotelo": "g147319-d151941"
+  },
+  "Hotel Nest": {
+    "xotelo": "g147319-d23865228"
+  },
+  "Hotel Hacienda El Jibarito (Complejo Agroturá­stico)": {
+    "xotelo": "g609121-d60096"
+  },
+  "CasaBlanca Hotel": {
+    "xotelo": "g147319-d1456033"
+  },
+  "Dream Inn Puerto Rico": {
+    "xotelo": "g147319-d2481661"
+  },
+  "Hostería Del Mar": {
+    "xotelo": "g147319-d148560"
+  },
+  "Caribe Hotel Ponce": {
+    "xotelo": "g147319-d149921"
+  },
+  "Hotel El Guajataca": {
+    "xotelo": "g147319-d150417"
+  },
+  "Hotel Mayaguez Plaza, BW Signature Collection": {
+    "xotelo": "g147319-d575670"
+  },
+  "The Lazy Parrot Inn": {
+    "xotelo": "g147319-d148789"
+  },
+  "Coral Princess Hotel": {
+    "xotelo": "g147319-d268429"
+  },
+  "Dream's Hotel": {
+    "xotelo": "g147319-d7316138"
+  },
+  "Dreams Hotel Miramar": {
+    "xotelo": "g147319-d14943546"
+  },
+  "The Looking Glass Hotel": {
+    "xotelo": "g147319-d27184349"
+  },
+  "At Wind Chimes Boutique Hotel": {
+    "xotelo": "g147319-d151679"
+  },
+  "Hacienda Tamarindo": {
+    "xotelo": "g147319-d147798"
+  },
+  "SeaGate Hotel": {
+    "xotelo": "g147319-d485475"
+  },
+  "Coconut Palms Inn on the Beach": {
+    "xotelo": "g147319-d267552"
+  },
+  "Nautilus by La Jamaca Hotels": {
+    "xotelo": "g147319-d3310458"
+  },
+  "Rocamar Resort & Restaurant": {
+    "xotelo": "g147319-d2058980"
+  },
+  "Hotel Punta Maracayo Resort": {
+    "xotelo": "g147319-d1391914"
+  },
+  "Costa Bahí­a Hotel & Convention Center": {
+    "xotelo": "g147319-d251396"
+  },
+  "Hacienda Gripiñas": {
+    "xotelo": "g147319-d151668"
+  },
+  "Parador MaunaCaribe": {
+    "xotelo": "g147319-d1681896"
+  },
+  "The Serene House Bed & Breakfast": {
+    "xotelo": "g147319-d26723746"
+  },
+  "Casa Sol Bed & Breakfast": {
+    "xotelo": "g147319-d5964475"
+  },
+  "Parador Boquemar": {
+    "xotelo": "g147319-d151667"
+  },
+  "Parador Villa Parguera": {
+    "xotelo": "g147319-d151670"
+  },
+  "Tamboo Hotel & Restaurant": {
+    "xotelo": "g147319-d293708"
+  },
+  "Ficus Hotel": {
+    "xotelo": "g147319-d25456741"
+  },
+  "Tapia Haus 103": {
+    "xotelo": "g147319-d20243623"
+  },
+  "Parador El Buen Café (Hotel Parador El Buen Café)": {
+    "xotelo": "g147319-d251395"
+  },
+  "Marina de Salinas": {
+    "xotelo": "g147319-d2066940"
+  },
+  "Casa Coral Luquillo (Hostel)": {
+    "xotelo": "g147319-d14920354"
+  },
+  "Dos Aguas Bed & Breakfast": {
+    "xotelo": "g147319-d291146"
+  },
+  "Luquillo Sunrise Beach Inn": {
+    "xotelo": "g147319-d649104"
+  },
+  "Casa Isabel B&B": {
+    "xotelo": "g147319-d9463907"
+  },
+  "Casa Campo Bed & Breakfast": {
+    "xotelo": "g147319-d13373035"
+  },
+  "La Jamaca Hotel y Restaurante (Estancia)": {
+    "xotelo": "g147319-d151966"
+  },
+  "Parador El Faro": {
+    "xotelo": "g147319-d268433"
+  },
+  "Parador Guánica 1929": {
+    "xotelo": "g147319-d590083"
+  },
+  "Posada Hotel Colonial": {
+    "xotelo": "g147319-d1007145"
+  },
+  "Rincón Plaza Hotel": {
+    "xotelo": "g147319-d10730993"
+  },
+  "San Sebastián Bed & Breakfast": {
+    "xotelo": "g147319-d7720672"
+  },
+  "The Village Inn": {
+    "xotelo": "g147319-d8522359"
+  },
+  "Villa Verde Inn": {
+    "xotelo": "g147319-d267488"
+  },
+  "Comfort Inn & Suites": {
+    "xotelo": "g147319-d1151081"
+  },
+  "Canario Boutique Hotel (Canario Inn) & Casa del Caribe Inn": {
+    "xotelo": "g147319-d150242"
+  },
+  "Canyon Boutique Hotel": {
+    "xotelo": "g147319-d150242"
+  },
+  "Hotel Media Luna": {
+    "xotelo": "g147319-d7137980"
+  },
+  "Dos Ángeles Del Mar Bed and Breakfast": {
+    "xotelo": "g147319-d291146"
+  },
+  "La Casa Azul B&B": {
+    "xotelo": "g147319-d9463907"
+  },
+  "Parador Turtle Bay Inn": {
+    "xotelo": "g147319-d1593115"
+  },
+  "4 Casitas": {
+    "xotelo": "g147319-d15856029"
+  },
+  "Hospedería Villa Alegre": {
+    "xotelo": "g147319-d1984406"
+  },
+  "Pitahaya Glamping Eco Retreat": {
+    "xotelo": "g147319-d15585165"
+  },
+  "Red Flamboyán Guesthouse Restaurant and Bar": {
+    "xotelo": "g147319-d681285"
+  },
+  "Caño Tiburones Guest House": {
+    "xotelo": "g147319-d636068"
+  },
+  "A2 Tiempos AyS, Bed and Breakfast": {
+    "xotelo": "g147319-d14037453"
+  },
+  "Conturce Boutique Hostel": {
+    "xotelo": "g147319-d12379060"
+  },
+  "Námada Urban Beach Hostel (Calle Loiza)": {
+    "xotelo": "g147319-d12640390"
+  }
 }

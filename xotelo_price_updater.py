@@ -7,6 +7,8 @@ Usage:
   Interactive:  python xotelo_price_updater.py
   Automatic:    python xotelo_price_updater.py --auto
   Multi-date:   python xotelo_price_updater.py --auto --multi-date
+  Cascade:      python xotelo_price_updater.py --auto --cascade
+  Full:         python xotelo_price_updater.py --auto --multi-date --cascade
 """
 from __future__ import annotations
 
@@ -25,6 +27,20 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 import config
 from xotelo_api import XoteloAPI, RateInfo, get_client
+
+# Import cascade pipeline components (optional)
+try:
+    from price_providers import (
+        CascadePriceProvider,
+        PriceCache,
+        XoteloProvider,
+        SerpApiProvider,
+        ApifyProvider,
+        PriceResult
+    )
+    CASCADE_AVAILABLE = True
+except ImportError:
+    CASCADE_AVAILABLE = False
 
 # Configure logging
 logging.basicConfig(
@@ -63,6 +79,7 @@ class HotelPriceData(TypedDict, total=False):
     provider: str
     hotel_key: str
     date_used: str  # Which date range found the price
+    source: str  # Which cascade provider found the price
 
 
 class DateRange(TypedDict):
@@ -269,20 +286,48 @@ def try_multiple_dates(
     return None
 
 
-def load_hotel_keys() -> Dict[str, str]:
-    """Load hotel name to key mappings from JSON database."""
+class HotelKeyData(TypedDict, total=False):
+    """Type definition for hotel key data (new format)."""
+    xotelo: str
+    booking_url: str
+
+
+def load_hotel_keys() -> Dict[str, Any]:
+    """
+    Load hotel name to key mappings from JSON database.
+
+    Supports both old format (string) and new format (dict).
+    Old: {"Hotel Name": "xotelo_key"}
+    New: {"Hotel Name": {"xotelo": "xotelo_key", "booking_url": "..."}}
+    """
     if not os.path.exists(HOTEL_KEYS_DB):
         logger.error("Hotel keys database not found: %s", HOTEL_KEYS_DB)
         return {}
 
     try:
         with open(HOTEL_KEYS_DB, 'r', encoding='utf-8') as f:
-            keys: Dict[str, str] = json.load(f)
+            keys: Dict[str, Any] = json.load(f)
         logger.info("Loaded %d hotel keys from %s", len(keys), HOTEL_KEYS_DB)
         return keys
     except (json.JSONDecodeError, OSError) as e:
         logger.error("Failed to load hotel keys: %s", e)
         return {}
+
+
+def get_xotelo_key(hotel_data: Any) -> Optional[str]:
+    """Extract Xotelo key from hotel data (supports old and new format)."""
+    if isinstance(hotel_data, str):
+        return hotel_data
+    elif isinstance(hotel_data, dict):
+        return hotel_data.get("xotelo")
+    return None
+
+
+def get_booking_url(hotel_data: Any) -> Optional[str]:
+    """Extract Booking URL from hotel data."""
+    if isinstance(hotel_data, dict):
+        return hotel_data.get("booking_url")
+    return None
 
 
 def get_hotel_rates(
@@ -308,7 +353,8 @@ def update_excel_with_prices(
     excel_hotels_with_prices: Dict[int, HotelPriceData],
     search_params: SearchParams,
     snapshot_date: str,
-    multi_date: bool = False
+    multi_date: bool = False,
+    cascade_mode: bool = False
 ) -> str:
     """Read Excel and update with prices, including snapshot date."""
     logger.info("Updating Excel file...")
@@ -323,22 +369,39 @@ def update_excel_with_prices(
     provider_col = max_col + 3
     key_col = max_col + 4
     search_col = max_col + 5
-    date_used_col = max_col + 6 if multi_date else None
+
+    # Additional columns based on mode
+    next_col = max_col + 6
+    date_used_col = None
+    source_col = None
+
+    if multi_date:
+        date_used_col = next_col
+        next_col += 1
+
+    if cascade_mode:
+        source_col = next_col
 
     # Add headers with styling
     header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
     header_font = Font(color="FFFFFF", bold=True)
 
+    # Use "Price_USD" for cascade mode (not just Xotelo)
+    price_header = "Price_USD" if cascade_mode else "Xotelo_Price_USD"
+
     headers = [
         (snapshot_col, "Snapshot_Date"),
-        (price_col, "Xotelo_Price_USD"),
+        (price_col, price_header),
         (provider_col, "Provider"),
         (key_col, "Hotel_Key"),
         (search_col, "Search_Params")
     ]
 
-    if multi_date and date_used_col:
+    if date_used_col:
         headers.append((date_used_col, "Date_Found"))
+
+    if source_col:
+        headers.append((source_col, "Source"))
 
     for col, header_text in headers:
         cell = ws.cell(row=1, column=col, value=header_text)
@@ -349,6 +412,8 @@ def update_excel_with_prices(
     search_info = f"{search_params['chk_in']} to {search_params['chk_out']} | {search_params['rooms']}rm/{search_params['adults']}ad"
     if multi_date:
         search_info += " (multi-date)"
+    if cascade_mode:
+        search_info += " (cascade)"
 
     # Update rows with matched data
     for row_num, hotel_data in excel_hotels_with_prices.items():
@@ -357,8 +422,10 @@ def update_excel_with_prices(
         ws.cell(row=row_num, column=provider_col, value=hotel_data.get('provider'))
         ws.cell(row=row_num, column=key_col, value=hotel_data.get('hotel_key'))
         ws.cell(row=row_num, column=search_col, value=search_info)
-        if multi_date and date_used_col:
+        if date_used_col:
             ws.cell(row=row_num, column=date_used_col, value=hotel_data.get('date_used', ''))
+        if source_col:
+            ws.cell(row=row_num, column=source_col, value=hotel_data.get('source', ''))
 
     # Generate output filename with date
     output_file = f"PRTC_Hotels_Prices_{snapshot_date}.xlsx"
@@ -376,6 +443,10 @@ def main() -> None:
                         help='Run in automatic mode with default parameters (no prompts)')
     parser.add_argument('--multi-date', action='store_true',
                         help='Try multiple date ranges to maximize price coverage')
+    parser.add_argument('--cascade', action='store_true',
+                        help='Use cascade pipeline (Xotelo -> SerpApi -> Apify) for max coverage')
+    parser.add_argument('--limit', type=int, default=0,
+                        help='Limit number of hotels to process (for testing)')
     args = parser.parse_args()
 
     # Get snapshot date (when the data was collected)
@@ -407,6 +478,53 @@ def main() -> None:
         print("   Date ranges to try:")
         for dr in date_ranges:
             print(f"     - {dr['label']}: {dr['chk_in']} to {dr['chk_out']}")
+
+    # Cascade mode setup
+    cascade_provider: Optional[CascadePriceProvider] = None
+    if args.cascade:
+        if not CASCADE_AVAILABLE:
+            logger.error("Cascade mode requires price_providers package. Install dependencies:")
+            logger.error("  pip install google-search-results apify-client python-dotenv")
+            return
+
+        print("\nCascade mode: ENABLED")
+
+        # Initialize providers
+        providers = []
+
+        # 1. Xotelo (primary, always available)
+        xotelo = XoteloProvider()
+        if date_ranges:
+            xotelo.set_multi_date_ranges(date_ranges)
+        providers.append(xotelo)
+        print("   [1] Xotelo: OK (primary)")
+
+        # 2. SerpApi (Google Hotels)
+        serpapi = SerpApiProvider()
+        if serpapi.is_available():
+            providers.append(serpapi)
+            print("   [2] SerpApi: OK (Google Hotels)")
+        else:
+            print("   [2] SerpApi: SKIP (no SERPAPI_KEY)")
+
+        # 3. Apify (Booking.com)
+        apify = ApifyProvider()
+        if apify.is_available():
+            providers.append(apify)
+            print("   [3] Apify: OK (Booking.com)")
+        else:
+            print("   [3] Apify: SKIP (no APIFY_TOKEN)")
+
+        # Initialize cache
+        cache = PriceCache(
+            cache_file=config.CACHE_FILE,
+            ttl_hours=config.CACHE_TTL_HOURS
+        )
+        cache_stats = cache.get_stats()
+        print(f"   Cache: {cache_stats['valid_entries']} valid entries")
+
+        # Create cascade provider
+        cascade_provider = CascadePriceProvider(providers, cache)
 
     print("=" * 70)
 
@@ -444,9 +562,63 @@ def main() -> None:
         hotel_name = str(hotel_name).strip()
         hotels_total += 1
 
-        hotel_key = hotel_keys.get(hotel_name)
+        # Check limit for testing
+        if args.limit > 0 and hotels_total > args.limit:
+            print(f"\n[LIMIT] Reached limit of {args.limit} hotels")
+            break
 
-        if hotel_key:
+        hotel_data = hotel_keys.get(hotel_name)
+        hotel_key = get_xotelo_key(hotel_data)
+        booking_url = get_booking_url(hotel_data)
+
+        # CASCADE MODE
+        if args.cascade and cascade_provider:
+            hotels_with_key += 1  # In cascade mode, we try all hotels
+            print(f"\n[{hotels_total}] {hotel_name}")
+            if hotel_key:
+                print(f"    Key: {hotel_key}")
+            else:
+                print("    Key: None (will try SerpApi/Apify)")
+            if booking_url:
+                print(f"    Booking URL: {booking_url[:50]}...")
+
+            result = cascade_provider.get_price(
+                hotel_name,
+                hotel_key,
+                search_params['chk_in'],
+                search_params['chk_out'],
+                search_params['rooms'],
+                search_params['adults'],
+                booking_url=booking_url
+            )
+
+            if result:
+                price = result['price']
+                provider = result['provider']
+                source = result['source']
+                cached = result['cached']
+                cache_label = " [cached]" if cached else ""
+
+                print(f"    Price: ${price:.2f} ({provider}) via {source}{cache_label}")
+
+                excel_hotels_with_prices[row] = HotelPriceData(
+                    price=price,
+                    provider=provider,
+                    hotel_key=hotel_key or '',
+                    source=source
+                )
+                hotels_with_prices += 1
+            else:
+                print("    No price available (all providers failed)")
+                excel_hotels_with_prices[row] = HotelPriceData(
+                    price=None,
+                    provider='N/A',
+                    hotel_key=hotel_key or '',
+                    source='none'
+                )
+
+        # NON-CASCADE MODE (original behavior)
+        elif hotel_key:  # hotel_key is already extracted above
             hotels_with_key += 1
             print(f"\n[{hotels_with_key}] {hotel_name}")
             print(f"    Key: {hotel_key}")
@@ -520,7 +692,10 @@ def main() -> None:
     print(f"[STATS] Hotels with keys: {hotels_with_key}")
     print(f"[STATS] Hotels with prices: {hotels_with_prices}")
 
-    if args.multi_date and date_stats:
+    # Show cascade statistics if in cascade mode
+    if args.cascade and cascade_provider:
+        print("\n" + cascade_provider.get_stats_summary())
+    elif args.multi_date and date_stats:
         print("\n[STATS] Prices found by date range:")
         for date_label, count in sorted(date_stats.items(), key=lambda x: -x[1]):
             print(f"   {date_label}: {count} hotels")
@@ -531,7 +706,8 @@ def main() -> None:
             excel_hotels_with_prices,
             search_params,
             snapshot_date,
-            multi_date=args.multi_date
+            multi_date=args.multi_date,
+            cascade_mode=args.cascade
         )
         print("\n" + "=" * 70)
         print("[COMPLETE]")

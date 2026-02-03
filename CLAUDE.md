@@ -4,85 +4,78 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Hotel Price Updater for Puerto Rico Tourism Company (PRTC) hotels. Fetches real-time prices from Xotelo API (TripAdvisor-based) using pre-mapped hotel keys for 149 endorsed hotels.
+Hotel Price Updater for Puerto Rico Tourism Company (PRTC). Fetches real-time prices for 149 endorsed hotels using a cascade of APIs: Xotelo (TripAdvisor), SerpApi (Google Hotels), and Apify (Booking.com).
 
 ## Commands
 
 ```bash
-# Install dependencies
-pip install requests openpyxl pandas flask
+# Install all dependencies
+pip install requests openpyxl flask google-search-results apify-client python-dotenv pytest
 
-# Install dev dependencies (for testing)
-pip install pytest pytest-cov
+# Main price updater
+python xotelo_price_updater.py                          # Interactive mode
+python xotelo_price_updater.py --auto                   # Automatic (+30 days)
+python xotelo_price_updater.py --auto --multi-date      # Try multiple dates
+python xotelo_price_updater.py --auto --cascade         # Use all price sources
+python xotelo_price_updater.py --auto --cascade --limit 10  # Test with few hotels
 
-# Main price updater - interactive mode (prompts for dates)
-python xotelo_price_updater.py
+# Find Booking.com URLs (improves Apify accuracy)
+python booking_url_finder.py --limit 50
 
-# Main price updater - automatic mode (30 days ahead, no prompts)
-python xotelo_price_updater.py --auto
-
-# Multi-date mode (fetches prices for multiple dates)
-python xotelo_price_updater.py --multi-date
-
-# Web UI for managing hotel-to-key mappings (Flask on port 5000)
-python key_manager.py
-
-# Extract all Puerto Rico hotels from Xotelo API
-python extract_all_hotels.py
-
-# Retry unmatched/unpriced hotels (uses relative dates by default)
-python xotelo_price_fixer.py
-python xotelo_price_fixer.py --days-ahead 45 --nights 2
-python xotelo_price_fixer.py --check-in 2026-03-15 --check-out 2026-03-16
-python xotelo_price_fixer.py --input "archivo.xlsx" --output "salida.xlsx"
-
-# Run all tests
-python -m pytest tests/ -v
-
-# Run unit/integration tests only (fast, no network)
-python -m pytest tests/ -v --ignore=tests/test_api_smoke.py
-
-# Run smoke tests only (hits real API, requires RUN_API_SMOKE=1)
-RUN_API_SMOKE=1 python -m pytest tests/test_api_smoke.py -v -m smoke
+# Run tests
+python -m pytest tests/ -v                              # All tests (no network)
+python -m pytest tests/ -v -k "test_xotelo"             # Single test file
+RUN_API_SMOKE=1 python -m pytest tests/test_api_smoke.py -v  # API smoke tests
 ```
 
 ## Architecture
 
-**Core Data Flow:**
 ```
-PRTC Excel → hotel_keys_db.json (lookup) → Xotelo API /rates → Updated Excel with prices
+PRTC Excel → hotel_keys_db.json (lookup) → Cascade Pipeline → Updated Excel
+
+Cascade Pipeline (--cascade):
+  1. Cache (24h TTL)
+  2. Xotelo (free, ~64% coverage)
+  3. SerpApi (Google Hotels, 250/month free)
+  4. Apify (Booking.com, $5/month free)
 ```
 
-**Shared Modules:**
-- `xotelo_api.py` - `XoteloAPI` class with typed methods for `/rates`, `/search`, `/list` endpoints. Handles retry logic, rate limiting via `api.wait()`, and request timeouts. Use `get_client()` for singleton access.
-- `config.py` - Centralized configuration via environment variables with defaults (BASE_URL, TIMEOUT, REQUEST_DELAY, file paths, search parameters)
+**Core Modules:**
+- `xotelo_api.py` - `XoteloAPI` class with `/rates`, `/search`, `/list` endpoints. Use `get_client()` for singleton. Always call `api.wait()` between requests.
+- `config.py` - Environment variables with defaults. Loads `.env` if present.
+- `price_providers/` - Cascade pipeline: `XoteloProvider`, `SerpApiProvider`, `ApifyProvider`, `CascadePriceProvider`, `PriceCache`
 
 **Scripts:**
-- `xotelo_price_updater.py` - Main tool: reads Excel, looks up keys, calls API, writes dated output
-- `key_manager.py` - Flask web UI for managing hotel key mappings
-- `extract_all_hotels.py` - Bulk extraction of all PR hotels from API
-- `xotelo_price_fixer.py` - Retry tool for failed lookups with CLI args for dates and files
+- `xotelo_price_updater.py` - Main CLI tool
+- `booking_url_finder.py` - Populate Booking.com URLs in hotel_keys_db.json
+- `key_manager.py` - Flask web UI for hotel key management (port 5000)
+- `xotelo_price_fixer.py` - Retry failed lookups with custom dates
 
-**Key Data Files:**
-- `hotel_keys_db.json` - Maps hotel names → Xotelo keys (e.g., `"Hotel Name": "g147319-d1234567"`)
-- `PRTC Endorsed Hotels (12.25).xlsx` - Source hotel list (column 1)
-- `PRTC_Hotels_Prices_YYYY-MM-DD.xlsx` - Output with prices and snapshot date
+## Key Data Formats
 
-## API Details
+**hotel_keys_db.json** (supports both formats):
+```json
+{
+  "Hotel A": "g147319-d123",
+  "Hotel B": {"xotelo": "g147319-d456", "booking_url": "https://www.booking.com/hotel/pr/..."}
+}
+```
 
-**Xotelo API** (`https://data.xotelo.com/api`):
-- `/list` - Get hotels by location
-- `/search` - Search hotels by name
-- `/rates` - Get pricing (requires hotel key + dates)
+**Output Excel columns:** `Snapshot_Date`, `Price_USD`, `Provider`, `Hotel_Key`, `Search_Params`, `Source`
 
-**Rate Limiting:** 0.5s delay between requests (configurable via `REQUEST_DELAY` env var). Timeout: 30s with 2 retries. Always call `api.wait()` between hotel requests.
+## API Configuration
 
-## Output Columns
-
-The price updater adds these columns: `Snapshot_Date`, `Xotelo_Price_USD`, `Provider`, `Hotel_Key`, `Search_Params`
+```bash
+# .env file for cascade mode
+SERPAPI_KEY=your_key      # serpapi.com (250 free/month)
+APIFY_TOKEN=your_token    # apify.com ($5 free/month)
+CASCADE_ENABLED=true
+CACHE_TTL_HOURS=24
+```
 
 ## Notes
 
 - UI prompts are in Spanish
-- Default auto-mode search: +30 days check-in, 1 night, 1 room, 2 adults
-- For cloud deployment, see `MICROSOFT_FABRIC_GUIDE.md`
+- Default search: +30 days, 1 night, 1 room, 2 adults
+- Rate limiting: 0.5s between Xotelo requests (`REQUEST_DELAY` env var)
+- Xotelo keys format: `g{location}-d{hotel_id}` (e.g., `g147319-d1837036`)
