@@ -47,6 +47,7 @@ class ExcelHandler:
     ]
 
     # Posibles nombres de columnas para keys de Xotelo
+    # Nota: Evitar nombres muy cortos como "id" que causan falsos positivos (ej: "provider" contiene "id")
     COLUMNAS_KEY_XOTELO: List[str] = [
         "key",
         "xotelo_key",
@@ -61,7 +62,6 @@ class ExcelHandler:
         "key_id",
         "keyid",
         "keys_id",
-        "id",
         "hotel_id",
         "tripadvisor_key",
         "tripadvisor_id",
@@ -107,6 +107,9 @@ class ExcelHandler:
         """
         Busca una columna que coincida con los nombres posibles.
 
+        Usa coincidencia estricta: el nombre debe coincidir exactamente,
+        o ser una palabra completa dentro del header (separada por _ o espacio).
+
         Args:
             headers: Lista de tuplas (índice, nombre_columna).
             nombres_posibles: Lista de nombres posibles para la columna.
@@ -114,11 +117,27 @@ class ExcelHandler:
         Returns:
             Índice de la columna encontrada, o None si no se encuentra.
         """
+        # Primera pasada: buscar coincidencia exacta
         for idx, header in headers:
             header_normalizado = self._normalizar_texto(header)
             for nombre in nombres_posibles:
-                if nombre in header_normalizado or header_normalizado in nombre:
+                if nombre == header_normalizado:
                     return idx
+
+        # Segunda pasada: buscar como palabra completa (separada por _ o espacio)
+        for idx, header in headers:
+            header_normalizado = self._normalizar_texto(header)
+            # Separar por _ y espacio para obtener palabras
+            palabras_header = header_normalizado.replace("_", " ").split()
+            for nombre in nombres_posibles:
+                palabras_nombre = nombre.replace("_", " ").split()
+                # Verificar si todas las palabras del nombre están en el header
+                if all(p in palabras_header for p in palabras_nombre):
+                    return idx
+                # O si el header completo está contenido en el nombre
+                if header_normalizado in nombre:
+                    return idx
+
         return None
 
     def detectar_columna_hotel(self, ruta: str) -> Optional[str]:
