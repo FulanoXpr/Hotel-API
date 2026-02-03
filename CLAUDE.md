@@ -10,8 +10,9 @@ Hotel Price Updater for Puerto Rico Tourism Company (PRTC). Fetches real-time pr
 
 ```bash
 # Install dependencies
-pip install -r requirements.txt           # Production only
-pip install -r requirements-dev.txt       # With pytest
+pip install -r requirements.txt           # Production CLI
+pip install -r requirements-dev.txt       # CLI + pytest
+pip install -r requirements-app.txt       # Desktop GUI (CustomTkinter)
 
 # Main price updater
 python xotelo_price_updater.py                          # Interactive mode
@@ -27,6 +28,10 @@ python xotelo_price_fixer.py --input "archivo.xlsx" --output "salida.xlsx"
 
 # Find Booking.com URLs (improves Apify accuracy)
 python booking_url_finder.py --limit 50
+
+# Desktop GUI application
+python hotel_price_app.py                             # Launch GUI
+# macOS with Homebrew Python: /opt/homebrew/bin/python3.12 hotel_price_app.py
 
 # Run tests
 python -m pytest tests/ -v                              # All tests (no network)
@@ -63,6 +68,13 @@ Cascade Pipeline (--cascade):
 - `amadeus_id_finder.py` - Find and validate Amadeus hotel IDs for the cascade pipeline
 - `key_manager.py` - Flask web UI for hotel key management (port 5000)
 - `xotelo_price_fixer.py` - Retry failed lookups. Supports `--check-in/--check-out` or `--days-ahead/--nights` for flexible date handling.
+- `hotel_price_app.py` - Desktop GUI entry point (CustomTkinter). Requires `python-tk` on macOS.
+
+**Desktop GUI (`ui/`):**
+- `ui/app.py` - Main application class `HotelPriceApp(CTk)`
+- `ui/tabs/` - Four tabs: API Keys, Hotels, Execute, Results
+- `ui/components/` - Reusable widgets: `HotelTable`, `ProgressBar`, `LogViewer`, `StatsPanel`
+- `ui/utils/` - Theme config, `.env` manager, Excel handler
 
 ## Key Data Formats
 
