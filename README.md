@@ -1,87 +1,170 @@
-# Hotel Price Updater API
+# Hotel Price Data Collector
 
-Automated system for fetching and updating hotel prices in Puerto Rico using the **Xotelo API** (TripAdvisor-based). Uses pre-mapped hotel keys for fast and accurate price lookups.
+Research tool for collecting hotel pricing data across 149 PRTC-endorsed hotels in Puerto Rico. Supports market analysis, tourism research, and pricing trend studies.
 
-## 📋 Project Overview
+## Overview
 
-The system processes Excel files containing PRTC endorsed hotels and retrieves real-time prices using direct Xotelo hotel keys.
+The system collects publicly listed hotel rates from multiple sources using a cascade pipeline. If one source has no data, it automatically tries the next until it finds pricing information.
 
-### Key Features
-*   **Key-Based Lookups:** Uses pre-mapped Xotelo keys for 149 PRTC hotels (no fuzzy matching needed)
-*   **Automatic Mode:** `--auto` flag for scheduled monthly automation
-*   **Snapshot Tracking:** Records collection date for historical analysis
-*   **Multi-Provider:** Retrieves lowest rate from Booking.com, Agoda, Trip.com, etc.
-*   **Interactive Mode:** Prompts for custom dates, rooms, and guests
+### Data Sources (Cascade Order)
 
-## 🚀 Main Scripts
+| Source | Description | Free Tier |
+|--------|-------------|-----------|
+| Xotelo | TripAdvisor aggregated rates | Unlimited |
+| SerpApi | Google Hotels search results | 250/month |
+| Apify | Booking.com listings | ~1,700/month |
+| Amadeus | Global Distribution System (travel agents) | 500/month |
 
-### `xotelo_price_updater.py` - Primary Tool
-The main price updater with two modes:
+### Coverage
+
+| Metric | Single Source | Cascade Pipeline |
+|--------|---------------|------------------|
+| Hotels with data | ~95 of 149 | ~145 of 149 |
+| Collection rate | ~64% | ~97% |
+
+## Installation
 
 ```bash
-# Interactive mode (prompts for dates/rooms/guests)
-python xotelo_price_updater.py
+# Clone repository
+git clone <repository-url>
+cd Hotel-API
 
-# Automatic mode (uses defaults, no prompts)
-python xotelo_price_updater.py --auto
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy environment template and add your API keys
+cp .env.example .env
 ```
 
-**Default parameters (auto mode):**
-- Check-in: +30 days from today
-- Check-out: +31 days (1 night stay)
-- Rooms: 1
-- Adults per room: 2
+### API Keys (Optional)
 
-### `extract_all_hotels.py`
-Extracts all hotels from Puerto Rico via Xotelo API for key mapping.
+The cascade pipeline works without API keys (Xotelo only), but additional sources require credentials:
 
-### `key_manager.py`
-Web interface for managing hotel-to-key mappings in `hotel_keys_db.json`.
+```bash
+# .env file
+SERPAPI_KEY=your_key              # serpapi.com
+APIFY_TOKEN=your_token            # apify.com
+AMADEUS_CLIENT_ID=your_id         # developers.amadeus.com
+AMADEUS_CLIENT_SECRET=your_secret
+```
 
-### `xotelo_price_fixer.py`
-Utility for deep searches and retries on unmatched hotels.
+## Usage
 
-## 📁 Data Files
+### Basic Data Collection
 
-| File | Description |
-|------|-------------|
-| `hotel_keys_db.json` | Database mapping 149 hotel names to Xotelo keys |
-| `PRTC Endorsed Hotels (12.25).xlsx` | Source list of PRTC endorsed hotels |
-| `PRTC_Hotels_Prices_YYYY-MM-DD.xlsx` | Output with prices and snapshot date |
+```bash
+# Interactive mode (prompts for dates)
+python xotelo_price_updater.py
 
-## 🛠️ Installation & Setup
+# Automatic mode (30 days ahead, 1 night)
+python xotelo_price_updater.py --auto
 
-1. Ensure Python 3.8+ is installed
-2. Install dependencies:
-   ```bash
-   pip install requests openpyxl pandas
-   ```
-3. Place source file `PRTC Endorsed Hotels (12.25).xlsx` in root directory
+# Use all data sources (cascade)
+python xotelo_price_updater.py --auto --cascade
 
-## ⏰ Monthly Automation (Windows)
+# Test with limited hotels
+python xotelo_price_updater.py --auto --cascade --limit 10
+```
 
-To schedule automatic monthly runs:
+### Additional Tools
 
-1. Open Task Scheduler
-2. Create new task with action:
-   ```
-   python "C:\path\to\Hotel API\xotelo_price_updater.py" --auto
-   ```
-3. Set trigger for monthly schedule
+```bash
+# Retry failed lookups with different dates
+python xotelo_price_fixer.py --days-ahead 45 --nights 2
 
-## 📊 Output Columns
+# Find Booking.com URLs for better Apify accuracy
+python booking_url_finder.py --limit 50
 
-The system adds these columns to the output Excel:
+# Map hotels to Amadeus IDs
+python amadeus_id_finder.py
+
+# Web UI for managing hotel keys (port 5000)
+python key_manager.py
+```
+
+### Running Tests
+
+```bash
+# All tests (offline, no API calls)
+python -m pytest tests/ -v
+
+# API smoke tests (requires credentials)
+RUN_API_SMOKE=1 python -m pytest tests/test_api_smoke.py -v -m smoke
+```
+
+## Output
+
+Results are saved to `PRTC_Hotels_Prices_YYYY-MM-DD.xlsx` with these columns:
 
 | Column | Description |
 |--------|-------------|
-| `Snapshot_Date` | Date when prices were collected |
-| `Xotelo_Price_USD` | Lowest retrieved nightly rate |
-| `Provider` | Booking site offering the rate |
-| `Hotel_Key` | Xotelo hotel identifier |
-| `Search_Params` | Dates and occupancy used for search |
+| Snapshot_Date | Date when data was collected |
+| Price_USD | Lowest rate found |
+| Provider | Source offering the rate |
+| Source | Which pipeline source found the data |
+| Hotel_Key | Hotel identifier |
+| Search_Params | Dates and occupancy used |
 
-## ☁️ Microsoft Fabric Deployment
+## Data Files
 
-For cloud deployment instructions, see:
-👉 **[Microsoft Fabric Migration Guide](MICROSOFT_FABRIC_GUIDE.md)**
+| File | Description |
+|------|-------------|
+| `hotel_keys_db.json` | Hotel mappings (Xotelo keys, Booking URLs, Amadeus IDs) |
+| `PRTC Endorsed Hotels (12.25).xlsx` | Source list of PRTC hotels |
+| `PRTC_Hotels_Prices_*.xlsx` | Output files with collected data |
+
+## Limitations
+
+- **Advertised rates only**: Prices are publicly listed rates, not negotiated or corporate rates
+- **Point-in-time snapshots**: Prices change constantly; results reflect collection moment
+- **Amadeus test environment**: Only 21 hotels connected (production requires approval)
+- **Small properties**: ~5-10 B&Bs not listed on major platforms may have no data
+- **Free tier limits**: Monthly collection is fine; multiple runs may exceed limits
+- **Research only**: This tool collects data for analysis, not for booking
+
+## Project Structure
+
+```
+Hotel-API/
+├── xotelo_price_updater.py    # Main data collection script
+├── xotelo_price_fixer.py      # Retry failed lookups
+├── booking_url_finder.py      # Map Booking.com URLs
+├── amadeus_id_finder.py       # Map Amadeus hotel IDs
+├── key_manager.py             # Web UI for hotel keys
+├── config.py                  # Environment configuration
+├── xotelo_api.py              # Xotelo API client
+├── price_providers/           # Cascade pipeline providers
+│   ├── base.py                # Provider interface
+│   ├── xotelo.py              # TripAdvisor source
+│   ├── serpapi.py             # Google Hotels source
+│   ├── apify.py               # Booking.com source
+│   ├── amadeus.py             # GDS source
+│   ├── cascade.py             # Pipeline orchestration
+│   └── cache.py               # 24-hour price cache
+├── tests/                     # Test suite
+├── hotel_keys_db.json         # Hotel mappings database
+└── templates/                 # Web UI templates
+```
+
+## Scheduling Monthly Collection
+
+### macOS/Linux (cron)
+
+```bash
+0 6 1 * * cd /path/to/Hotel-API && python xotelo_price_updater.py --auto --cascade
+```
+
+### Windows (Task Scheduler)
+
+Create task with action:
+```
+python "C:\path\to\Hotel-API\xotelo_price_updater.py" --auto --cascade
+```
+
+## Cloud Deployment
+
+For Microsoft Fabric deployment, see [MICROSOFT_FABRIC_GUIDE.md](MICROSOFT_FABRIC_GUIDE.md).
+
+## License
+
+See [LICENSE](LICENSE) file.
