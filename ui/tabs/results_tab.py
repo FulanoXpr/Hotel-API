@@ -64,6 +64,10 @@ class ResultsTab(ctk.CTkFrame):
         self._orden_columna = "hotel"
         self._orden_ascendente = True
 
+        # Paginación para evitar congelamiento con muchos resultados
+        self._filas_por_pagina = 50
+        self._filas_mostradas = 0
+
         # Configurar layout
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
@@ -446,11 +450,13 @@ class ResultsTab(ctk.CTkFrame):
         self._actualizar_tabla()
 
     def _actualizar_tabla(self) -> None:
-        """Actualiza la visualización de la tabla."""
+        """Actualiza la visualización de la tabla con paginación."""
         try:
             # Limpiar filas existentes
             for widget in self.scroll_frame.winfo_children():
                 widget.destroy()
+
+            self._filas_mostradas = 0
 
             if not self._resultados_filtrados:
                 self.label_sin_resultados = ctk.CTkLabel(
@@ -462,8 +468,21 @@ class ResultsTab(ctk.CTkFrame):
                 self.label_sin_resultados.pack(pady=50)
                 return
 
-            # Crear filas
-            for idx, resultado in enumerate(self._resultados_filtrados):
+            # Mostrar primera página
+            self._mostrar_mas_filas()
+
+        except Exception as e:
+            print(f"Error al actualizar tabla: {e}")
+
+    def _mostrar_mas_filas(self) -> None:
+        """Muestra el siguiente lote de filas."""
+        try:
+            inicio = self._filas_mostradas
+            fin = min(inicio + self._filas_por_pagina, len(self._resultados_filtrados))
+
+            # Crear filas del lote actual
+            for idx in range(inicio, fin):
+                resultado = self._resultados_filtrados[idx]
                 if resultado is None:
                     continue
                 try:
@@ -472,8 +491,36 @@ class ResultsTab(ctk.CTkFrame):
                 except Exception as e:
                     print(f"Error al crear fila {idx}: {e}")
                     continue
+
+                # Actualizar UI cada 10 filas para mantener responsividad
+                if (idx - inicio) % 10 == 9:
+                    self.update_idletasks()
+
+            self._filas_mostradas = fin
+
+            # Si hay más filas, mostrar botón "Cargar más"
+            if fin < len(self._resultados_filtrados):
+                restantes = len(self._resultados_filtrados) - fin
+                self._btn_cargar_mas = ctk.CTkButton(
+                    self.scroll_frame,
+                    text=f"Cargar más ({restantes} restantes)",
+                    font=FUENTES.get("normal", ("Segoe UI", 12)),
+                    fg_color=self.tema["acento"],
+                    hover_color=self.tema["acento_hover"],
+                    command=self._on_cargar_mas,
+                )
+                self._btn_cargar_mas.pack(pady=10)
+
         except Exception as e:
-            print(f"Error al actualizar tabla: {e}")
+            print(f"Error al mostrar filas: {e}")
+
+    def _on_cargar_mas(self) -> None:
+        """Callback para cargar más filas."""
+        # Eliminar el botón actual
+        if hasattr(self, "_btn_cargar_mas"):
+            self._btn_cargar_mas.destroy()
+        # Mostrar siguiente lote
+        self._mostrar_mas_filas()
 
     def _actualizar_metricas(self) -> None:
         """Actualiza las métricas del resumen."""
