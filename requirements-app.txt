@@ -1,0 +1,5 @@
+# Dependencias adicionales para la aplicación de escritorio
+# Instalar con: pip install -r requirements-app.txt
+
+customtkinter>=5.2.0
+packaging>=23.0

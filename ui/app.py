@@ -1,0 +1,275 @@
+"""
+Aplicación principal de Hotel Price Checker.
+Interfaz gráfica de escritorio usando CustomTkinter.
+"""
+
+from typing import Any, Dict, Optional
+
+import customtkinter as ctk
+
+from ui.utils.theme import TAMANOS, TemaMode, aplicar_tema, obtener_fuente
+
+
+class HotelPriceApp(ctk.CTk):
+    """
+    Aplicación principal para consultar precios de hoteles.
+
+    Attributes:
+        modo_tema: Modo de tema actual ("dark" o "light").
+        tabview: Widget de pestañas principal.
+    """
+
+    # Configuración de la ventana
+    TITULO_APP: str = "Hotel Price Checker"
+    ANCHO_VENTANA: int = 900
+    ALTO_VENTANA: int = 700
+    ANCHO_MINIMO: int = 800
+    ALTO_MINIMO: int = 600
+
+    # Nombres de las pestañas
+    PESTANAS: Dict[str, str] = {
+        "api_keys": "🔑 API Keys",
+        "hoteles": "📋 Hoteles",
+        "ejecutar": "▶ Ejecutar",
+        "resultados": "📊 Resultados",
+    }
+
+    def __init__(self) -> None:
+        """Inicializa la aplicación principal."""
+        super().__init__()
+
+        # Estado inicial
+        self.modo_tema: TemaMode = "dark"
+
+        # Referencias a las pestañas
+        self.tab_api_keys: Optional[Any] = None
+        self.tab_hoteles: Optional[Any] = None
+        self.tab_ejecutar: Optional[Any] = None
+        self.tab_resultados: Optional[Any] = None
+
+        # Configurar ventana
+        self._configurar_ventana()
+
+        # Aplicar tema inicial
+        aplicar_tema(self.modo_tema)
+
+        # Crear interfaz
+        self._crear_barra_superior()
+        self._crear_tabview()
+        self._crear_contenido_pestanas()
+
+    def _configurar_ventana(self) -> None:
+        """Configura las propiedades de la ventana principal."""
+        self.title(self.TITULO_APP)
+        self.geometry(f"{self.ANCHO_VENTANA}x{self.ALTO_VENTANA}")
+        self.minsize(self.ANCHO_MINIMO, self.ALTO_MINIMO)
+
+        # Centrar ventana en pantalla
+        self._centrar_ventana()
+
+        # Configurar grid
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+
+    def _centrar_ventana(self) -> None:
+        """Centra la ventana en la pantalla."""
+        self.update_idletasks()
+        ancho_pantalla = self.winfo_screenwidth()
+        alto_pantalla = self.winfo_screenheight()
+        x = (ancho_pantalla - self.ANCHO_VENTANA) // 2
+        y = (alto_pantalla - self.ALTO_VENTANA) // 2
+        self.geometry(f"{self.ANCHO_VENTANA}x{self.ALTO_VENTANA}+{x}+{y}")
+
+    def _crear_barra_superior(self) -> None:
+        """Crea la barra superior con título y toggle de tema."""
+        # Frame de la barra superior
+        self.barra_superior = ctk.CTkFrame(self, height=50, corner_radius=0)
+        self.barra_superior.grid(row=0, column=0, sticky="ew", padx=0, pady=0)
+        self.barra_superior.grid_columnconfigure(1, weight=1)
+
+        # Título de la aplicación
+        self.label_titulo = ctk.CTkLabel(
+            self.barra_superior, text=self.TITULO_APP, font=obtener_fuente("subtitulo")
+        )
+        self.label_titulo.grid(row=0, column=0, padx=TAMANOS["padding_grande"], pady=10)
+
+        # Toggle de tema (dark/light)
+        self.toggle_tema = ctk.CTkSwitch(
+            self.barra_superior,
+            text="🌙 Modo Oscuro",
+            command=self._alternar_tema,
+            onvalue=True,
+            offvalue=False,
+        )
+        self.toggle_tema.grid(row=0, column=2, padx=TAMANOS["padding_grande"], pady=10)
+        self.toggle_tema.select()  # Iniciar en modo oscuro
+
+    def _crear_tabview(self) -> None:
+        """Crea el widget de pestañas principal."""
+        self.tabview = ctk.CTkTabview(self, corner_radius=TAMANOS["radio_borde"])
+        self.tabview.grid(
+            row=1,
+            column=0,
+            sticky="nsew",
+            padx=TAMANOS["padding_grande"],
+            pady=(0, TAMANOS["padding_grande"]),
+        )
+
+        # Agregar pestañas
+        for nombre_interno, titulo in self.PESTANAS.items():
+            self.tabview.add(titulo)
+
+    def _crear_contenido_pestanas(self) -> None:
+        """Crea el contenido de cada pestaña."""
+        # Importar tabs aquí para evitar imports circulares
+        from ui.tabs.api_keys_tab import ApiKeysTab
+        from ui.tabs.hotels_tab import HotelsTab
+
+        # Pestaña API Keys
+        tab_api_keys_frame = self.tabview.tab(self.PESTANAS["api_keys"])
+        tab_api_keys_frame.grid_columnconfigure(0, weight=1)
+        tab_api_keys_frame.grid_rowconfigure(0, weight=1)
+        self.tab_api_keys = ApiKeysTab(tab_api_keys_frame)
+        self.tab_api_keys.grid(row=0, column=0, sticky="nsew")
+
+        # Pestaña Hoteles
+        tab_hoteles_frame = self.tabview.tab(self.PESTANAS["hoteles"])
+        tab_hoteles_frame.grid_columnconfigure(0, weight=1)
+        tab_hoteles_frame.grid_rowconfigure(0, weight=1)
+        self.tab_hoteles = HotelsTab(tab_hoteles_frame)
+        self.tab_hoteles.grid(row=0, column=0, sticky="nsew")
+
+        # Pestaña Ejecutar
+        tab_ejecutar_frame = self.tabview.tab(self.PESTANAS["ejecutar"])
+        tab_ejecutar_frame.grid_columnconfigure(0, weight=1)
+        tab_ejecutar_frame.grid_rowconfigure(0, weight=1)
+        try:
+            from ui.tabs.execute_tab import ExecuteTab
+
+            self.tab_ejecutar = ExecuteTab(
+                tab_ejecutar_frame,
+                modo_tema=self.modo_tema,
+                obtener_hoteles=self._obtener_hoteles_para_busqueda,
+                on_busqueda_completada=self._on_busqueda_completada,
+            )
+            self.tab_ejecutar.grid(row=0, column=0, sticky="nsew")
+        except ImportError as e:
+            label_placeholder = ctk.CTkLabel(
+                tab_ejecutar_frame,
+                text=f"Pestaña Ejecutar\n\n(Error: {e})",
+                font=obtener_fuente("encabezado"),
+            )
+            label_placeholder.grid(row=0, column=0, pady=50)
+
+        # Pestaña Resultados
+        tab_resultados_frame = self.tabview.tab(self.PESTANAS["resultados"])
+        tab_resultados_frame.grid_columnconfigure(0, weight=1)
+        tab_resultados_frame.grid_rowconfigure(0, weight=1)
+        try:
+            from ui.tabs.results_tab import ResultsTab
+
+            self.tab_resultados = ResultsTab(
+                tab_resultados_frame,
+                modo_tema=self.modo_tema,
+            )
+            self.tab_resultados.grid(row=0, column=0, sticky="nsew")
+        except ImportError as e:
+            label_placeholder = ctk.CTkLabel(
+                tab_resultados_frame,
+                text=f"Pestaña Resultados\n\n(Error: {e})",
+                font=obtener_fuente("encabezado"),
+            )
+            label_placeholder.grid(row=0, column=0, pady=50)
+
+    def _obtener_hoteles_para_busqueda(self):
+        """
+        Callback para obtener la lista de hoteles desde la pestaña Hoteles.
+
+        Returns:
+            Lista de hoteles para búsqueda.
+        """
+        if self.tab_hoteles:
+            return self.tab_hoteles.obtener_hoteles()
+        return []
+
+    def _on_busqueda_completada(self, resultados: list):
+        """
+        Callback cuando la búsqueda de precios termina.
+
+        Args:
+            resultados: Lista de resultados de la búsqueda.
+        """
+        # Pasar resultados a la pestaña de resultados
+        if self.tab_resultados and hasattr(self.tab_resultados, "cargar_resultados"):
+            self.tab_resultados.cargar_resultados(resultados)
+            # Cambiar a la pestaña de resultados
+            self.cambiar_pestana("resultados")
+
+    def _alternar_tema(self) -> None:
+        """Alterna entre modo oscuro y claro."""
+        if self.toggle_tema.get():
+            self.modo_tema = "dark"
+            self.toggle_tema.configure(text="🌙 Modo Oscuro")
+        else:
+            self.modo_tema = "light"
+            self.toggle_tema.configure(text="☀️ Modo Claro")
+
+        aplicar_tema(self.modo_tema)
+
+    def cambiar_pestana(self, nombre: str) -> None:
+        """
+        Cambia a una pestaña específica programáticamente.
+
+        Args:
+            nombre: Nombre interno de la pestaña ("api_keys", "hoteles",
+                   "ejecutar", "resultados").
+        """
+        if nombre in self.PESTANAS:
+            titulo = self.PESTANAS[nombre]
+            self.tabview.set(titulo)
+        else:
+            raise ValueError(
+                f"Pestaña '{nombre}' no existe. "
+                f"Opciones válidas: {list(self.PESTANAS.keys())}"
+            )
+
+    def obtener_pestana_actual(self) -> str:
+        """
+        Obtiene el nombre interno de la pestaña actual.
+
+        Returns:
+            Nombre interno de la pestaña activa.
+        """
+        titulo_actual = self.tabview.get()
+        for nombre, titulo in self.PESTANAS.items():
+            if titulo == titulo_actual:
+                return nombre
+        return ""
+
+    def obtener_frame_pestana(self, nombre: str) -> ctk.CTkFrame:
+        """
+        Obtiene el frame de una pestaña para agregar contenido.
+
+        Args:
+            nombre: Nombre interno de la pestaña.
+
+        Returns:
+            Frame de la pestaña.
+        """
+        if nombre in self.PESTANAS:
+            return self.tabview.tab(self.PESTANAS[nombre])
+        raise ValueError(f"Pestaña '{nombre}' no existe.")
+
+    def ejecutar(self) -> None:
+        """Inicia el loop principal de la aplicación."""
+        self.mainloop()
+
+
+def main() -> None:
+    """Función principal para ejecutar la aplicación."""
+    app = HotelPriceApp()
+    app.ejecutar()
+
+
+if __name__ == "__main__":
+    main()
