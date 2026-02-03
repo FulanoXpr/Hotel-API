@@ -21,14 +21,20 @@ python xotelo_price_updater.py
 # Main price updater - automatic mode (30 days ahead, no prompts)
 python xotelo_price_updater.py --auto
 
+# Multi-date mode (fetches prices for multiple dates)
+python xotelo_price_updater.py --multi-date
+
 # Web UI for managing hotel-to-key mappings (Flask on port 5000)
 python key_manager.py
 
 # Extract all Puerto Rico hotels from Xotelo API
 python extract_all_hotels.py
 
-# Retry unmatched/unpriced hotels
+# Retry unmatched/unpriced hotels (uses relative dates by default)
 python xotelo_price_fixer.py
+python xotelo_price_fixer.py --days-ahead 45 --nights 2
+python xotelo_price_fixer.py --check-in 2026-03-15 --check-out 2026-03-16
+python xotelo_price_fixer.py --input "archivo.xlsx" --output "salida.xlsx"
 
 # Run all tests
 python -m pytest tests/ -v
@@ -36,8 +42,8 @@ python -m pytest tests/ -v
 # Run unit/integration tests only (fast, no network)
 python -m pytest tests/ -v --ignore=tests/test_api_smoke.py
 
-# Run smoke tests only (hits real API)
-python -m pytest tests/test_api_smoke.py -v
+# Run smoke tests only (hits real API, requires RUN_API_SMOKE=1)
+RUN_API_SMOKE=1 python -m pytest tests/test_api_smoke.py -v -m smoke
 ```
 
 ## Architecture
@@ -47,11 +53,15 @@ python -m pytest tests/test_api_smoke.py -v
 PRTC Excel → hotel_keys_db.json (lookup) → Xotelo API /rates → Updated Excel with prices
 ```
 
+**Shared Modules:**
+- `xotelo_api.py` - `XoteloAPI` class with typed methods for `/rates`, `/search`, `/list` endpoints. Handles retry logic, rate limiting via `api.wait()`, and request timeouts. Use `get_client()` for singleton access.
+- `config.py` - Centralized configuration via environment variables with defaults (BASE_URL, TIMEOUT, REQUEST_DELAY, file paths, search parameters)
+
 **Scripts:**
 - `xotelo_price_updater.py` - Main tool: reads Excel, looks up keys, calls API, writes dated output
 - `key_manager.py` - Flask web UI for managing hotel key mappings
 - `extract_all_hotels.py` - Bulk extraction of all PR hotels from API
-- `xotelo_price_fixer.py` - Retry tool for failed lookups
+- `xotelo_price_fixer.py` - Retry tool for failed lookups with CLI args for dates and files
 
 **Key Data Files:**
 - `hotel_keys_db.json` - Maps hotel names → Xotelo keys (e.g., `"Hotel Name": "g147319-d1234567"`)
@@ -65,7 +75,7 @@ PRTC Excel → hotel_keys_db.json (lookup) → Xotelo API /rates → Updated Exc
 - `/search` - Search hotels by name
 - `/rates` - Get pricing (requires hotel key + dates)
 
-**Rate Limiting:** 0.5-1.5 second delays between requests. Timeout: 30 seconds with 2 retries.
+**Rate Limiting:** 0.5s delay between requests (configurable via `REQUEST_DELAY` env var). Timeout: 30s with 2 retries. Always call `api.wait()` between hotel requests.
 
 ## Output Columns
 
