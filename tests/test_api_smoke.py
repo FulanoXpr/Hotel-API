@@ -2,15 +2,23 @@
 Smoke tests that hit the real Xotelo API.
 These tests verify the API is accessible and returns expected data structures.
 
-Run with: pytest tests/test_api_smoke.py -v -m smoke
+Run with: RUN_API_SMOKE=1 pytest tests/test_api_smoke.py -v -m smoke
 Skip with: pytest -m "not smoke"
 """
+from datetime import datetime, timedelta
+import os
+
 import pytest
 import requests
-from datetime import datetime, timedelta
 
-# Mark all tests in this module as smoke tests
-pytestmark = pytest.mark.smoke
+# Mark all tests in this module as smoke tests and guard with env var
+pytestmark = [
+    pytest.mark.smoke,
+    pytest.mark.skipif(
+        os.getenv("RUN_API_SMOKE") != "1",
+        reason="Set RUN_API_SMOKE=1 to run API smoke tests"
+    ),
+]
 
 BASE_URL = "https://data.xotelo.com/api"
 

@@ -148,10 +148,22 @@ class XoteloAPI:
         if not rates:
             return None
 
-        lowest_rate = min(rates, key=lambda x: x.get('rate', float('inf')))
+        valid_rates = []
+        for rate in rates:
+            raw_rate = rate.get('rate')
+            try:
+                numeric_rate = float(raw_rate)
+            except (TypeError, ValueError):
+                continue
+            valid_rates.append((numeric_rate, rate))
+
+        if not valid_rates:
+            return None
+
+        lowest_numeric_rate, lowest_rate = min(valid_rates, key=lambda item: item[0])
 
         return RateInfo(
-            rate=lowest_rate.get('rate'),
+            rate=lowest_numeric_rate,
             provider=lowest_rate.get('name', 'Unknown'),
             code=lowest_rate.get('code', '')
         )

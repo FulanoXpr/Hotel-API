@@ -6,6 +6,7 @@ Supports both interactive and automatic modes for monthly automation.
 Usage:
   Interactive:  python xotelo_price_updater.py
   Automatic:    python xotelo_price_updater.py --auto
+  Multi-date:   python xotelo_price_updater.py --auto --multi-date
 """
 from __future__ import annotations
 
@@ -15,7 +16,7 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional, Tuple, TypedDict
 
 import openpyxl
 from openpyxl.styles import Font, PatternFill
@@ -23,7 +24,7 @@ from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
 import config
-from xotelo_api import XoteloAPI, get_client
+from xotelo_api import XoteloAPI, RateInfo, get_client
 
 # Configure logging
 logging.basicConfig(
@@ -61,6 +62,14 @@ class HotelPriceData(TypedDict, total=False):
     price: Optional[float]
     provider: str
     hotel_key: str
+    date_used: str  # Which date range found the price
+
+
+class DateRange(TypedDict):
+    """Type definition for a date range to try."""
+    label: str
+    chk_in: str
+    chk_out: str
 
 
 def get_user_input() -> Optional[SearchParams]:
@@ -174,6 +183,92 @@ def get_auto_params() -> SearchParams:
     )
 
 
+def get_multi_date_ranges() -> List[DateRange]:
+    """
+    Generate multiple date ranges to try for better price coverage.
+
+    Returns a list of date ranges in priority order:
+    1. +30 days (weekday)
+    2. Next weekend (+35-42 days, Friday-Saturday)
+    3. +60 days (weekday)
+    4. +90 days (weekday)
+    """
+    today = datetime.now()
+    date_ranges: List[DateRange] = []
+
+    # 1. Primary: +30 days
+    primary = today + timedelta(days=30)
+    date_ranges.append(DateRange(
+        label="+30d",
+        chk_in=primary.strftime("%Y-%m-%d"),
+        chk_out=(primary + timedelta(days=1)).strftime("%Y-%m-%d")
+    ))
+
+    # 2. Weekend: Find next Friday after +30 days
+    days_until_friday = (4 - primary.weekday()) % 7
+    if days_until_friday == 0:
+        days_until_friday = 7  # Next Friday, not today
+    weekend = primary + timedelta(days=days_until_friday)
+    date_ranges.append(DateRange(
+        label="weekend",
+        chk_in=weekend.strftime("%Y-%m-%d"),
+        chk_out=(weekend + timedelta(days=1)).strftime("%Y-%m-%d")
+    ))
+
+    # 3. +60 days
+    d60 = today + timedelta(days=60)
+    date_ranges.append(DateRange(
+        label="+60d",
+        chk_in=d60.strftime("%Y-%m-%d"),
+        chk_out=(d60 + timedelta(days=1)).strftime("%Y-%m-%d")
+    ))
+
+    # 4. +90 days
+    d90 = today + timedelta(days=90)
+    date_ranges.append(DateRange(
+        label="+90d",
+        chk_in=d90.strftime("%Y-%m-%d"),
+        chk_out=(d90 + timedelta(days=1)).strftime("%Y-%m-%d")
+    ))
+
+    return date_ranges
+
+
+def try_multiple_dates(
+    api: XoteloAPI,
+    hotel_key: str,
+    date_ranges: List[DateRange],
+    rooms: int = 1,
+    adults: int = 2
+) -> Optional[Tuple[RateInfo, str]]:
+    """
+    Try multiple date ranges until a price is found.
+
+    Args:
+        api: XoteloAPI instance
+        hotel_key: Hotel key to query
+        date_ranges: List of date ranges to try
+        rooms: Number of rooms
+        adults: Adults per room
+
+    Returns:
+        Tuple of (RateInfo, date_label) if found, None otherwise
+    """
+    for date_range in date_ranges:
+        rate_data = api.get_rates(
+            hotel_key,
+            date_range['chk_in'],
+            date_range['chk_out'],
+            rooms,
+            adults
+        )
+        if rate_data:
+            return (rate_data, date_range['label'])
+        api.wait()
+
+    return None
+
+
 def load_hotel_keys() -> Dict[str, str]:
     """Load hotel name to key mappings from JSON database."""
     if not os.path.exists(HOTEL_KEYS_DB):
@@ -212,7 +307,8 @@ def get_hotel_rates(
 def update_excel_with_prices(
     excel_hotels_with_prices: Dict[int, HotelPriceData],
     search_params: SearchParams,
-    snapshot_date: str
+    snapshot_date: str,
+    multi_date: bool = False
 ) -> str:
     """Read Excel and update with prices, including snapshot date."""
     logger.info("Updating Excel file...")
@@ -227,6 +323,7 @@ def update_excel_with_prices(
     provider_col = max_col + 3
     key_col = max_col + 4
     search_col = max_col + 5
+    date_used_col = max_col + 6 if multi_date else None
 
     # Add headers with styling
     header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
@@ -240,6 +337,9 @@ def update_excel_with_prices(
         (search_col, "Search_Params")
     ]
 
+    if multi_date and date_used_col:
+        headers.append((date_used_col, "Date_Found"))
+
     for col, header_text in headers:
         cell = ws.cell(row=1, column=col, value=header_text)
         cell.fill = header_fill
@@ -247,6 +347,8 @@ def update_excel_with_prices(
 
     # Create search info string
     search_info = f"{search_params['chk_in']} to {search_params['chk_out']} | {search_params['rooms']}rm/{search_params['adults']}ad"
+    if multi_date:
+        search_info += " (multi-date)"
 
     # Update rows with matched data
     for row_num, hotel_data in excel_hotels_with_prices.items():
@@ -255,6 +357,8 @@ def update_excel_with_prices(
         ws.cell(row=row_num, column=provider_col, value=hotel_data.get('provider'))
         ws.cell(row=row_num, column=key_col, value=hotel_data.get('hotel_key'))
         ws.cell(row=row_num, column=search_col, value=search_info)
+        if multi_date and date_used_col:
+            ws.cell(row=row_num, column=date_used_col, value=hotel_data.get('date_used', ''))
 
     # Generate output filename with date
     output_file = f"PRTC_Hotels_Prices_{snapshot_date}.xlsx"
@@ -270,6 +374,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description='Hotel Price Updater - Xotelo API')
     parser.add_argument('--auto', action='store_true',
                         help='Run in automatic mode with default parameters (no prompts)')
+    parser.add_argument('--multi-date', action='store_true',
+                        help='Try multiple date ranges to maximize price coverage')
     args = parser.parse_args()
 
     # Get snapshot date (when the data was collected)
@@ -292,6 +398,15 @@ def main() -> None:
         if not search_params_result:
             return
         search_params = search_params_result
+
+    # Multi-date mode setup
+    date_ranges: Optional[List[DateRange]] = None
+    if args.multi_date:
+        print("\nMulti-date mode: ENABLED")
+        date_ranges = get_multi_date_ranges()
+        print("   Date ranges to try:")
+        for dr in date_ranges:
+            print(f"     - {dr['label']}: {dr['chk_in']} to {dr['chk_out']}")
 
     print("=" * 70)
 
@@ -317,6 +432,9 @@ def main() -> None:
     hotels_with_prices = 0
     excel_hotels_with_prices: Dict[int, HotelPriceData] = {}
 
+    # Track date usage stats for multi-date mode
+    date_stats: Dict[str, int] = {}
+
     for row in range(2, ws.max_row + 1):
         hotel_name = ws.cell(row=row, column=1).value
 
@@ -334,33 +452,66 @@ def main() -> None:
             print(f"    Key: {hotel_key}")
             print("    Fetching price...")
 
-            rate_data = api.get_rates(
-                hotel_key,
-                search_params['chk_in'],
-                search_params['chk_out'],
-                search_params['rooms'],
-                search_params['adults']
-            )
-
-            if rate_data:
-                price = rate_data['rate']
-                provider = rate_data['provider']
-                print(f"    Price: ${price:.2f} ({provider})")
-
-                excel_hotels_with_prices[row] = HotelPriceData(
-                    price=price,
-                    provider=provider,
-                    hotel_key=hotel_key
+            if args.multi_date and date_ranges:
+                # Try multiple dates
+                result = try_multiple_dates(
+                    api,
+                    hotel_key,
+                    date_ranges,
+                    search_params['rooms'],
+                    search_params['adults']
                 )
-                hotels_with_prices += 1
+
+                if result:
+                    rate_data, date_label = result
+                    price = rate_data['rate']
+                    provider = rate_data['provider']
+                    print(f"    Price: ${price:.2f} ({provider}) [found: {date_label}]")
+
+                    excel_hotels_with_prices[row] = HotelPriceData(
+                        price=price,
+                        provider=provider,
+                        hotel_key=hotel_key,
+                        date_used=date_label
+                    )
+                    hotels_with_prices += 1
+                    date_stats[date_label] = date_stats.get(date_label, 0) + 1
+                else:
+                    print("    No price available (tried all dates)")
+                    excel_hotels_with_prices[row] = HotelPriceData(
+                        price=None,
+                        provider='N/A',
+                        hotel_key=hotel_key,
+                        date_used=''
+                    )
             else:
-                print("    No price available")
-                excel_hotels_with_prices[row] = HotelPriceData(
-                    price=None,
-                    provider='N/A',
-                    hotel_key=hotel_key
+                # Single date mode (original behavior)
+                rate_data = api.get_rates(
+                    hotel_key,
+                    search_params['chk_in'],
+                    search_params['chk_out'],
+                    search_params['rooms'],
+                    search_params['adults']
                 )
 
+                if rate_data:
+                    price = rate_data['rate']
+                    provider = rate_data['provider']
+                    print(f"    Price: ${price:.2f} ({provider})")
+
+                    excel_hotels_with_prices[row] = HotelPriceData(
+                        price=price,
+                        provider=provider,
+                        hotel_key=hotel_key
+                    )
+                    hotels_with_prices += 1
+                else:
+                    print("    No price available")
+                    excel_hotels_with_prices[row] = HotelPriceData(
+                        price=None,
+                        provider='N/A',
+                        hotel_key=hotel_key
+                    )
             api.wait()
         else:
             print(f"\n[SKIP] {hotel_name} - No key in database")
@@ -369,9 +520,19 @@ def main() -> None:
     print(f"[STATS] Hotels with keys: {hotels_with_key}")
     print(f"[STATS] Hotels with prices: {hotels_with_prices}")
 
+    if args.multi_date and date_stats:
+        print("\n[STATS] Prices found by date range:")
+        for date_label, count in sorted(date_stats.items(), key=lambda x: -x[1]):
+            print(f"   {date_label}: {count} hotels")
+
     # Step 3: Update Excel
     if excel_hotels_with_prices:
-        output_file = update_excel_with_prices(excel_hotels_with_prices, search_params, snapshot_date)
+        output_file = update_excel_with_prices(
+            excel_hotels_with_prices,
+            search_params,
+            snapshot_date,
+            multi_date=args.multi_date
+        )
         print("\n" + "=" * 70)
         print("[COMPLETE]")
         print(f"Output: {output_file}")

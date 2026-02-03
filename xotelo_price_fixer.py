@@ -4,8 +4,10 @@ Searches for hotels that didn't match or didn't get prices one by one.
 """
 from __future__ import annotations
 
+import argparse
 import logging
 import sys
+from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
 import openpyxl
@@ -25,13 +27,29 @@ logger = logging.getLogger(__name__)
 # Force immediate output
 sys.stdout.reconfigure(line_buffering=True)
 
-# File paths
-INPUT_FILE = "PRTC Endorsed Hotels - Updated Xotelo.xlsx"
-OUTPUT_FILE = "PRTC Endorsed Hotels - Updated Xotelo.xlsx"  # Overwrite same file
+# File path defaults
+DEFAULT_INPUT_FILE = "PRTC Endorsed Hotels - Updated Xotelo.xlsx"
 
-# Date configuration
-CHECK_IN_DATE = "2026-01-30"
-CHECK_OUT_DATE = "2026-01-31"
+# Date defaults (relative)
+DEFAULT_DAYS_AHEAD = config.DEFAULT_DAYS_AHEAD
+DEFAULT_NIGHTS = config.DEFAULT_NIGHTS
+
+
+def resolve_dates(args: argparse.Namespace) -> Tuple[str, str]:
+    """
+    Resolve check-in/check-out dates using args or relative defaults.
+
+    Priority:
+    1) Explicit --check-in and --check-out
+    2) Relative --days-ahead/--nights (or defaults)
+    """
+    if args.check_in and args.check_out:
+        return args.check_in, args.check_out
+
+    today = datetime.now()
+    check_in = today + timedelta(days=args.days_ahead)
+    check_out = check_in + timedelta(days=args.nights)
+    return check_in.strftime("%Y-%m-%d"), check_out.strftime("%Y-%m-%d")
 
 
 def search_hotel(api: XoteloAPI, query: str) -> Optional[HotelInfo]:
@@ -51,7 +69,12 @@ def search_hotel(api: XoteloAPI, query: str) -> Optional[HotelInfo]:
     return None
 
 
-def get_hotel_rates(api: XoteloAPI, hotel_key: str) -> Optional[RateInfo]:
+def get_hotel_rates(
+    api: XoteloAPI,
+    hotel_key: str,
+    check_in_date: str,
+    check_out_date: str
+) -> Optional[RateInfo]:
     """
     Get hotel rates for specific dates.
 
@@ -62,7 +85,7 @@ def get_hotel_rates(api: XoteloAPI, hotel_key: str) -> Optional[RateInfo]:
     Returns:
         RateInfo with rate and provider, or None if not available
     """
-    return api.get_rates(hotel_key, CHECK_IN_DATE, CHECK_OUT_DATE)
+    return api.get_rates(hotel_key, check_in_date, check_out_date)
 
 
 def process_unmatched_hotels(
@@ -73,7 +96,9 @@ def process_unmatched_hotels(
     provider_col: Optional[int],
     match_col: Optional[int],
     score_col: Optional[int],
-    key_col: Optional[int]
+    key_col: Optional[int],
+    check_in_date: str,
+    check_out_date: str
 ) -> int:
     """
     Process hotels without a match - search one by one.
@@ -121,7 +146,7 @@ def process_unmatched_hotels(
         if found:
             # Get price
             print("  -> Getting price...")
-            rate_data = get_hotel_rates(api, found['key'])
+            rate_data = get_hotel_rates(api, found['key'], check_in_date, check_out_date)
 
             if rate_data and price_col and provider_col:
                 print(f"  -> Price: ${rate_data['rate']} ({rate_data['provider']})")
@@ -153,7 +178,9 @@ def process_no_price_hotels(
     ws: Worksheet,
     no_price: List[Tuple[int, str, Optional[str], Optional[str]]],
     price_col: Optional[int],
-    provider_col: Optional[int]
+    provider_col: Optional[int],
+    check_in_date: str,
+    check_out_date: str
 ) -> int:
     """
     Process hotels with match but no price - retry getting prices.
@@ -175,7 +202,7 @@ def process_no_price_hotels(
         print(f"  -> Key: {hotel_key}")
 
         if hotel_key:
-            rate_data = get_hotel_rates(api, hotel_key)
+            rate_data = get_hotel_rates(api, hotel_key, check_in_date, check_out_date)
 
             if rate_data and price_col and provider_col:
                 print(f"  -> Price: ${rate_data['rate']} ({rate_data['provider']})")
@@ -195,14 +222,59 @@ def process_no_price_hotels(
 
 def main() -> None:
     """Main execution function."""
+    parser = argparse.ArgumentParser(description="Hotel Price Fixer - Xotelo API")
+    parser.add_argument(
+        "--input",
+        default=DEFAULT_INPUT_FILE,
+        help="Input Excel file (default: updated Xotelo workbook)"
+    )
+    parser.add_argument(
+        "--output",
+        default=None,
+        help="Output Excel file (default: overwrite input)"
+    )
+    parser.add_argument(
+        "--check-in",
+        dest="check_in",
+        help="Check-in date (YYYY-MM-DD). Requires --check-out if set."
+    )
+    parser.add_argument(
+        "--check-out",
+        dest="check_out",
+        help="Check-out date (YYYY-MM-DD). Requires --check-in if set."
+    )
+    parser.add_argument(
+        "--days-ahead",
+        type=int,
+        default=DEFAULT_DAYS_AHEAD,
+        help="Days ahead for check-in when dates are not provided."
+    )
+    parser.add_argument(
+        "--nights",
+        type=int,
+        default=DEFAULT_NIGHTS,
+        help="Number of nights when dates are not provided."
+    )
+    args = parser.parse_args()
+
+    if (args.check_in and not args.check_out) or (args.check_out and not args.check_in):
+        raise SystemExit("Both --check-in and --check-out are required together.")
+
+    if args.output is None:
+        args.output = args.input
+
+    check_in_date, check_out_date = resolve_dates(args)
+
     print("=" * 70)
     print("Hotel Price Fixer - Searching Missing Hotels")
     print("=" * 70)
+    print(f"Check-in: {check_in_date}")
+    print(f"Check-out: {check_out_date}")
 
     # Initialize API client with longer delay for search operations
     api = XoteloAPI(delay=1.5)
 
-    wb: Workbook = openpyxl.load_workbook(INPUT_FILE)
+    wb: Workbook = openpyxl.load_workbook(args.input)
     ws: Worksheet = wb.active
 
     # Find column indices
@@ -247,7 +319,16 @@ def main() -> None:
     print("=" * 70)
 
     updated_match = process_unmatched_hotels(
-        api, ws, no_match, price_col, provider_col, match_col, score_col, key_col
+        api,
+        ws,
+        no_match,
+        price_col,
+        provider_col,
+        match_col,
+        score_col,
+        key_col,
+        check_in_date,
+        check_out_date
     )
 
     # Process hotels with match but no price - retry getting prices
@@ -255,14 +336,22 @@ def main() -> None:
     print("PART 2: Retrying prices for matched hotels")
     print("=" * 70)
 
-    updated_price = process_no_price_hotels(api, ws, no_price, price_col, provider_col)
+    updated_price = process_no_price_hotels(
+        api,
+        ws,
+        no_price,
+        price_col,
+        provider_col,
+        check_in_date,
+        check_out_date
+    )
 
     # Save
-    wb.save(OUTPUT_FILE)
+    wb.save(args.output)
     total_updated = updated_match + updated_price
     print("\n" + "=" * 70)
     print(f"[COMPLETE] Updated {total_updated} hotels with new prices")
-    print(f"[SAVED] {OUTPUT_FILE}")
+    print(f"[SAVED] {args.output}")
     print("=" * 70)
 
 

@@ -1,9 +1,9 @@
 """
 Unit tests for xotelo_price_fixer.py
 """
-import pytest
 import os
 import sys
+from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 
 # Add parent directory to path for imports
@@ -50,7 +50,7 @@ class TestGetHotelRates:
             code='BK'
         )
 
-        result = fixer.get_hotel_rates(mock_api, "test-key")
+        result = fixer.get_hotel_rates(mock_api, "test-key", "2026-03-01", "2026-03-02")
 
         assert result is not None
         assert result['rate'] == 150.0
@@ -60,20 +60,20 @@ class TestGetHotelRates:
         mock_api = MagicMock(spec=XoteloAPI)
         mock_api.get_rates.return_value = None
 
-        result = fixer.get_hotel_rates(mock_api, "test-key")
+        result = fixer.get_hotel_rates(mock_api, "test-key", "2026-03-01", "2026-03-02")
 
         assert result is None
 
-    def test_uses_configured_dates(self):
+    def test_uses_provided_dates(self):
         mock_api = MagicMock(spec=XoteloAPI)
         mock_api.get_rates.return_value = None
 
-        fixer.get_hotel_rates(mock_api, "test-key")
+        fixer.get_hotel_rates(mock_api, "test-key", "2026-03-01", "2026-03-02")
 
         mock_api.get_rates.assert_called_once_with(
             "test-key",
-            fixer.CHECK_IN_DATE,
-            fixer.CHECK_OUT_DATE
+            "2026-03-01",
+            "2026-03-02"
         )
 
 
@@ -100,7 +100,8 @@ class TestProcessUnmatchedHotels:
 
         updated = fixer.process_unmatched_hotels(
             mock_api, mock_ws, no_match,
-            price_col=3, provider_col=4, match_col=5, score_col=6, key_col=7
+            price_col=3, provider_col=4, match_col=5, score_col=6, key_col=7,
+            check_in_date="2026-03-01", check_out_date="2026-03-02"
         )
 
         assert updated == 1
@@ -123,7 +124,8 @@ class TestProcessUnmatchedHotels:
 
         updated = fixer.process_unmatched_hotels(
             mock_api, mock_ws, no_match,
-            price_col=3, provider_col=4, match_col=5, score_col=6, key_col=7
+            price_col=3, provider_col=4, match_col=5, score_col=6, key_col=7,
+            check_in_date="2026-03-01", check_out_date="2026-03-02"
         )
 
         assert updated == 0
@@ -147,7 +149,8 @@ class TestProcessUnmatchedHotels:
 
         fixer.process_unmatched_hotels(
             mock_api, mock_ws, no_match,
-            price_col=3, provider_col=4, match_col=5, score_col=6, key_col=7
+            price_col=3, provider_col=4, match_col=5, score_col=6, key_col=7,
+            check_in_date="2026-03-01", check_out_date="2026-03-02"
         )
 
         # Should have tried multiple search variations
@@ -172,7 +175,8 @@ class TestProcessNoPriceHotels:
 
         updated = fixer.process_no_price_hotels(
             mock_api, mock_ws, no_price,
-            price_col=3, provider_col=4
+            price_col=3, provider_col=4,
+            check_in_date="2026-03-01", check_out_date="2026-03-02"
         )
 
         assert updated == 1
@@ -190,7 +194,8 @@ class TestProcessNoPriceHotels:
 
         updated = fixer.process_no_price_hotels(
             mock_api, mock_ws, no_price,
-            price_col=3, provider_col=4
+            price_col=3, provider_col=4,
+            check_in_date="2026-03-01", check_out_date="2026-03-02"
         )
 
         assert updated == 0
@@ -206,7 +211,8 @@ class TestProcessNoPriceHotels:
 
         updated = fixer.process_no_price_hotels(
             mock_api, mock_ws, no_price,
-            price_col=3, provider_col=4
+            price_col=3, provider_col=4,
+            check_in_date="2026-03-01", check_out_date="2026-03-02"
         )
 
         assert updated == 0
@@ -214,16 +220,34 @@ class TestProcessNoPriceHotels:
         mock_api.get_rates.assert_not_called()
 
 
-class TestConstants:
-    """Tests for module constants."""
+class TestResolveDates:
+    """Tests for date resolution helper."""
 
-    def test_input_file_is_set(self):
-        assert fixer.INPUT_FILE is not None
-        assert '.xlsx' in fixer.INPUT_FILE
+    def test_resolve_dates_with_explicit_dates(self):
+        args = type("Args", (), {
+            "check_in": "2026-03-01",
+            "check_out": "2026-03-02",
+            "days_ahead": 30,
+            "nights": 1
+        })()
 
-    def test_dates_are_valid_format(self):
-        from datetime import datetime
+        check_in, check_out = fixer.resolve_dates(args)
 
-        # Should not raise
-        datetime.strptime(fixer.CHECK_IN_DATE, "%Y-%m-%d")
-        datetime.strptime(fixer.CHECK_OUT_DATE, "%Y-%m-%d")
+        assert check_in == "2026-03-01"
+        assert check_out == "2026-03-02"
+
+    def test_resolve_dates_with_relative_defaults(self):
+        args = type("Args", (), {
+            "check_in": None,
+            "check_out": None,
+            "days_ahead": 30,
+            "nights": 2
+        })()
+
+        check_in, check_out = fixer.resolve_dates(args)
+
+        expected_check_in = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
+        expected_check_out = (datetime.strptime(expected_check_in, "%Y-%m-%d") + timedelta(days=2)).strftime("%Y-%m-%d")
+
+        assert check_in == expected_check_in
+        assert check_out == expected_check_out
