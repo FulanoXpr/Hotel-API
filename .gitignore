@@ -50,3 +50,4 @@ PRTC_Hotels_Prices_*.xlsx
 
 # Logs
 logs/
+xotelo_hotels_cache.json

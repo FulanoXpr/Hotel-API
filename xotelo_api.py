@@ -1,16 +1,26 @@
 """
 Xotelo API Client - Shared module for interacting with the Xotelo API.
 Provides methods for searching hotels, getting rates, and listing hotels by location.
+
+Note: The /search endpoint now requires RapidAPI subscription.
+This module implements a local cache workaround using the free /list endpoint.
 """
 from __future__ import annotations
 
+import json
 import logging
+import os
+import re
 import time
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, TypedDict
 
 import requests
 
 import config
+
+# Cache file for hotel list (workaround for /search API restriction)
+HOTEL_CACHE_FILE = os.getenv("XOTELO_HOTEL_CACHE", "xotelo_hotels_cache.json")
 
 logger = logging.getLogger(__name__)
 
@@ -176,6 +186,9 @@ class XoteloAPI:
         """
         Search for a hotel by name.
 
+        First tries the API /search endpoint. If it fails (401 - RapidAPI required),
+        falls back to local cache search using fuzzy matching.
+
         Args:
             query: Hotel name to search for
             location_type: Type of location (default: 'accommodation')
@@ -183,27 +196,242 @@ class XoteloAPI:
         Returns:
             HotelInfo with key, name, and location, or None if not found
         """
+        # Try API search first
         params = {
             "query": query,
             "location_type": location_type
         }
 
         data = self._request("/search", params)
-        if not data:
+        if data:
+            result = data.get('result', {})
+            hotels = result.get('list', [])
+
+            if hotels:
+                hotel = hotels[0]
+                return HotelInfo(
+                    key=hotel.get('hotel_key', ''),
+                    name=hotel.get('name', ''),
+                    location=hotel.get('short_place_name', '')
+                )
+
+        # Fallback to local cache search
+        logger.info("API /search unavailable, using local cache for: %s", query)
+        return self.search_hotel_local(query)
+
+    def search_hotel_local(self, query: str, threshold: float = 0.4) -> Optional[HotelInfo]:
+        """
+        Search for a hotel in the local cache using fuzzy matching.
+
+        Args:
+            query: Hotel name to search for
+            threshold: Minimum similarity score (0.0-1.0) to consider a match
+
+        Returns:
+            HotelInfo with key and name, or None if not found
+        """
+        cache = self._load_hotel_cache()
+        if not cache:
+            logger.warning("Hotel cache is empty. Run refresh_hotel_cache() first.")
             return None
 
-        result = data.get('result', {})
-        hotels = result.get('list', [])
+        query_normalized = self._normalize_name(query)
+        best_match = None
+        best_score = 0.0
 
+        for hotel in cache:
+            hotel_name = hotel.get('name', '')
+            hotel_normalized = self._normalize_name(hotel_name)
+
+            score = self._fuzzy_match_score(query_normalized, hotel_normalized)
+
+            if score > best_score:
+                best_score = score
+                best_match = hotel
+
+        if best_match and best_score >= threshold:
+            logger.info("Local match: '%s' -> '%s' (score: %.2f)",
+                       query, best_match.get('name'), best_score)
+            return HotelInfo(
+                key=best_match.get('key', ''),
+                name=best_match.get('name', ''),
+                location='Puerto Rico'
+            )
+
+        logger.info("No local match for '%s' (best score: %.2f)", query, best_score)
+        return None
+
+    def _normalize_name(self, name: str) -> str:
+        """Normalize hotel name for comparison."""
+        # Lowercase
+        name = name.lower()
+        # Remove common suffixes/prefixes
+        remove_patterns = [
+            r'\s*-\s*puerto rico$',
+            r'\s*,\s*puerto rico$',
+            r'\s*hotel$',
+            r'\s*resort$',
+            r'\s*&\s*spa$',
+            r'\s*and\s*spa$',
+            r'^the\s+',
+            r'^hotel\s+',
+        ]
+        for pattern in remove_patterns:
+            name = re.sub(pattern, '', name, flags=re.IGNORECASE)
+        # Remove special characters, keep alphanumeric and spaces
+        name = re.sub(r'[^\w\s]', '', name)
+        # Normalize whitespace
+        name = ' '.join(name.split())
+        return name
+
+    def _fuzzy_match_score(self, query: str, target: str) -> float:
+        """
+        Calculate fuzzy match score between two strings.
+
+        Uses a combination of:
+        - Word overlap (Jaccard similarity)
+        - Substring matching
+        - Character-level similarity
+
+        Returns:
+            Score from 0.0 to 1.0
+        """
+        if not query or not target:
+            return 0.0
+
+        # Exact match
+        if query == target:
+            return 1.0
+
+        # Word-based Jaccard similarity
+        query_words = set(query.split())
+        target_words = set(target.split())
+
+        if query_words and target_words:
+            intersection = len(query_words & target_words)
+            union = len(query_words | target_words)
+            jaccard = intersection / union if union > 0 else 0
+        else:
+            jaccard = 0
+
+        # Substring bonus
+        substring_bonus = 0.0
+        if query in target or target in query:
+            substring_bonus = 0.3
+
+        # Character-level similarity (simple ratio)
+        longer = max(len(query), len(target))
+        if longer > 0:
+            # Count matching characters in order
+            matches = 0
+            target_chars = list(target)
+            for char in query:
+                if char in target_chars:
+                    target_chars.remove(char)
+                    matches += 1
+            char_ratio = matches / longer
+        else:
+            char_ratio = 0
+
+        # Weighted combination
+        score = (jaccard * 0.5) + (char_ratio * 0.3) + substring_bonus
+        return min(score, 1.0)
+
+    def _load_hotel_cache(self) -> List[Dict[str, Any]]:
+        """Load hotel cache from file."""
+        cache_path = Path(HOTEL_CACHE_FILE)
+        if not cache_path.exists():
+            return []
+
+        try:
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return data.get('hotels', [])
+        except (json.JSONDecodeError, IOError) as e:
+            logger.error("Error loading hotel cache: %s", e)
+            return []
+
+    def _save_hotel_cache(self, hotels: List[Dict[str, Any]]) -> None:
+        """Save hotel cache to file."""
+        cache_path = Path(HOTEL_CACHE_FILE)
+        try:
+            with open(cache_path, 'w', encoding='utf-8') as f:
+                json.dump({
+                    'hotels': hotels,
+                    'count': len(hotels),
+                    'updated': time.strftime('%Y-%m-%d %H:%M:%S')
+                }, f, ensure_ascii=False, indent=2)
+            logger.info("Saved %d hotels to cache", len(hotels))
+        except IOError as e:
+            logger.error("Error saving hotel cache: %s", e)
+
+    def refresh_hotel_cache(
+        self,
+        location_key: Optional[str] = None,
+        progress_callback: Optional[callable] = None
+    ) -> int:
+        """
+        Refresh the local hotel cache from the API.
+
+        Fetches all hotels from the /list endpoint and saves to local cache.
+        This is a workaround for the /search endpoint requiring RapidAPI.
+
+        Args:
+            location_key: Location key (defaults to Puerto Rico)
+            progress_callback: Optional callback(current, total) for progress updates
+
+        Returns:
+            Number of hotels cached
+        """
+        location = location_key or config.LOCATION_KEY
+        all_hotels = []
+        offset = 0
+        limit = 100  # API max per request
+
+        # First request to get total count
+        hotels, total_count = self.list_hotels(location_key=location, limit=limit, offset=0)
         if not hotels:
-            return None
+            logger.error("Failed to fetch hotels from API")
+            return 0
 
-        hotel = hotels[0]
-        return HotelInfo(
-            key=hotel.get('hotel_key', ''),
-            name=hotel.get('name', ''),
-            location=hotel.get('short_place_name', '')
-        )
+        all_hotels.extend(hotels)
+        if progress_callback:
+            progress_callback(len(all_hotels), total_count)
+
+        # Fetch remaining pages
+        while len(all_hotels) < total_count:
+            offset += limit
+            self.wait()  # Rate limiting
+
+            hotels, _ = self.list_hotels(location_key=location, limit=limit, offset=offset)
+            if not hotels:
+                break
+
+            all_hotels.extend(hotels)
+            if progress_callback:
+                progress_callback(len(all_hotels), total_count)
+
+        # Save to cache
+        self._save_hotel_cache(all_hotels)
+        return len(all_hotels)
+
+    def get_cache_info(self) -> Dict[str, Any]:
+        """Get information about the hotel cache."""
+        cache_path = Path(HOTEL_CACHE_FILE)
+        if not cache_path.exists():
+            return {'exists': False, 'count': 0, 'updated': None}
+
+        try:
+            with open(cache_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return {
+                    'exists': True,
+                    'count': data.get('count', 0),
+                    'updated': data.get('updated'),
+                    'path': str(cache_path.absolute())
+                }
+        except (json.JSONDecodeError, IOError):
+            return {'exists': False, 'count': 0, 'updated': None}
 
     def list_hotels(
         self,
