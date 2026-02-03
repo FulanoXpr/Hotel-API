@@ -428,7 +428,7 @@ class ExecuteTab(ctk.CTkFrame):
                     break
 
                 nombre = hotel.get("nombre", "Hotel desconocido")
-                key = hotel.get("key_xotelo", "")
+                key = hotel.get("xotelo_key", "")
                 booking_url = hotel.get("booking_url", "")
 
                 self._queue.put(("log", f"Buscando: {nombre}...", "info"))
