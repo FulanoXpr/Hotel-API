@@ -1,7 +1,10 @@
 """
 Apify Price Provider - Booking.com Scraper via Apify.
 
-Uses Apify's Fast Booking Scraper actor to get prices from Booking.com.
+Uses two Apify actors:
+- Fast Booking Scraper: For searches by hotel name (faster, cheaper)
+- Full Booking Scraper: For direct hotel URLs (more accurate)
+
 Free tier: $5/month in credits (~1,700 results).
 """
 from __future__ import annotations
@@ -26,7 +29,14 @@ except ImportError:
 
 class ApifyProvider(PriceProvider):
     """
-    Price provider using Apify's Booking.com scraper.
+    Price provider using Apify's Booking.com scrapers.
+
+    Uses two different scrapers:
+    - Fast Booking Scraper (voyager/fast-booking-scraper): For name searches
+    - Full Booking Scraper (dtrungtin/booking-scraper): For direct hotel URLs
+
+    The full scraper is more accurate when we have a booking_url, as the
+    fast scraper cannot handle individual hotel URLs.
 
     This is the tertiary price source, used as a last resort when
     both Xotelo and SerpApi don't have prices. Requires an APIFY_TOKEN
@@ -36,8 +46,9 @@ class ApifyProvider(PriceProvider):
     Note: Searches can take 30-60 seconds to complete.
     """
 
-    # Apify actor ID for Fast Booking Scraper
-    ACTOR_ID = "voyager/fast-booking-scraper"
+    # Apify actor IDs
+    FAST_ACTOR_ID = "voyager/fast-booking-scraper"  # For name searches
+    FULL_ACTOR_ID = "dtrungtin/booking-scraper"     # For direct URLs
 
     def __init__(
         self,
@@ -97,9 +108,10 @@ class ApifyProvider(PriceProvider):
             return None
 
         try:
-            # Configure the scraper input
+            # Choose actor and configure input based on whether we have a URL
             if booking_url:
-                # Use direct URL - more reliable
+                # Use FULL scraper for direct URLs - more accurate
+                actor_id = self.FULL_ACTOR_ID
                 run_input = {
                     "startUrls": [{"url": booking_url}],
                     "checkIn": check_in,
@@ -107,11 +119,14 @@ class ApifyProvider(PriceProvider):
                     "rooms": rooms,
                     "adults": adults,
                     "currency": "USD",
-                    "language": "en-us"
+                    "language": "en-us",
+                    "minScore": 0,
+                    "maxPages": 1
                 }
-                logger.info("Apify: Fetching direct URL for %s", hotel_name)
+                logger.info("Apify: Using FULL scraper for direct URL: %s", hotel_name)
             else:
-                # Search by name
+                # Use FAST scraper for name searches - cheaper
+                actor_id = self.FAST_ACTOR_ID
                 run_input = {
                     "search": f"{hotel_name}, Puerto Rico",
                     "checkIn": check_in,
@@ -122,15 +137,14 @@ class ApifyProvider(PriceProvider):
                     "maxResults": 5,
                     "language": "en-us"
                 }
-
-            logger.info("Apify: Starting search for %s...", hotel_name)
+                logger.info("Apify: Using FAST scraper for name search: %s", hotel_name)
 
             # Run the actor and wait for completion
             client = self.client
             if not client:
                 return None
 
-            run = client.actor(self.ACTOR_ID).call(
+            run = client.actor(actor_id).call(
                 run_input=run_input,
                 timeout_secs=self.timeout_seconds,
                 memory_mbytes=256  # Minimum memory to save credits

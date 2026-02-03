@@ -90,7 +90,8 @@
     "xotelo": "g147319-d268430"
   },
   "Margaritaville Vacation Club by Wyndham Rio Mar": {
-    "xotelo": "g147319-d16659689"
+    "xotelo": "g147319-d16659689",
+    "booking_url": "https://www.booking.com/hotel/pr/beautiful-resort-margarita-rio-mar.html"
   },
   "Ciqala Luxury Home Suites": {
     "xotelo": "g147320-d2179878"
@@ -132,7 +133,8 @@
     "xotelo": "g644389-d3355962"
   },
   "Rainforest Inn": {
-    "xotelo": "g147319-d503287"
+    "xotelo": "g147319-d503287",
+    "booking_url": "https://www.booking.com/hotel/pr/rainforest-inn.html"
   },
   "Wyndham Palmas Beach and Golf Boutique Resort": {
     "xotelo": "g147319-d310451"
@@ -180,7 +182,8 @@
     "xotelo": "g147319-d9602805"
   },
   "Club Seabourne": {
-    "xotelo": "g147319-d151840"
+    "xotelo": "g147319-d151840",
+    "booking_url": "https://www.booking.com/hotel/pr/club-seabourne.html"
   },
   "Fajardo Inn": {
     "xotelo": "g147319-d155796"
@@ -210,10 +213,12 @@
     "xotelo": "g147319-d5598171"
   },
   "The Tryst Beachfront Hotel": {
-    "xotelo": "g147319-d26629555"
+    "xotelo": "g147319-d26629555",
+    "booking_url": "https://www.booking.com/hotel/pr/atlantic-beach.html"
   },
   "Aqua Marina Beach Club": {
-    "xotelo": "g147319-d623904"
+    "xotelo": "g147319-d623904",
+    "booking_url": "https://www.booking.com/hotel/pr/aqua-marina-beach-club.html"
   },
   "Don Rafa Boutique Hotel & Residences": {
     "xotelo": "g147319-d25178239"
@@ -261,7 +266,8 @@
     "xotelo": "g147319-d17741745"
   },
   "Parador Villas Del Mar Hau": {
-    "xotelo": "g147319-d275180"
+    "xotelo": "g147319-d275180",
+    "booking_url": "https://www.booking.com/hotel/pr/parador-villas-del-mar-hau.html"
   },
   "Hotel Puerto Valdós": {
     "xotelo": "g147319-d23482969"
@@ -276,7 +282,8 @@
     "xotelo": "g147319-d6161031"
   },
   "Casa Verde Hotel": {
-    "xotelo": "g147319-d668014"
+    "xotelo": "g147319-d668014",
+    "booking_url": "https://www.booking.com/hotel/pr/casa-verde.html"
   },
   "Holiday Inn Express San Juan Condado": {
     "xotelo": "g147319-d151941"
@@ -324,7 +331,8 @@
     "xotelo": "g147319-d151679"
   },
   "Hacienda Tamarindo": {
-    "xotelo": "g147319-d147798"
+    "xotelo": "g147319-d147798",
+    "booking_url": "https://www.booking.com/hotel/pr/hacienda-tamarindo-vieques1.html"
   },
   "SeaGate Hotel": {
     "xotelo": "g147319-d485475"
@@ -351,10 +359,12 @@
     "xotelo": "g147319-d1681896"
   },
   "The Serene House Bed & Breakfast": {
-    "xotelo": "g147319-d26723746"
+    "xotelo": "g147319-d26723746",
+    "booking_url": "https://www.booking.com/hotel/pr/the-serene-house.html"
   },
   "Casa Sol Bed & Breakfast": {
-    "xotelo": "g147319-d5964475"
+    "xotelo": "g147319-d5964475",
+    "booking_url": "https://www.booking.com/hotel/pr/casa-sol-bed-and-breakfast.html"
   },
   "Parador Boquemar": {
     "xotelo": "g147319-d151667"
@@ -369,19 +379,22 @@
     "xotelo": "g147319-d25456741"
   },
   "Tapia Haus 103": {
-    "xotelo": "g147319-d20243623"
+    "xotelo": "g147319-d20243623",
+    "booking_url": "https://www.booking.com/hotel/pr/tapia-haus-103.html"
   },
   "Parador El Buen Café (Hotel Parador El Buen Café)": {
     "xotelo": "g147319-d251395"
   },
   "Marina de Salinas": {
-    "xotelo": "g147319-d2066940"
+    "xotelo": "g147319-d2066940",
+    "booking_url": "https://www.booking.com/hotel/pr/marina-de-salinas.html"
   },
   "Casa Coral Luquillo (Hostel)": {
     "xotelo": "g147319-d14920354"
   },
   "Dos Aguas Bed & Breakfast": {
-    "xotelo": "g147319-d291146"
+    "xotelo": "g147319-d291146",
+    "booking_url": "https://www.booking.com/hotel/pr/dos-aguas.html"
   },
   "Luquillo Sunrise Beach Inn": {
     "xotelo": "g147319-d649104"
@@ -402,13 +415,15 @@
     "xotelo": "g147319-d590083"
   },
   "Posada Hotel Colonial": {
-    "xotelo": "g147319-d1007145"
+    "xotelo": "g147319-d1007145",
+    "booking_url": "https://www.booking.com/hotel/pr/posada-colonial.html"
   },
   "Rincón Plaza Hotel": {
     "xotelo": "g147319-d10730993"
   },
   "San Sebastián Bed & Breakfast": {
-    "xotelo": "g147319-d7720672"
+    "xotelo": "g147319-d7720672",
+    "booking_url": "https://www.booking.com/hotel/pr/san-sebastian-bed-amp-breakfast.sk.html"
   },
   "The Village Inn": {
     "xotelo": "g147319-d8522359"
@@ -429,7 +444,8 @@
     "xotelo": "g147319-d7137980"
   },
   "Dos Ángeles Del Mar Bed and Breakfast": {
-    "xotelo": "g147319-d291146"
+    "xotelo": "g147319-d291146",
+    "booking_url": "https://www.booking.com/hotel/pr/dos-angeles-del-mar.html"
   },
   "La Casa Azul B&B": {
     "xotelo": "g147319-d9463907"
@@ -438,16 +454,19 @@
     "xotelo": "g147319-d1593115"
   },
   "4 Casitas": {
-    "xotelo": "g147319-d15856029"
+    "xotelo": "g147319-d15856029",
+    "booking_url": "https://www.booking.com/hotel/pr/4-casitas.html"
   },
   "Hospedería Villa Alegre": {
-    "xotelo": "g147319-d1984406"
+    "xotelo": "g147319-d1984406",
+    "booking_url": "https://www.booking.com/hotel/pr/hospederia-villa-alegre-cabana1.es.html"
   },
   "Pitahaya Glamping Eco Retreat": {
     "xotelo": "g147319-d15585165"
   },
   "Red Flamboyán Guesthouse Restaurant and Bar": {
-    "xotelo": "g147319-d681285"
+    "xotelo": "g147319-d681285",
+    "booking_url": "https://www.booking.com/hotel/pr/red-flamboyan-guesthouse-and-restaurant.html"
   },
   "Caño Tiburones Guest House": {
     "xotelo": "g147319-d636068"
