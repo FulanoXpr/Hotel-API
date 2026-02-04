@@ -13,6 +13,12 @@ El ejecutable resultante estará en dist/HotelPriceChecker/
 
 import sys
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_all, collect_submodules
+
+# Collect all files for packages that need complete collection
+requests_datas, requests_binaries, requests_hiddenimports = collect_all('requests')
+urllib3_datas, urllib3_binaries, urllib3_hiddenimports = collect_all('urllib3')
+certifi_datas, certifi_binaries, certifi_hiddenimports = collect_all('certifi')
 
 # Detectar plataforma
 is_windows = sys.platform == 'win32'
@@ -37,25 +43,12 @@ datas = [
 ]
 
 # Módulos ocultos que PyInstaller no detecta automáticamente
+# Note: requests, urllib3, certifi are collected via collect_all() above
 hiddenimports = [
     'customtkinter',
     'tkinter',
     'openpyxl',
-    # Requests and its dependencies
-    'requests',
-    'requests.adapters',
-    'requests.auth',
-    'requests.cookies',
-    'requests.exceptions',
-    'requests.models',
-    'requests.sessions',
-    'requests.structures',
-    'requests.utils',
-    'urllib3',
-    'urllib3.util',
-    'urllib3.util.retry',
     'charset_normalizer',
-    'certifi',
     # Other dependencies
     'dotenv',
     'packaging',
@@ -108,9 +101,9 @@ excludes = [
 a = Analysis(
     [main_script],
     pathex=[],
-    binaries=[],
-    datas=datas,
-    hiddenimports=hiddenimports,
+    binaries=requests_binaries + urllib3_binaries + certifi_binaries,
+    datas=datas + requests_datas + urllib3_datas + certifi_datas,
+    hiddenimports=hiddenimports + requests_hiddenimports + urllib3_hiddenimports + certifi_hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

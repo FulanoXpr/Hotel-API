@@ -20,7 +20,7 @@ from packaging import version
 logger = logging.getLogger(__name__)
 
 # Application version - update this with each release
-APP_VERSION = "1.1.1"
+APP_VERSION = "1.1.2"
 
 # GitHub repository info
 GITHUB_OWNER = "FulanoXpr"
