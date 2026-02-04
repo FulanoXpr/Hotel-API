@@ -59,7 +59,7 @@ class EditarHotelDialog(ctk.CTkToplevel):
             self.api = None
 
         # Configurar ventana
-        self.title("Editar Hotel")
+        self.title("Edit Hotel")
         self.geometry("500x300")
         self.resizable(False, False)
         self.transient(master)
@@ -85,7 +85,7 @@ class EditarHotelDialog(ctk.CTkToplevel):
         # Campo nombre
         ctk.CTkLabel(
             self.frame_principal,
-            text="Nombre del Hotel:",
+            text="Hotel Name:",
             font=obtener_fuente("normal"),
             anchor="w",
         ).grid(row=0, column=0, padx=padding, pady=padding, sticky="w")
@@ -116,7 +116,7 @@ class EditarHotelDialog(ctk.CTkToplevel):
         self.entry_key.insert(0, key)
 
         self.btn_buscar = ctk.CTkButton(
-            frame_key, text="🔍 Buscar", width=80, command=self._buscar_key
+            frame_key, text="🔍 Search", width=80, command=self._buscar_key
         )
         self.btn_buscar.grid(row=0, column=1, padx=(5, 0))
 
@@ -149,32 +149,32 @@ class EditarHotelDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             frame_botones,
-            text="Cancelar",
+            text="Cancel",
             width=100,
             fg_color="gray50",
             command=self.destroy,
         ).pack(side="left", padx=5)
 
         ctk.CTkButton(
-            frame_botones, text="💾 Guardar", width=100, command=self._guardar
+            frame_botones, text="💾 Save", width=100, command=self._guardar
         ).pack(side="left", padx=5)
 
     def _buscar_key(self) -> None:
         """Busca la key Xotelo para el hotel."""
         if not self.api:
             self.label_estado.configure(
-                text="API de Xotelo no disponible", text_color="red"
+                text="Xotelo API not available", text_color="red"
             )
             return
 
         nombre = self.entry_nombre.get().strip()
         if not nombre:
             self.label_estado.configure(
-                text="Ingrese un nombre de hotel primero", text_color="orange"
+                text="Enter a hotel name first", text_color="orange"
             )
             return
 
-        self.label_estado.configure(text="Buscando...", text_color="gray")
+        self.label_estado.configure(text="Searching...", text_color="gray")
         self.btn_buscar.configure(state="disabled")
 
         def buscar() -> None:
@@ -195,14 +195,14 @@ class EditarHotelDialog(ctk.CTkToplevel):
         self.entry_key.delete(0, "end")
         self.entry_key.insert(0, key)
         self.label_estado.configure(
-            text=f"✅ Key encontrada: {key}", text_color="green"
+            text=f"✅ Key found: {key}", text_color="green"
         )
         self.btn_buscar.configure(state="normal")
 
     def _mostrar_no_encontrado(self) -> None:
         """Muestra mensaje de hotel no encontrado."""
         self.label_estado.configure(
-            text="⚠️ No se encontró el hotel en Xotelo", text_color="orange"
+            text="⚠️ Hotel not found in Xotelo", text_color="orange"
         )
         self.btn_buscar.configure(state="normal")
 
@@ -215,7 +215,7 @@ class EditarHotelDialog(ctk.CTkToplevel):
         """Guarda los cambios y cierra el diálogo."""
         nombre = self.entry_nombre.get().strip()
         if not nombre:
-            messagebox.showwarning("Advertencia", "El nombre del hotel es requerido.")
+            messagebox.showwarning("Warning", "Hotel name is required.")
             return
 
         datos: HotelData = {
@@ -286,7 +286,7 @@ class HotelsTab(ctk.CTkFrame):
         # Botón Cargar Excel
         self.btn_cargar = ctk.CTkButton(
             self.barra_herramientas,
-            text="📂 Cargar Excel",
+            text="📂 Load Excel",
             width=TAMANOS["ancho_boton"],
             command=self._cargar_excel,
         )
@@ -295,7 +295,7 @@ class HotelsTab(ctk.CTkFrame):
         # Botón Guardar Excel
         self.btn_guardar = ctk.CTkButton(
             self.barra_herramientas,
-            text="💾 Guardar Excel",
+            text="💾 Save Excel",
             width=TAMANOS["ancho_boton"],
             command=self._guardar_excel,
         )
@@ -309,7 +309,7 @@ class HotelsTab(ctk.CTkFrame):
         # Botón Eliminar seleccionados
         self.btn_eliminar = ctk.CTkButton(
             self.barra_herramientas,
-            text="🗑️ Eliminar",
+            text="🗑️ Delete",
             width=100,
             fg_color="firebrick",
             hover_color="darkred",
@@ -320,7 +320,7 @@ class HotelsTab(ctk.CTkFrame):
         # Botón Limpiar todo
         self.btn_limpiar = ctk.CTkButton(
             self.barra_herramientas,
-            text="Limpiar Todo",
+            text="Clear All",
             width=100,
             fg_color="gray50",
             command=self._limpiar_todo,
@@ -330,7 +330,7 @@ class HotelsTab(ctk.CTkFrame):
         # Botón Buscar Keys de seleccionados (a la derecha)
         self.btn_buscar_keys_sel = ctk.CTkButton(
             self.barra_herramientas,
-            text="🔍 Buscar Keys (Selección)",
+            text="🔍 Search Keys (Selection)",
             width=160,
             fg_color="green",
             hover_color="darkgreen",
@@ -341,7 +341,7 @@ class HotelsTab(ctk.CTkFrame):
         # Botón Buscar Keys de todos los faltantes
         self.btn_buscar_keys = ctk.CTkButton(
             self.barra_herramientas,
-            text="🔍 Buscar Todos",
+            text="🔍 Search All",
             width=120,
             fg_color="gray50",
             hover_color="gray40",
@@ -373,19 +373,19 @@ class HotelsTab(ctk.CTkFrame):
         # Título del panel
         ctk.CTkLabel(
             self.panel_agregar,
-            text="➕ Agregar Hotel Manualmente",
+            text="➕ Add Hotel Manually",
             font=obtener_fuente("encabezado"),
         ).grid(row=0, column=0, columnspan=6, pady=(5, 10))
 
         # Campo nombre
         ctk.CTkLabel(
-            self.panel_agregar, text="Nombre:", font=obtener_fuente("normal")
+            self.panel_agregar, text="Name:", font=obtener_fuente("normal")
         ).grid(row=1, column=0, padx=5, pady=5, sticky="e")
 
         self.entry_nombre = ctk.CTkEntry(
             self.panel_agregar,
             font=obtener_fuente("normal"),
-            placeholder_text="Nombre del hotel",
+            placeholder_text="Hotel name",
         )
         self.entry_nombre.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
@@ -397,20 +397,20 @@ class HotelsTab(ctk.CTkFrame):
         self.entry_key = ctk.CTkEntry(
             self.panel_agregar,
             font=obtener_fuente("codigo"),
-            placeholder_text="(opcional) g147319-d123456",
+            placeholder_text="(optional) g147319-d123456",
         )
         self.entry_key.grid(row=1, column=3, padx=5, pady=5, sticky="ew")
 
         # Botón buscar key
         self.btn_buscar = ctk.CTkButton(
-            self.panel_agregar, text="🔍 Buscar", width=80, command=self._buscar_key
+            self.panel_agregar, text="🔍 Search", width=80, command=self._buscar_key
         )
         self.btn_buscar.grid(row=1, column=4, padx=5, pady=5)
 
         # Botón agregar
         self.btn_agregar = ctk.CTkButton(
             self.panel_agregar,
-            text="Agregar a Lista",
+            text="Add to List",
             width=120,
             command=self._agregar_hotel,
         )
@@ -433,13 +433,13 @@ class HotelsTab(ctk.CTkFrame):
 
         self.label_contador = ctk.CTkLabel(
             self.barra_estado,
-            text="Total: 0 hoteles | Con key: 0 | Sin key: 0",
+            text="Total: 0 hotels | With key: 0 | Without key: 0",
             font=obtener_fuente("normal"),
         )
         self.label_contador.pack(side="left", padx=10, pady=5)
 
         self.label_seleccion = ctk.CTkLabel(
-            self.barra_estado, text="Seleccionados: 0", font=obtener_fuente("normal")
+            self.barra_estado, text="Selected: 0", font=obtener_fuente("normal")
         )
         self.label_seleccion.pack(side="right", padx=10, pady=5)
 
@@ -447,13 +447,13 @@ class HotelsTab(ctk.CTkFrame):
         """Actualiza el contador de hoteles en la barra de estado."""
         stats = self.tabla.obtener_estadisticas()
         self.label_contador.configure(
-            text=f"Total: {stats['total']} hoteles | "
-            f"Con key: {stats['con_key']} | Sin key: {stats['sin_key']}"
+            text=f"Total: {stats['total']} hotels | "
+            f"With key: {stats['con_key']} | Without key: {stats['sin_key']}"
         )
 
     def _on_seleccion_cambio(self, seleccionados: List[HotelData]) -> None:
         """Callback cuando cambia la selección en la tabla."""
-        self.label_seleccion.configure(text=f"Seleccionados: {len(seleccionados)}")
+        self.label_seleccion.configure(text=f"Selected: {len(seleccionados)}")
 
     def _on_doble_click(self, indice: int, hotel_data: HotelData) -> None:
         """Callback cuando se hace doble clic en una fila."""
@@ -470,10 +470,10 @@ class HotelsTab(ctk.CTkFrame):
     def _cargar_excel(self) -> None:
         """Abre un diálogo para seleccionar y cargar un archivo Excel."""
         ruta = filedialog.askopenfilename(
-            title="Seleccionar archivo Excel",
+            title="Select Excel file",
             filetypes=[
-                ("Archivos Excel", "*.xlsx *.xls"),
-                ("Todos los archivos", "*.*"),
+                ("Excel files", "*.xlsx *.xls"),
+                ("All files", "*.*"),
             ],
         )
 
@@ -481,9 +481,9 @@ class HotelsTab(ctk.CTkFrame):
             return
 
         # Deshabilitar botón y mostrar estado de carga
-        self.btn_cargar.configure(state="disabled", text="⏳ Cargando...")
+        self.btn_cargar.configure(state="disabled", text="⏳ Loading...")
         self.label_busqueda.configure(
-            text=f"Cargando {os.path.basename(ruta)}...", text_color="gray"
+            text=f"Loading {os.path.basename(ruta)}...", text_color="gray"
         )
         self.update_idletasks()
 
@@ -493,11 +493,11 @@ class HotelsTab(ctk.CTkFrame):
                 # Actualizar UI en el thread principal
                 self.after(0, lambda: self._excel_cargado(hoteles, ruta))
             except FileNotFoundError as e:
-                self.after(0, lambda: self._excel_error(f"Archivo no encontrado: {e}"))
+                self.after(0, lambda: self._excel_error(f"File not found: {e}"))
             except ValueError as e:
                 self.after(0, lambda: self._excel_error(str(e)))
             except Exception as e:
-                self.after(0, lambda: self._excel_error(f"Error al cargar archivo: {e}"))
+                self.after(0, lambda: self._excel_error(f"Error loading file: {e}"))
 
         thread = threading.Thread(target=cargar_en_background, daemon=True)
         thread.start()
@@ -506,15 +506,15 @@ class HotelsTab(ctk.CTkFrame):
         """Callback cuando el Excel se cargó exitosamente."""
         self.tabla.cargar_hoteles(hoteles)
         self._actualizar_contador()
-        self.btn_cargar.configure(state="normal", text="📂 Cargar Excel")
+        self.btn_cargar.configure(state="normal", text="📂 Load Excel")
         self.label_busqueda.configure(
-            text=f"✅ Cargados {len(hoteles)} hoteles desde {os.path.basename(ruta)}",
+            text=f"✅ Loaded {len(hoteles)} hotels from {os.path.basename(ruta)}",
             text_color="green",
         )
 
     def _excel_error(self, mensaje: str) -> None:
         """Callback cuando hay error al cargar Excel."""
-        self.btn_cargar.configure(state="normal", text="📂 Cargar Excel")
+        self.btn_cargar.configure(state="normal", text="📂 Load Excel")
         self.label_busqueda.configure(text="", text_color="gray")
         messagebox.showerror("Error", mensaje)
 
@@ -523,13 +523,13 @@ class HotelsTab(ctk.CTkFrame):
         hoteles = self.tabla.obtener_hoteles()
 
         if not hoteles:
-            messagebox.showwarning("Advertencia", "No hay hoteles para guardar.")
+            messagebox.showwarning("Warning", "No hotels to save.")
             return
 
         ruta = filedialog.asksaveasfilename(
-            title="Guardar archivo Excel",
+            title="Save Excel file",
             defaultextension=".xlsx",
-            filetypes=[("Archivos Excel", "*.xlsx"), ("Todos los archivos", "*.*")],
+            filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
         )
 
         if not ruta:
@@ -538,30 +538,30 @@ class HotelsTab(ctk.CTkFrame):
         try:
             self.excel_handler.guardar_excel(ruta, hoteles)
             self.label_busqueda.configure(
-                text=f"✅ Guardados {len(hoteles)} hoteles en {os.path.basename(ruta)}",
+                text=f"✅ Saved {len(hoteles)} hotels to {os.path.basename(ruta)}",
                 text_color="green",
             )
         except Exception as e:
-            messagebox.showerror("Error", f"Error al guardar archivo: {e}")
+            messagebox.showerror("Error", f"Error saving file: {e}")
 
     def _eliminar_seleccionados(self) -> None:
         """Elimina los hoteles seleccionados."""
         seleccionados = self.tabla.obtener_seleccionados()
 
         if not seleccionados:
-            messagebox.showinfo("Info", "No hay hoteles seleccionados.")
+            messagebox.showinfo("Info", "No hotels selected.")
             return
 
         confirmacion = messagebox.askyesno(
-            "Confirmar eliminación",
-            f"¿Eliminar {len(seleccionados)} hotel(es) seleccionado(s)?",
+            "Confirm deletion",
+            f"Delete {len(seleccionados)} selected hotel(s)?",
         )
 
         if confirmacion:
             eliminados = self.tabla.eliminar_seleccionados()
             self._actualizar_contador()
             self.label_busqueda.configure(
-                text=f"🗑️ Eliminados {eliminados} hoteles", text_color="orange"
+                text=f"🗑️ Deleted {eliminados} hotels", text_color="orange"
             )
 
     def _limpiar_todo(self) -> None:
@@ -570,30 +570,30 @@ class HotelsTab(ctk.CTkFrame):
             return
 
         confirmacion = messagebox.askyesno(
-            "Confirmar", "¿Eliminar todos los hoteles de la lista?"
+            "Confirm", "Delete all hotels from the list?"
         )
 
         if confirmacion:
             self.tabla.limpiar()
             self._actualizar_contador()
-            self.label_busqueda.configure(text="Lista limpiada", text_color="gray")
+            self.label_busqueda.configure(text="List cleared", text_color="gray")
 
     def _buscar_key(self) -> None:
         """Busca la key Xotelo para el nombre ingresado."""
         if not self.api:
             self.label_busqueda.configure(
-                text="API de Xotelo no disponible", text_color="red"
+                text="Xotelo API not available", text_color="red"
             )
             return
 
         nombre = self.entry_nombre.get().strip()
         if not nombre:
             self.label_busqueda.configure(
-                text="Ingrese un nombre de hotel primero", text_color="orange"
+                text="Enter a hotel name first", text_color="orange"
             )
             return
 
-        self.label_busqueda.configure(text="Buscando...", text_color="gray")
+        self.label_busqueda.configure(text="Searching...", text_color="gray")
         self.btn_buscar.configure(state="disabled")
 
         def buscar() -> None:
@@ -614,14 +614,14 @@ class HotelsTab(ctk.CTkFrame):
         self.entry_key.delete(0, "end")
         self.entry_key.insert(0, key)
         self.label_busqueda.configure(
-            text=f"✅ Key encontrada: {key}", text_color="green"
+            text=f"✅ Key found: {key}", text_color="green"
         )
         self.btn_buscar.configure(state="normal")
 
     def _key_no_encontrada(self) -> None:
         """Callback cuando no se encuentra la key."""
         self.label_busqueda.configure(
-            text="⚠️ No se encontró el hotel en Xotelo", text_color="orange"
+            text="⚠️ Hotel not found in Xotelo", text_color="orange"
         )
         self.btn_buscar.configure(state="normal")
 
@@ -634,7 +634,7 @@ class HotelsTab(ctk.CTkFrame):
         """Agrega un hotel manualmente a la lista."""
         nombre = self.entry_nombre.get().strip()
         if not nombre:
-            messagebox.showwarning("Advertencia", "Ingrese el nombre del hotel.")
+            messagebox.showwarning("Warning", "Enter the hotel name.")
             return
 
         key = self.entry_key.get().strip() or None
@@ -646,64 +646,64 @@ class HotelsTab(ctk.CTkFrame):
         self.entry_nombre.delete(0, "end")
         self.entry_key.delete(0, "end")
         self.label_busqueda.configure(
-            text=f"✅ Hotel '{nombre}' agregado", text_color="green"
+            text=f"✅ Hotel '{nombre}' added", text_color="green"
         )
 
     def _buscar_keys_seleccionados(self) -> None:
         """Busca keys de Xotelo solo para los hoteles seleccionados."""
         if not self.api:
-            messagebox.showerror("Error", "API de Xotelo no disponible.")
+            messagebox.showerror("Error", "Xotelo API not available.")
             return
 
         seleccionados = self.tabla.obtener_seleccionados()
 
         if not seleccionados:
-            messagebox.showinfo("Info", "Seleccione los hoteles para buscar keys.")
+            messagebox.showinfo("Info", "Select hotels to search keys for.")
             return
 
         # Filtrar solo los que no tienen key
         sin_key = [h for h in seleccionados if not h.get("xotelo_key")]
 
         if not sin_key:
-            messagebox.showinfo("Info", "Todos los hoteles seleccionados ya tienen key.")
+            messagebox.showinfo("Info", "All selected hotels already have keys.")
             return
 
         confirmacion = messagebox.askyesno(
-            "Confirmar",
-            f"¿Buscar keys para {len(sin_key)} hotel(es) seleccionado(s)?\n"
-            f"({len(seleccionados)} seleccionados, {len(sin_key)} sin key)",
+            "Confirm",
+            f"Search keys for {len(sin_key)} selected hotel(s)?\n"
+            f"({len(seleccionados)} selected, {len(sin_key)} without key)",
         )
 
         if not confirmacion:
             return
 
-        self.btn_buscar_keys_sel.configure(state="disabled", text="Buscando...")
-        self._ejecutar_busqueda_keys(seleccionados, self.btn_buscar_keys_sel, "🔍 Buscar Keys (Selección)")
+        self.btn_buscar_keys_sel.configure(state="disabled", text="Searching...")
+        self._ejecutar_busqueda_keys(seleccionados, self.btn_buscar_keys_sel, "🔍 Search Keys (Selection)")
 
     def _buscar_keys_faltantes(self) -> None:
         """Busca keys de Xotelo para todos los hoteles sin key."""
         if not self.api:
-            messagebox.showerror("Error", "API de Xotelo no disponible.")
+            messagebox.showerror("Error", "Xotelo API not available.")
             return
 
         hoteles = self.tabla.obtener_hoteles()
         sin_key = [h for h in hoteles if not h.get("xotelo_key")]
 
         if not sin_key:
-            messagebox.showinfo("Info", "Todos los hoteles ya tienen key.")
+            messagebox.showinfo("Info", "All hotels already have keys.")
             return
 
         confirmacion = messagebox.askyesno(
-            "Confirmar",
-            f"¿Buscar keys para TODOS los {len(sin_key)} hotel(es) sin key?\n"
-            "Esto puede tomar varios minutos.",
+            "Confirm",
+            f"Search keys for ALL {len(sin_key)} hotel(s) without key?\n"
+            "This may take several minutes.",
         )
 
         if not confirmacion:
             return
 
-        self.btn_buscar_keys.configure(state="disabled", text="Buscando...")
-        self._ejecutar_busqueda_keys(hoteles, self.btn_buscar_keys, "🔍 Buscar Todos")
+        self.btn_buscar_keys.configure(state="disabled", text="Searching...")
+        self._ejecutar_busqueda_keys(hoteles, self.btn_buscar_keys, "🔍 Search All")
 
     def _ejecutar_busqueda_keys(
         self,
@@ -756,7 +756,7 @@ class HotelsTab(ctk.CTkFrame):
                 self.after(
                     0,
                     lambda p=procesados, t=total_sin_key: (
-                        boton.configure(text=f"Buscando... ({p}/{t})")
+                        boton.configure(text=f"Searching... ({p}/{t})")
                     ),
                 )
 
@@ -785,12 +785,12 @@ class HotelsTab(ctk.CTkFrame):
         boton.configure(state="normal", text=texto_boton_original)
         self._actualizar_contador()
         self.label_busqueda.configure(
-            text=f"✅ Búsqueda completada: {encontrados}/{total} keys encontradas",
+            text=f"✅ Search complete: {encontrados}/{total} keys found",
             text_color="green",
         )
         messagebox.showinfo(
-            "Búsqueda completada",
-            f"Se encontraron keys para {encontrados} de {total} hoteles.",
+            "Search complete",
+            f"Found keys for {encontrados} of {total} hotels.",
         )
 
     def obtener_hoteles(self) -> List[HotelData]:

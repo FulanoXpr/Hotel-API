@@ -33,37 +33,47 @@ class ConfiguracionTema(TypedDict):
     estados: ColoresEstado
 
 
+# Colores de marca FPR (Foundation for Puerto Rico)
+FPR_BLUE = "#3189A1"
+FPR_BLUE_LIGHT = "#62D4DA"
+FPR_GREEN = "#B0CA5F"
+FPR_GREEN_LIGHT = "#D7F346"
+FPR_YELLOW = "#FCAF17"
+FPR_RED = "#F04E37"
+FPR_GREY = "#3E4242"
+FPR_GREY_LIGHT = "#7E7E7E"
+
 # Configuración del tema oscuro
 TEMA_OSCURO: ConfiguracionTema = {
-    "fondo_principal": "#1a1a2e",
-    "fondo_secundario": "#16213e",
-    "texto_principal": "#eaeaea",
-    "texto_secundario": "#a0a0a0",
-    "acento": "#0f4c75",
-    "acento_hover": "#3282b8",
-    "borde": "#2d2d44",
+    "fondo_principal": "#1a2528",
+    "fondo_secundario": FPR_GREY,
+    "texto_principal": "#f0f4f5",
+    "texto_secundario": "#a8b5b8",
+    "acento": FPR_BLUE,
+    "acento_hover": FPR_BLUE_LIGHT,
+    "borde": "#4a5354",
     "estados": {
-        "exito": "#2ecc71",
-        "error": "#e74c3c",
-        "warning": "#f39c12",
-        "info": "#3498db",
+        "exito": FPR_GREEN,
+        "error": FPR_RED,
+        "warning": FPR_YELLOW,
+        "info": FPR_BLUE_LIGHT,
     },
 }
 
 # Configuración del tema claro
 TEMA_CLARO: ConfiguracionTema = {
-    "fondo_principal": "#f5f5f5",
+    "fondo_principal": "#f5f7f7",
     "fondo_secundario": "#ffffff",
-    "texto_principal": "#2c3e50",
-    "texto_secundario": "#7f8c8d",
-    "acento": "#3498db",
-    "acento_hover": "#2980b9",
-    "borde": "#dcdcdc",
+    "texto_principal": FPR_GREY,
+    "texto_secundario": FPR_GREY_LIGHT,
+    "acento": FPR_BLUE,
+    "acento_hover": "#287a8f",
+    "borde": "#d1d5d6",
     "estados": {
-        "exito": "#27ae60",
-        "error": "#c0392b",
-        "warning": "#d68910",
-        "info": "#2471a3",
+        "exito": "#8fb34a",  # FPR Green más oscuro para contraste
+        "error": "#d94432",  # FPR Red más oscuro para contraste
+        "warning": "#e09a10",  # FPR Yellow más oscuro para contraste
+        "info": FPR_BLUE,
     },
 }
 

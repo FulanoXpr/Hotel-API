@@ -97,7 +97,7 @@ class ExecuteTab(ctk.CTkFrame):
         # Título
         ctk.CTkLabel(
             self.frame_config,
-            text="Configuración de Búsqueda",
+            text="Search Configuration",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
             text_color=self.tema["texto_principal"],
         ).pack(anchor="w", padx=15, pady=(15, 10))
@@ -113,7 +113,7 @@ class ExecuteTab(ctk.CTkFrame):
         # Fecha de entrada
         ctk.CTkLabel(
             fila1,
-            text="Fecha entrada:",
+            text="Check-in date:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             text_color=self.tema["texto_principal"],
         ).pack(side="left", padx=(0, 5))
@@ -132,7 +132,7 @@ class ExecuteTab(ctk.CTkFrame):
         # Noches
         ctk.CTkLabel(
             fila1,
-            text="Noches:",
+            text="Nights:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             text_color=self.tema["texto_principal"],
         ).pack(side="left", padx=(0, 5))
@@ -153,7 +153,7 @@ class ExecuteTab(ctk.CTkFrame):
         # Habitaciones
         ctk.CTkLabel(
             fila2,
-            text="Habitaciones:",
+            text="Rooms:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             text_color=self.tema["texto_principal"],
         ).pack(side="left", padx=(0, 5))
@@ -170,7 +170,7 @@ class ExecuteTab(ctk.CTkFrame):
         # Adultos
         ctk.CTkLabel(
             fila2,
-            text="Adultos:",
+            text="Adults:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             text_color=self.tema["texto_principal"],
         ).pack(side="left", padx=(0, 5))
@@ -187,7 +187,7 @@ class ExecuteTab(ctk.CTkFrame):
         # Niños
         ctk.CTkLabel(
             fila2,
-            text="Niños:",
+            text="Children:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             text_color=self.tema["texto_principal"],
         ).pack(side="left", padx=(0, 5))
@@ -209,7 +209,7 @@ class ExecuteTab(ctk.CTkFrame):
         self.var_cascade = ctk.BooleanVar(value=True)
         self.check_cascade = ctk.CTkCheckBox(
             fila3,
-            text="Usar cascade (todos los proveedores)",
+            text="Use cascade (all providers)",
             variable=self.var_cascade,
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             text_color=self.tema["texto_principal"],
@@ -219,7 +219,7 @@ class ExecuteTab(ctk.CTkFrame):
         # Botones Iniciar/Detener
         self.boton_detener = ctk.CTkButton(
             fila3,
-            text="⏹ Detener",
+            text="⏹ Stop",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             fg_color=self.tema["estados"]["error"],
             hover_color="#c0392b",
@@ -231,7 +231,7 @@ class ExecuteTab(ctk.CTkFrame):
 
         self.boton_iniciar = ctk.CTkButton(
             fila3,
-            text="▶ Iniciar Búsqueda",
+            text="▶ Start Search",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             fg_color=self.tema["estados"]["exito"],
             hover_color="#27ae60",
@@ -251,7 +251,7 @@ class ExecuteTab(ctk.CTkFrame):
 
         ctk.CTkLabel(
             self.frame_progreso,
-            text="Progreso",
+            text="Progress",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
             text_color=self.tema["texto_principal"],
         ).pack(anchor="w", padx=15, pady=(15, 5))
@@ -281,7 +281,7 @@ class ExecuteTab(ctk.CTkFrame):
 
         ctk.CTkLabel(
             frame_log,
-            text="Log de Búsqueda",
+            text="Search Log",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
             text_color=self.tema["texto_principal"],
         ).pack(anchor="w", padx=15, pady=(15, 5))
@@ -317,7 +317,7 @@ class ExecuteTab(ctk.CTkFrame):
         fecha = self.entry_fecha.get().strip()
         if not self._validar_fecha(fecha):
             messagebox.showerror(
-                "Error", "Formato de fecha inválido. Use YYYY-MM-DD (ej: 2024-12-25)"
+                "Error", "Invalid date format. Use YYYY-MM-DD (e.g., 2024-12-25)"
             )
             return
 
@@ -328,8 +328,8 @@ class ExecuteTab(ctk.CTkFrame):
 
         if not hoteles:
             messagebox.showwarning(
-                "Sin hoteles",
-                "No hay hoteles para buscar. Agregue hoteles en la pestaña 'Hoteles'.",
+                "No hotels",
+                "No hotels to search. Add hotels in the 'Hotels' tab.",
             )
             return
 
@@ -357,10 +357,10 @@ class ExecuteTab(ctk.CTkFrame):
 
         # Log inicio
         self.log_viewer.agregar_log(
-            f"Iniciando búsqueda para {len(hoteles)} hoteles...", "info"
+            f"Starting search for {len(hoteles)} hotels...", "info"
         )
         self.log_viewer.agregar_log(
-            f"Fechas: {check_in} → {check_out} ({noches} noches)", "info"
+            f"Dates: {check_in} → {check_out} ({noches} nights)", "info"
         )
 
         # Iniciar thread
@@ -411,7 +411,7 @@ class ExecuteTab(ctk.CTkFrame):
                     pass
 
             if not providers:
-                self._queue.put(("log", "No hay proveedores disponibles", "error"))
+                self._queue.put(("log", "No providers available", "error"))
                 self._queue.put(("done", None, None))
                 return
 
@@ -423,15 +423,15 @@ class ExecuteTab(ctk.CTkFrame):
             for i, hotel in enumerate(hoteles):
                 if self._cancelar:
                     self._queue.put(
-                        ("log", "Búsqueda cancelada por el usuario", "warning")
+                        ("log", "Search cancelled by user", "warning")
                     )
                     break
 
-                nombre = hotel.get("nombre", "Hotel desconocido")
+                nombre = hotel.get("nombre", "Unknown hotel")
                 key = hotel.get("xotelo_key", "")
                 booking_url = hotel.get("booking_url", "")
 
-                self._queue.put(("log", f"Buscando: {nombre}...", "info"))
+                self._queue.put(("log", f"Searching: {nombre}...", "info"))
                 self._queue.put(("progress", i, total))
 
                 try:
@@ -469,7 +469,7 @@ class ExecuteTab(ctk.CTkFrame):
                         )
                     else:
                         self._queue.put(
-                            ("log", f"✗ {nombre}: No encontrado", "warning")
+                            ("log", f"✗ {nombre}: Not found", "warning")
                         )
                         self._resultados.append(
                             {
@@ -498,7 +498,7 @@ class ExecuteTab(ctk.CTkFrame):
             self._queue.put(("log", cascade.get_stats_summary(), "info"))
 
         except Exception as e:
-            self._queue.put(("log", f"Error crítico: {str(e)}", "error"))
+            self._queue.put(("log", f"Critical error: {str(e)}", "error"))
 
         finally:
             self._queue.put(("done", None, None))
@@ -507,7 +507,7 @@ class ExecuteTab(ctk.CTkFrame):
         """Detiene la búsqueda en progreso."""
         if self._buscando:
             self._cancelar = True
-            self.log_viewer.agregar_log("Deteniendo búsqueda...", "warning")
+            self.log_viewer.agregar_log("Stopping search...", "warning")
 
     def _poll_queue(self) -> None:
         """Procesa mensajes de la cola del thread de búsqueda."""
@@ -546,7 +546,7 @@ class ExecuteTab(ctk.CTkFrame):
         con_precio = sum(1 for r in self._resultados if r.get("precio") is not None)
 
         self.log_viewer.agregar_log(
-            f"Búsqueda completada: {con_precio}/{total} hoteles con precio",
+            f"Search complete: {con_precio}/{total} hotels with price",
             "success" if con_precio > 0 else "warning",
         )
 

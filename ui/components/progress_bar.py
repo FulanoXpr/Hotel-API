@@ -89,7 +89,7 @@ class ProgressBar(ctk.CTkFrame):
             if mostrar_eta:
                 self._label_eta = ctk.CTkLabel(
                     frame_info,
-                    text="Tiempo estimado: --:--",
+                    text="Estimated time: --:--",
                     font=FUENTES.get("pequena", ("Segoe UI", 10)),
                     text_color=self._tema["texto_secundario"],
                 )
@@ -142,7 +142,7 @@ class ProgressBar(ctk.CTkFrame):
         # Calcular y mostrar ETA
         if self._label_eta is not None:
             eta_texto = self._calcular_eta_texto()
-            self._label_eta.configure(text=f"Tiempo estimado: {eta_texto}")
+            self._label_eta.configure(text=f"Estimated time: {eta_texto}")
 
         # Forzar actualización visual
         self.update_idletasks()
@@ -217,7 +217,7 @@ class ProgressBar(ctk.CTkFrame):
             self._label_porcentaje.configure(text="0%")
 
         if self._label_eta is not None:
-            self._label_eta.configure(text="Tiempo estimado: --:--")
+            self._label_eta.configure(text="Estimated time: --:--")
 
         self.update_idletasks()
 

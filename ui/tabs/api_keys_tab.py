@@ -72,14 +72,14 @@ class ApiKeysTab(ctk.CTkFrame):
 
         self.label_titulo = ctk.CTkLabel(
             self.frame_encabezado,
-            text="Configuración de API Keys",
+            text="API Keys Configuration",
             font=FUENTES["subtitulo"],
         )
         self.label_titulo.pack(anchor="w")
 
         self.label_subtitulo = ctk.CTkLabel(
             self.frame_encabezado,
-            text="Configura las credenciales para el pipeline de búsqueda de precios",
+            text="Configure credentials for the price search pipeline",
             font=FUENTES["normal"],
             text_color="gray",
         )
@@ -131,7 +131,7 @@ class ApiKeysTab(ctk.CTkFrame):
         # Descripción
         label_desc = ctk.CTkLabel(
             frame_contenido,
-            text="API gratuita de TripAdvisor - No requiere API key",
+            text="Free TripAdvisor API - No API key required",
             font=FUENTES["normal"],
             text_color="gray",
         )
@@ -140,7 +140,7 @@ class ApiKeysTab(ctk.CTkFrame):
         # Estado
         label_estado = ctk.CTkLabel(
             frame_contenido,
-            text="✅ Siempre disponible (proveedor principal)",
+            text="✅ Always available (primary provider)",
             font=FUENTES["normal"],
             text_color="green",
         )
@@ -152,9 +152,9 @@ class ApiKeysTab(ctk.CTkFrame):
             self.scroll_frame,
             nombre_api="serpapi",
             titulo="SerpApi (Google Hotels)",
-            descripcion="250 búsquedas/mes gratis",
+            descripcion="250 searches/month free",
             url_obtencion="https://serpapi.com/manage-api-key",
-            placeholder="Ingresa tu SerpApi key...",
+            placeholder="Enter your SerpApi key...",
             on_cambio=self._on_valor_cambio,
             test_funcion=self._test_serpapi,
         )
@@ -168,9 +168,9 @@ class ApiKeysTab(ctk.CTkFrame):
             self.scroll_frame,
             nombre_api="apify",
             titulo="Apify (Booking.com)",
-            descripcion="$5/mes en créditos gratis",
+            descripcion="$5/month in free credits",
             url_obtencion="https://console.apify.com/account#/integrations",
-            placeholder="Ingresa tu Apify token...",
+            placeholder="Enter your Apify token...",
             on_cambio=self._on_valor_cambio,
             test_funcion=self._test_apify,
         )
@@ -214,7 +214,7 @@ class ApiKeysTab(ctk.CTkFrame):
         # Botón de guardar
         self.boton_guardar = ctk.CTkButton(
             self.frame_inferior,
-            text="💾 Guardar Configuración",
+            text="💾 Save Configuration",
             width=180,
             height=35,
             font=FUENTES["normal"],
@@ -273,7 +273,7 @@ class ApiKeysTab(ctk.CTkFrame):
         self._actualizar_estado_apis()
 
         # Mostrar indicador de cambios pendientes
-        self.label_guardado.configure(text="Cambios sin guardar", text_color="orange")
+        self.label_guardado.configure(text="Unsaved changes", text_color="orange")
 
     def _guardar_configuracion(self) -> None:
         """Guarda la configuración al archivo .env."""
@@ -300,13 +300,13 @@ class ApiKeysTab(ctk.CTkFrame):
 
             # Mostrar éxito
             self.label_guardado.configure(
-                text="✅ Guardado correctamente", text_color="green"
+                text="✅ Saved successfully", text_color="green"
             )
 
             # Actualizar estado
             self._actualizar_estado_apis()
         else:
-            self.label_guardado.configure(text="❌ Error al guardar", text_color="red")
+            self.label_guardado.configure(text="❌ Error saving", text_color="red")
 
     def _actualizar_estado_apis(self) -> None:
         """Actualiza la barra de estado con las APIs configuradas."""
@@ -331,11 +331,11 @@ class ApiKeysTab(ctk.CTkFrame):
         # Construir texto de estado
         if apis_configuradas:
             texto = (
-                f"APIs configuradas: Xotelo (siempre), {', '.join(apis_configuradas)}"
+                f"Configured APIs: Xotelo (always), {', '.join(apis_configuradas)}"
             )
             color = "green"
         else:
-            texto = "APIs configuradas: Solo Xotelo (gratuita)"
+            texto = "Configured APIs: Only Xotelo (free)"
             color = "orange"
 
         self.label_status.configure(text=texto, text_color=color)
@@ -362,16 +362,16 @@ class ApiKeysTab(ctk.CTkFrame):
                 data = response.json()
                 # Obtener información de la cuenta
                 searches_left = data.get("plan_searches_left", "N/A")
-                return True, f"OK - {searches_left} búsquedas restantes"
+                return True, f"OK - {searches_left} searches left"
             elif response.status_code == 401:
-                return False, "API key inválida"
+                return False, "Invalid API key"
             else:
                 return False, f"Error HTTP {response.status_code}"
 
         except requests.Timeout:
-            return False, "Timeout - Sin respuesta"
+            return False, "Timeout - No response"
         except requests.RequestException as e:
-            return False, f"Error de conexión: {str(e)[:30]}"
+            return False, f"Connection error: {str(e)[:30]}"
 
     def _test_apify(self, api_token: str) -> Tuple[bool, str]:
         """
@@ -394,14 +394,14 @@ class ApiKeysTab(ctk.CTkFrame):
                 username = data.get("data", {}).get("username", "Usuario")
                 return True, f"OK - {username}"
             elif response.status_code == 401:
-                return False, "Token inválido"
+                return False, "Invalid token"
             else:
-                return False, f"Error HTTP {response.status_code}"
+                return False, f"HTTP Error {response.status_code}"
 
         except requests.Timeout:
-            return False, "Timeout - Sin respuesta"
+            return False, "Timeout - No response"
         except requests.RequestException as e:
-            return False, f"Error de conexión: {str(e)[:30]}"
+            return False, f"Connection error: {str(e)[:30]}"
 
     def _test_amadeus(self, client_id: str, client_secret: str) -> Tuple[bool, str]:
         """
@@ -429,9 +429,9 @@ class ApiKeysTab(ctk.CTkFrame):
             if response.status_code == 200:
                 token_data = response.json()
                 expires_in = token_data.get("expires_in", 0)
-                return True, f"OK - Token válido ({expires_in}s)"
+                return True, f"OK - Valid token ({expires_in}s)"
             elif response.status_code == 401:
-                return False, "Credenciales inválidas"
+                return False, "Invalid credentials"
             else:
                 error_msg = response.json().get(
                     "error_description", f"Error HTTP {response.status_code}"
@@ -439,9 +439,9 @@ class ApiKeysTab(ctk.CTkFrame):
                 return False, error_msg[:40]
 
         except requests.Timeout:
-            return False, "Timeout - Sin respuesta"
+            return False, "Timeout - No response"
         except requests.RequestException as e:
-            return False, f"Error de conexión: {str(e)[:30]}"
+            return False, f"Connection error: {str(e)[:30]}"
 
     def recargar_valores(self) -> None:
         """Recarga los valores del archivo .env."""

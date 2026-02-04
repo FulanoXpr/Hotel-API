@@ -89,7 +89,7 @@ class ResultsTab(ctk.CTkFrame):
         # Título
         ctk.CTkLabel(
             self.frame_resumen,
-            text="Resumen de Resultados",
+            text="Results Summary",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
             text_color=self.tema["texto_principal"],
         ).pack(anchor="w", padx=15, pady=(15, 10))
@@ -107,10 +107,10 @@ class ResultsTab(ctk.CTkFrame):
 
         metricas = [
             ("total", "Total", self.tema["texto_principal"]),
-            ("con_precio", "Con Precio", self.tema["estados"]["exito"]),
-            ("sin_precio", "Sin Precio", self.tema["estados"]["error"]),
-            ("precio_min", "Precio Mín", self.tema["estados"]["info"]),
-            ("precio_max", "Precio Máx", self.tema["estados"]["warning"]),
+            ("con_precio", "With Price", self.tema["estados"]["exito"]),
+            ("sin_precio", "No Price", self.tema["estados"]["error"]),
+            ("precio_min", "Min Price", self.tema["estados"]["info"]),
+            ("precio_max", "Max Price", self.tema["estados"]["warning"]),
         ]
 
         self._labels_metricas: Dict[str, ctk.CTkLabel] = {}
@@ -142,7 +142,7 @@ class ResultsTab(ctk.CTkFrame):
 
         ctk.CTkLabel(
             frame_proveedores,
-            text="Distribución por Proveedor:",
+            text="Distribution by Provider:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             text_color=self.tema["texto_principal"],
         ).pack(anchor="w", pady=(0, 5))
@@ -171,7 +171,7 @@ class ResultsTab(ctk.CTkFrame):
         # Filtros
         ctk.CTkLabel(
             frame_inner,
-            text="Filtrar:",
+            text="Filter:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             text_color=self.tema["texto_principal"],
         ).pack(side="left", padx=(0, 10))
@@ -179,9 +179,9 @@ class ResultsTab(ctk.CTkFrame):
         self.var_filtro = ctk.StringVar(value="todos")
 
         filtros = [
-            ("Todos", "todos"),
-            ("Con Precio", "con_precio"),
-            ("Sin Precio", "sin_precio"),
+            ("All", "todos"),
+            ("With Price", "con_precio"),
+            ("No Price", "sin_precio"),
         ]
 
         for texto, valor in filtros:
@@ -199,7 +199,7 @@ class ResultsTab(ctk.CTkFrame):
         # Botones de acción
         self.boton_copiar = ctk.CTkButton(
             frame_inner,
-            text="📋 Copiar",
+            text="📋 Copy",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             fg_color=self.tema["acento"],
             hover_color=self.tema["acento_hover"],
@@ -210,7 +210,7 @@ class ResultsTab(ctk.CTkFrame):
 
         self.boton_exportar = ctk.CTkButton(
             frame_inner,
-            text="📥 Exportar Excel",
+            text="📥 Export Excel",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             fg_color=self.tema["estados"]["exito"],
             hover_color="#27ae60",
@@ -239,9 +239,9 @@ class ResultsTab(ctk.CTkFrame):
         columnas = [
             ("#", 40, "center"),
             ("Hotel", 300, "w"),
-            ("Precio", 100, "e"),
-            ("Moneda", 60, "center"),
-            ("Proveedor", 100, "center"),
+            ("Price", 100, "e"),
+            ("Currency", 60, "center"),
+            ("Provider", 100, "center"),
             ("Check-in", 100, "center"),
             ("Check-out", 100, "center"),
         ]
@@ -277,7 +277,7 @@ class ResultsTab(ctk.CTkFrame):
         # Label para cuando no hay resultados
         self.label_sin_resultados = ctk.CTkLabel(
             self.scroll_frame,
-            text="No hay resultados para mostrar.\nEjecute una búsqueda en la pestaña 'Ejecutar'.",
+            text="No results to display.\nRun a search in the 'Execute' tab.",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             text_color=self.tema["texto_secundario"],
         )
@@ -461,7 +461,7 @@ class ResultsTab(ctk.CTkFrame):
             if not self._resultados_filtrados:
                 self.label_sin_resultados = ctk.CTkLabel(
                     self.scroll_frame,
-                    text="No hay resultados para mostrar.",
+                    text="No results to display.",
                     font=FUENTES.get("normal", ("Segoe UI", 12)),
                     text_color=self.tema["texto_secundario"],
                 )
@@ -503,7 +503,7 @@ class ResultsTab(ctk.CTkFrame):
                 restantes = len(self._resultados_filtrados) - fin
                 self._btn_cargar_mas = ctk.CTkButton(
                     self.scroll_frame,
-                    text=f"Cargar más ({restantes} restantes)",
+                    text=f"Load more ({restantes} remaining)",
                     font=FUENTES.get("normal", ("Segoe UI", 12)),
                     fg_color=self.tema["acento"],
                     hover_color=self.tema["acento_hover"],
@@ -603,7 +603,7 @@ class ResultsTab(ctk.CTkFrame):
     def _exportar_excel(self) -> None:
         """Exporta los resultados a un archivo Excel."""
         if not self._resultados:
-            messagebox.showinfo("Sin datos", "No hay resultados para exportar.")
+            messagebox.showinfo("No data", "No results to export.")
             return
 
         # Pedir ubicación del archivo
@@ -629,9 +629,9 @@ class ResultsTab(ctk.CTkFrame):
             headers = [
                 "#",
                 "Hotel",
-                "Precio",
-                "Moneda",
-                "Proveedor",
+                "Price",
+                "Currency",
+                "Provider",
                 "Check-in",
                 "Check-out",
             ]
@@ -666,22 +666,22 @@ class ResultsTab(ctk.CTkFrame):
             ws.column_dimensions["G"].width = 12
 
             wb.save(filename)
-            messagebox.showinfo("Exportado", f"Resultados exportados a:\n{filename}")
+            messagebox.showinfo("Exported", f"Results exported to:\n{filename}")
 
         except ImportError:
             messagebox.showerror(
-                "Error", "openpyxl no está instalado. Ejecute: pip install openpyxl"
+                "Error", "openpyxl is not installed. Run: pip install openpyxl"
             )
         except Exception as e:
-            messagebox.showerror("Error", f"Error al exportar: {str(e)}")
+            messagebox.showerror("Error", f"Error exporting: {str(e)}")
 
     def _copiar_portapapeles(self) -> None:
         """Copia los resultados al portapapeles."""
         if not self._resultados_filtrados:
-            messagebox.showinfo("Sin datos", "No hay resultados para copiar.")
+            messagebox.showinfo("No data", "No results to copy.")
             return
 
-        lineas = ["Hotel\tPrecio\tMoneda\tProveedor\tCheck-in\tCheck-out"]
+        lineas = ["Hotel\tPrice\tCurrency\tProvider\tCheck-in\tCheck-out"]
 
         for r in self._resultados_filtrados:
             precio = f"${r.get('precio'):.2f}" if r.get("precio") else "-"
@@ -697,8 +697,8 @@ class ResultsTab(ctk.CTkFrame):
         self.clipboard_append(texto)
 
         messagebox.showinfo(
-            "Copiado",
-            f"{len(self._resultados_filtrados)} resultados copiados al portapapeles.",
+            "Copied",
+            f"{len(self._resultados_filtrados)} results copied to clipboard.",
         )
 
     def cambiar_tema(self, modo_tema: TemaMode) -> None:

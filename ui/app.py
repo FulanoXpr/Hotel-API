@@ -3,9 +3,11 @@ Aplicación principal de Hotel Price Checker.
 Interfaz gráfica de escritorio usando CustomTkinter.
 """
 
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 import customtkinter as ctk
+from PIL import Image
 
 from ui.utils.theme import TAMANOS, TemaMode, aplicar_tema, obtener_fuente
 
@@ -26,12 +28,16 @@ class HotelPriceApp(ctk.CTk):
     ANCHO_MINIMO: int = 800
     ALTO_MINIMO: int = 600
 
-    # Nombres de las pestañas
+    # Ruta al logo de FPR
+    LOGO_PATH: Path = Path(__file__).parent / "assets" / "fpr_logo.png"
+    LOGO_HEIGHT: int = 35
+
+    # Tab names
     PESTANAS: Dict[str, str] = {
         "api_keys": "🔑 API Keys",
-        "hoteles": "📋 Hoteles",
-        "ejecutar": "▶ Ejecutar",
-        "resultados": "📊 Resultados",
+        "hoteles": "📋 Hotels",
+        "ejecutar": "▶ Execute",
+        "resultados": "📊 Results",
     }
 
     def __init__(self) -> None:
@@ -81,27 +87,43 @@ class HotelPriceApp(ctk.CTk):
         self.geometry(f"{self.ANCHO_VENTANA}x{self.ALTO_VENTANA}+{x}+{y}")
 
     def _crear_barra_superior(self) -> None:
-        """Crea la barra superior con título y toggle de tema."""
+        """Crea la barra superior con logo, título y toggle de tema."""
         # Frame de la barra superior
         self.barra_superior = ctk.CTkFrame(self, height=50, corner_radius=0)
         self.barra_superior.grid(row=0, column=0, sticky="ew", padx=0, pady=0)
-        self.barra_superior.grid_columnconfigure(1, weight=1)
+        self.barra_superior.grid_columnconfigure(2, weight=1)
+
+        # Logo de FPR
+        if self.LOGO_PATH.exists():
+            logo_img = Image.open(self.LOGO_PATH)
+            # Calcular ancho proporcional
+            aspect_ratio = logo_img.width / logo_img.height
+            logo_width = int(self.LOGO_HEIGHT * aspect_ratio)
+            self.logo_image = ctk.CTkImage(
+                light_image=logo_img,
+                dark_image=logo_img,
+                size=(logo_width, self.LOGO_HEIGHT),
+            )
+            self.label_logo = ctk.CTkLabel(
+                self.barra_superior, image=self.logo_image, text=""
+            )
+            self.label_logo.grid(row=0, column=0, padx=(TAMANOS["padding_grande"], 10), pady=8)
 
         # Título de la aplicación
         self.label_titulo = ctk.CTkLabel(
             self.barra_superior, text=self.TITULO_APP, font=obtener_fuente("subtitulo")
         )
-        self.label_titulo.grid(row=0, column=0, padx=TAMANOS["padding_grande"], pady=10)
+        self.label_titulo.grid(row=0, column=1, padx=0, pady=10)
 
         # Toggle de tema (dark/light)
         self.toggle_tema = ctk.CTkSwitch(
             self.barra_superior,
-            text="🌙 Modo Oscuro",
+            text="🌙 Dark Mode",
             command=self._alternar_tema,
             onvalue=True,
             offvalue=False,
         )
-        self.toggle_tema.grid(row=0, column=2, padx=TAMANOS["padding_grande"], pady=10)
+        self.toggle_tema.grid(row=0, column=3, padx=TAMANOS["padding_grande"], pady=10)
         self.toggle_tema.select()  # Iniciar en modo oscuro
 
     def _crear_tabview(self) -> None:
@@ -209,10 +231,10 @@ class HotelPriceApp(ctk.CTk):
         """Alterna entre modo oscuro y claro."""
         if self.toggle_tema.get():
             self.modo_tema = "dark"
-            self.toggle_tema.configure(text="🌙 Modo Oscuro")
+            self.toggle_tema.configure(text="🌙 Dark Mode")
         else:
             self.modo_tema = "light"
-            self.toggle_tema.configure(text="☀️ Modo Claro")
+            self.toggle_tema.configure(text="☀️ Light Mode")
 
         aplicar_tema(self.modo_tema)
 

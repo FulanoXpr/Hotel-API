@@ -74,7 +74,7 @@ class StatsPanel(ctk.CTkFrame):
 
         self.label_titulo = ctk.CTkLabel(
             self.frame_encabezado,
-            text="Estadísticas de Búsqueda",
+            text="Search Statistics",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
             text_color=self.tema["texto_principal"],
         )
@@ -82,7 +82,7 @@ class StatsPanel(ctk.CTkFrame):
 
         self.boton_reiniciar = ctk.CTkButton(
             self.frame_encabezado,
-            text="Reiniciar",
+            text="Reset",
             font=FUENTES.get("pequena", ("Segoe UI", 10)),
             width=70,
             height=26,
@@ -106,8 +106,8 @@ class StatsPanel(ctk.CTkFrame):
 
         contadores_config = [
             ("total", "Total", self.tema["texto_principal"]),
-            ("exitos", "Éxitos", self.tema["estados"]["exito"]),
-            ("not_found", "Fallos", self.tema["estados"]["error"]),
+            ("exitos", "Success", self.tema["estados"]["exito"]),
+            ("not_found", "Failures", self.tema["estados"]["error"]),
             ("cache", "Cache", self.tema["estados"]["info"]),
         ]
 
@@ -147,7 +147,7 @@ class StatsPanel(ctk.CTkFrame):
 
         self.label_proveedores = ctk.CTkLabel(
             self,
-            text="Por Proveedor",
+            text="By Provider",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
             text_color=self.tema["texto_principal"],
         )

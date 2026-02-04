@@ -123,7 +123,7 @@ class ApiKeyFrame(ctk.CTkFrame):
         # Link para obtener key
         self.link_obtener = ctk.CTkButton(
             self.frame_encabezado,
-            text="Obtener key",
+            text="Get key",
             font=FUENTES["pequena"],
             fg_color="transparent",
             text_color=("#2980b9", "#3498db"),
@@ -191,7 +191,7 @@ class ApiKeyFrame(ctk.CTkFrame):
         # Botón de test
         self.boton_test = ctk.CTkButton(
             self.frame_botones,
-            text="🔗 Test Conexión",
+            text="🔗 Test Connection",
             width=120,
             height=28,
             font=FUENTES["pequena"],
@@ -249,11 +249,11 @@ class ApiKeyFrame(ctk.CTkFrame):
     def _actualizar_indicador_estado(self) -> None:
         """Actualiza el indicador visual de estado."""
         estados_texto = {
-            "configurado": ("✅ Configurado", "green"),
-            "vacio": ("⚠️ Vacío", "orange"),
-            "probando": ("🔄 Probando...", "gray"),
+            "configurado": ("✅ Configured", "green"),
+            "vacio": ("⚠️ Empty", "orange"),
+            "probando": ("🔄 Testing...", "gray"),
             "error": ("❌ Error", "red"),
-            "exito": ("✅ Conectado", "green"),
+            "exito": ("✅ Connected", "green"),
         }
 
         texto, color = estados_texto.get(self._estado, ("", "gray"))
@@ -263,14 +263,14 @@ class ApiKeyFrame(ctk.CTkFrame):
         """Ejecuta el test de conexión en un hilo separado."""
         if not self.test_funcion:
             self.label_test_resultado.configure(
-                text="Test no disponible", text_color="gray"
+                text="Test not available", text_color="gray"
             )
             return
 
         valor = self.entrada_key.get()
         if not valor:
             self.label_test_resultado.configure(
-                text="Ingresa una key primero", text_color="orange"
+                text="Enter a key first", text_color="orange"
             )
             return
 
@@ -278,7 +278,7 @@ class ApiKeyFrame(ctk.CTkFrame):
         self._estado = "probando"
         self._actualizar_indicador_estado()
         self.boton_test.configure(state="disabled")
-        self.label_test_resultado.configure(text="Conectando...", text_color="gray")
+        self.label_test_resultado.configure(text="Connecting...", text_color="gray")
 
         # Ejecutar en hilo separado
         def ejecutar_test_async():
@@ -402,7 +402,7 @@ class AmadeusKeyFrame(ctk.CTkFrame):
         # Descripción
         self.label_descripcion = ctk.CTkLabel(
             self.frame_encabezado,
-            text="(500 llamadas/mes gratis)",
+            text="(500 calls/month free)",
             font=FUENTES["pequena"],
             text_color="gray",
         )
@@ -411,7 +411,7 @@ class AmadeusKeyFrame(ctk.CTkFrame):
         # Link
         self.link_obtener = ctk.CTkButton(
             self.frame_encabezado,
-            text="Obtener credenciales",
+            text="Get credentials",
             font=FUENTES["pequena"],
             fg_color="transparent",
             text_color=("#2980b9", "#3498db"),
@@ -447,7 +447,7 @@ class AmadeusKeyFrame(ctk.CTkFrame):
 
         self.entrada_client_id = ctk.CTkEntry(
             self.frame_campos,
-            placeholder_text="Tu Client ID...",
+            placeholder_text="Your Client ID...",
             show="*",
             font=FUENTES["codigo"],
             height=35,
@@ -467,7 +467,7 @@ class AmadeusKeyFrame(ctk.CTkFrame):
 
         self.entrada_client_secret = ctk.CTkEntry(
             self.frame_campos,
-            placeholder_text="Tu Client Secret...",
+            placeholder_text="Your Client Secret...",
             show="*",
             font=FUENTES["codigo"],
             height=35,
@@ -503,7 +503,7 @@ class AmadeusKeyFrame(ctk.CTkFrame):
         # Botón de test
         self.boton_test = ctk.CTkButton(
             self.frame_botones,
-            text="🔗 Test Conexión",
+            text="🔗 Test Connection",
             width=120,
             height=28,
             font=FUENTES["pequena"],
@@ -561,19 +561,19 @@ class AmadeusKeyFrame(ctk.CTkFrame):
 
         if client_id and client_secret:
             self._estado = "configurado"
-            self.label_estado.configure(text="✅ Configurado", text_color="green")
+            self.label_estado.configure(text="✅ Configured", text_color="green")
         elif client_id or client_secret:
             self._estado = "vacio"
-            self.label_estado.configure(text="⚠️ Incompleto", text_color="orange")
+            self.label_estado.configure(text="⚠️ Incomplete", text_color="orange")
         else:
             self._estado = "vacio"
-            self.label_estado.configure(text="⚠️ Vacío", text_color="orange")
+            self.label_estado.configure(text="⚠️ Empty", text_color="orange")
 
     def _ejecutar_test(self) -> None:
         """Ejecuta el test de conexión."""
         if not self.test_funcion:
             self.label_test_resultado.configure(
-                text="Test no disponible", text_color="gray"
+                text="Test not available", text_color="gray"
             )
             return
 
@@ -582,14 +582,14 @@ class AmadeusKeyFrame(ctk.CTkFrame):
 
         if not client_id or not client_secret:
             self.label_test_resultado.configure(
-                text="Completa ambos campos", text_color="orange"
+                text="Complete both fields", text_color="orange"
             )
             return
 
         # Cambiar estado
-        self.label_estado.configure(text="🔄 Probando...", text_color="gray")
+        self.label_estado.configure(text="🔄 Testing...", text_color="gray")
         self.boton_test.configure(state="disabled")
-        self.label_test_resultado.configure(text="Conectando...", text_color="gray")
+        self.label_test_resultado.configure(text="Connecting...", text_color="gray")
 
         def ejecutar_test_async():
             try:
@@ -607,7 +607,7 @@ class AmadeusKeyFrame(ctk.CTkFrame):
 
         if exito:
             self._estado = "exito"
-            self.label_estado.configure(text="✅ Conectado", text_color="green")
+            self.label_estado.configure(text="✅ Connected", text_color="green")
             self.label_test_resultado.configure(text=mensaje, text_color="green")
         else:
             self._estado = "error"

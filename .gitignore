@@ -52,3 +52,6 @@ resultados_hoteles_*.xlsx
 # Logs
 logs/
 xotelo_hotels_cache.json
+
+# Branding assets (not for version control)
+Branding/
