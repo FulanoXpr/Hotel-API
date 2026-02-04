@@ -5,11 +5,13 @@ Este módulo proporciona la interfaz completa para cargar, agregar,
 eliminar y gestionar hoteles con sus keys de Xotelo.
 """
 
+import json
 import os
 import sys
 import threading
+from pathlib import Path
 from tkinter import filedialog, messagebox
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import customtkinter as ctk
 
@@ -234,6 +236,7 @@ class HotelsTab(ctk.CTkFrame):
 
     Proporciona interfaz para:
     - Cargar hoteles desde archivos Excel
+    - Cargar hoteles desde hotel_keys_db.json
     - Agregar hoteles manualmente
     - Buscar keys de Xotelo automáticamente
     - Eliminar hoteles seleccionados
@@ -244,6 +247,9 @@ class HotelsTab(ctk.CTkFrame):
         excel_handler: Manejador de archivos Excel.
         api: Cliente de la API de Xotelo.
     """
+
+    # Path to hotel keys database (relative to project root)
+    HOTEL_DB_FILENAME = "hotel_keys_db.json"
 
     def __init__(self, master: Any, **kwargs: Any) -> None:
         """
@@ -282,6 +288,26 @@ class HotelsTab(ctk.CTkFrame):
         self.barra_herramientas.grid(
             row=0, column=0, sticky="ew", padx=padding, pady=(padding, 5)
         )
+
+        # Botón Descargar Cache de hoteles PR (importante para primer uso)
+        self.btn_download_cache = ctk.CTkButton(
+            self.barra_herramientas,
+            text="⬇️ Download PR Hotels",
+            width=160,
+            fg_color="darkorange",
+            hover_color="orange",
+            command=self._descargar_cache_hoteles,
+        )
+        self.btn_download_cache.pack(side="left", padx=5, pady=5)
+
+        # Botón Cargar Database (hotel_keys_db.json)
+        self.btn_cargar_db = ctk.CTkButton(
+            self.barra_herramientas,
+            text="🗄️ Load Database",
+            width=TAMANOS["ancho_boton"],
+            command=self._cargar_database,
+        )
+        self.btn_cargar_db.pack(side="left", padx=5, pady=5)
 
         # Botón Cargar Excel
         self.btn_cargar = ctk.CTkButton(
@@ -517,6 +543,137 @@ class HotelsTab(ctk.CTkFrame):
         self.btn_cargar.configure(state="normal", text="📂 Load Excel")
         self.label_busqueda.configure(text="", text_color="gray")
         messagebox.showerror("Error", mensaje)
+
+    def _encontrar_database(self) -> Optional[Path]:
+        """
+        Busca el archivo hotel_keys_db.json en ubicaciones comunes.
+
+        Returns:
+            Path al archivo si existe, None si no se encuentra.
+        """
+        # Buscar en orden de prioridad:
+        # 1. Directorio de trabajo actual
+        # 2. Directorio del ejecutable/script
+        # 3. Directorio padre del paquete ui/
+        posibles_rutas = [
+            Path.cwd() / self.HOTEL_DB_FILENAME,
+            Path(sys.executable).parent / self.HOTEL_DB_FILENAME,
+            Path(__file__).parent.parent.parent / self.HOTEL_DB_FILENAME,
+        ]
+
+        # Si hay _MEIPASS (PyInstaller), buscar también ahí
+        if hasattr(sys, "_MEIPASS"):
+            posibles_rutas.insert(0, Path(sys._MEIPASS) / self.HOTEL_DB_FILENAME)
+
+        for ruta in posibles_rutas:
+            if ruta.exists():
+                return ruta
+
+        return None
+
+    def _cargar_database(self) -> None:
+        """Carga hoteles desde hotel_keys_db.json."""
+        db_path = self._encontrar_database()
+
+        if not db_path:
+            messagebox.showwarning(
+                "Database Not Found",
+                f"Could not find {self.HOTEL_DB_FILENAME}.\n\n"
+                "Use 'Load Excel' to load hotels from an Excel file instead.",
+            )
+            return
+
+        self.btn_cargar_db.configure(state="disabled", text="⏳ Loading...")
+        self.label_busqueda.configure(text="Loading database...", text_color="gray")
+        self.update_idletasks()
+
+        def cargar_en_background() -> None:
+            try:
+                hoteles = self._parsear_hotel_keys_db(db_path)
+                self.after(0, lambda: self._database_cargada(hoteles, db_path))
+            except Exception as e:
+                self.after(0, lambda: self._database_error(str(e)))
+
+        thread = threading.Thread(target=cargar_en_background, daemon=True)
+        thread.start()
+
+    def _parsear_hotel_keys_db(self, ruta: Path) -> List[HotelData]:
+        """
+        Parsea el archivo hotel_keys_db.json.
+
+        El formato soporta:
+        - Valores string: {"Hotel Name": "g147319-d123456"}
+        - Valores dict: {"Hotel Name": {"xotelo": "...", "booking_url": "..."}}
+
+        Args:
+            ruta: Path al archivo JSON.
+
+        Returns:
+            Lista de HotelData.
+        """
+        with open(ruta, "r", encoding="utf-8") as f:
+            data: Dict[str, Union[str, Dict[str, str]]] = json.load(f)
+
+        hoteles: List[HotelData] = []
+        for nombre, valor in data.items():
+            hotel: HotelData = {"nombre": nombre, "xotelo_key": None, "booking_url": None}
+
+            if isinstance(valor, str):
+                # Formato antiguo: valor es directamente la key
+                hotel["xotelo_key"] = valor
+            elif isinstance(valor, dict):
+                # Formato nuevo: valor es un diccionario
+                hotel["xotelo_key"] = valor.get("xotelo")
+                hotel["booking_url"] = valor.get("booking_url")
+
+            hoteles.append(hotel)
+
+        return hoteles
+
+    def _database_cargada(self, hoteles: List[HotelData], ruta: Path) -> None:
+        """Callback cuando la database se cargó exitosamente."""
+        self.tabla.cargar_hoteles(hoteles)
+        self._actualizar_contador()
+        self.btn_cargar_db.configure(state="normal", text="🗄️ Load Database")
+        self.label_busqueda.configure(
+            text=f"✅ Loaded {len(hoteles)} hotels from {ruta.name}",
+            text_color="green",
+        )
+
+    def _database_error(self, mensaje: str) -> None:
+        """Callback cuando hay error al cargar la database."""
+        self.btn_cargar_db.configure(state="normal", text="🗄️ Load Database")
+        self.label_busqueda.configure(text="", text_color="gray")
+        messagebox.showerror("Error", f"Error loading database: {mensaje}")
+
+    def cargar_database_auto(self) -> bool:
+        """
+        Carga automáticamente la database si existe.
+
+        Llamado por la aplicación principal al iniciar.
+
+        Returns:
+            True si se cargó exitosamente, False si no se encontró o hubo error.
+        """
+        db_path = self._encontrar_database()
+        if not db_path:
+            return False
+
+        try:
+            hoteles = self._parsear_hotel_keys_db(db_path)
+            self.tabla.cargar_hoteles(hoteles)
+            self._actualizar_contador()
+            self.label_busqueda.configure(
+                text=f"✅ Auto-loaded {len(hoteles)} hotels from {db_path.name}",
+                text_color="green",
+            )
+            return True
+        except Exception as e:
+            self.label_busqueda.configure(
+                text=f"⚠️ Could not auto-load database: {e}",
+                text_color="orange",
+            )
+            return False
 
     def _guardar_excel(self) -> None:
         """Guarda la lista de hoteles a un archivo Excel."""
@@ -810,3 +967,101 @@ class HotelsTab(ctk.CTkFrame):
             Lista filtrada de hoteles con key.
         """
         return [h for h in self.tabla.obtener_hoteles() if h.get("xotelo_key")]
+
+    def _descargar_cache_hoteles(self) -> None:
+        """Descarga el cache de todos los hoteles de Puerto Rico desde Xotelo."""
+        if not self.api:
+            messagebox.showerror("Error", "Xotelo API not available.")
+            return
+
+        # Verificar si ya existe el cache
+        cache_info = self.api.get_cache_info()
+        if cache_info.get("exists") and cache_info.get("count", 0) > 0:
+            confirmar = messagebox.askyesno(
+                "Cache Exists",
+                f"Hotel cache already exists with {cache_info['count']} hotels.\n"
+                f"Last updated: {cache_info.get('updated', 'Unknown')}\n\n"
+                "Download again to refresh?",
+            )
+            if not confirmar:
+                return
+
+        # Confirmar descarga
+        confirmar = messagebox.askyesno(
+            "Download PR Hotels",
+            "This will download all Puerto Rico hotels from Xotelo (~1,100 hotels).\n\n"
+            "This may take 1-2 minutes.\n\n"
+            "Continue?",
+        )
+        if not confirmar:
+            return
+
+        self.btn_download_cache.configure(state="disabled", text="⬇️ Downloading...")
+        self.label_busqueda.configure(text="Downloading hotel cache...", text_color="gray")
+
+        def descargar() -> None:
+            try:
+                def progress_callback(current: int, total: int) -> None:
+                    self.after(
+                        0,
+                        lambda c=current, t=total: self._actualizar_progreso_descarga(c, t),
+                    )
+
+                total = self.api.refresh_hotel_cache(progress_callback=progress_callback)
+                self.after(0, lambda: self._descarga_completada(total))
+            except Exception as e:
+                self.after(0, lambda: self._descarga_error(str(e)))
+
+        thread = threading.Thread(target=descargar, daemon=True)
+        thread.start()
+
+    def _actualizar_progreso_descarga(self, current: int, total: int) -> None:
+        """Actualiza el progreso de descarga en la UI."""
+        pct = (current / total * 100) if total > 0 else 0
+        self.btn_download_cache.configure(text=f"⬇️ {current}/{total} ({pct:.0f}%)")
+        self.label_busqueda.configure(
+            text=f"Downloading: {current} of {total} hotels...",
+            text_color="gray",
+        )
+
+    def _descarga_completada(self, total: int) -> None:
+        """Callback cuando la descarga se completó."""
+        self.btn_download_cache.configure(state="normal", text="⬇️ Download PR Hotels")
+        self.label_busqueda.configure(
+            text=f"✅ Downloaded {total} Puerto Rico hotels to cache",
+            text_color="green",
+        )
+        messagebox.showinfo(
+            "Download Complete",
+            f"Successfully downloaded {total} Puerto Rico hotels.\n\n"
+            "You can now use 'Search All' or 'Search Keys' to find Xotelo keys "
+            "for your imported hotels.",
+        )
+
+    def _descarga_error(self, error: str) -> None:
+        """Callback cuando hay error en la descarga."""
+        self.btn_download_cache.configure(state="normal", text="⬇️ Download PR Hotels")
+        self.label_busqueda.configure(text=f"❌ Download failed: {error}", text_color="red")
+        messagebox.showerror("Download Error", f"Failed to download hotel cache:\n\n{error}")
+
+    def verificar_cache_existe(self) -> bool:
+        """
+        Verifica si el cache de hoteles existe.
+
+        Returns:
+            True si existe, False si no.
+        """
+        if not self.api:
+            return False
+        cache_info = self.api.get_cache_info()
+        return cache_info.get("exists", False) and cache_info.get("count", 0) > 0
+
+    def mostrar_aviso_cache_faltante(self) -> None:
+        """Muestra un aviso si el cache no existe."""
+        if self.verificar_cache_existe():
+            return
+
+        self.label_busqueda.configure(
+            text="⚠️ Hotel cache not found. Click 'Download PR Hotels' to enable key search.",
+            text_color="orange",
+        )

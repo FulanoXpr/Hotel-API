@@ -3,6 +3,7 @@ Aplicación principal de Hotel Price Checker.
 Interfaz gráfica de escritorio usando CustomTkinter.
 """
 
+import logging
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -10,6 +11,8 @@ import customtkinter as ctk
 from PIL import Image
 
 from ui.utils.theme import TAMANOS, TemaMode, aplicar_tema, obtener_fuente
+
+logger = logging.getLogger(__name__)
 
 
 class HotelPriceApp(ctk.CTk):
@@ -23,9 +26,9 @@ class HotelPriceApp(ctk.CTk):
 
     # Configuración de la ventana
     TITULO_APP: str = "Hotel Price Checker"
-    ANCHO_VENTANA: int = 900
+    ANCHO_VENTANA: int = 1100
     ALTO_VENTANA: int = 700
-    ANCHO_MINIMO: int = 800
+    ANCHO_MINIMO: int = 1000
     ALTO_MINIMO: int = 600
 
     # Ruta al logo de FPR
@@ -63,6 +66,12 @@ class HotelPriceApp(ctk.CTk):
         self._crear_barra_superior()
         self._crear_tabview()
         self._crear_contenido_pestanas()
+
+        # Auto-cargar hotel database si existe
+        self._cargar_database_inicial()
+
+        # Check for updates (async, non-blocking)
+        self._check_for_updates()
 
     def _configurar_ventana(self) -> None:
         """Configura las propiedades de la ventana principal."""
@@ -115,6 +124,33 @@ class HotelPriceApp(ctk.CTk):
         )
         self.label_titulo.grid(row=0, column=1, padx=0, pady=10)
 
+        # Version label
+        try:
+            from ui.utils.updater import APP_VERSION
+            version_text = f"v{APP_VERSION}"
+        except ImportError:
+            version_text = ""
+
+        self.label_version = ctk.CTkLabel(
+            self.barra_superior,
+            text=version_text,
+            font=obtener_fuente("pequena"),
+            text_color="gray",
+        )
+        self.label_version.grid(row=0, column=2, padx=5, pady=10, sticky="e")
+
+        # Check updates button
+        self.btn_updates = ctk.CTkButton(
+            self.barra_superior,
+            text="🔄",
+            width=30,
+            height=30,
+            command=self._manual_check_updates,
+            fg_color="transparent",
+            hover_color="gray30",
+        )
+        self.btn_updates.grid(row=0, column=3, padx=5, pady=10)
+
         # Toggle de tema (dark/light)
         self.toggle_tema = ctk.CTkSwitch(
             self.barra_superior,
@@ -123,7 +159,7 @@ class HotelPriceApp(ctk.CTk):
             onvalue=True,
             offvalue=False,
         )
-        self.toggle_tema.grid(row=0, column=3, padx=TAMANOS["padding_grande"], pady=10)
+        self.toggle_tema.grid(row=0, column=4, padx=TAMANOS["padding_grande"], pady=10)
         self.toggle_tema.select()  # Iniciar en modo oscuro
 
     def _crear_tabview(self) -> None:
@@ -203,6 +239,54 @@ class HotelPriceApp(ctk.CTk):
             )
             label_placeholder.grid(row=0, column=0, pady=50)
 
+    def _cargar_database_inicial(self) -> None:
+        """
+        Verifica el estado inicial y muestra avisos necesarios.
+
+        - Verifica si existe el cache de hoteles de Xotelo
+        - Muestra aviso si falta el cache
+        """
+        if self.tab_hoteles:
+            # Verificar si existe el cache de hoteles PR
+            if hasattr(self.tab_hoteles, "mostrar_aviso_cache_faltante"):
+                self.tab_hoteles.mostrar_aviso_cache_faltante()
+
+    def _check_for_updates(self) -> None:
+        """
+        Check for application updates asynchronously.
+
+        Shows a dialog if an update is available.
+        """
+        try:
+            from ui.utils.updater import get_updater, UpdateInfo
+            from ui.components.update_dialog import show_update_dialog
+
+            updater = get_updater()
+
+            def on_update_available(info: UpdateInfo) -> None:
+                """Called when an update is found."""
+                logger.info(f"Update available: {info.version}")
+                # Show dialog on main thread
+                self.after(0, lambda: show_update_dialog(self, info))
+
+            def on_no_update() -> None:
+                """Called when no update is available."""
+                logger.debug("No update available")
+
+            def on_error(error: str) -> None:
+                """Called when update check fails."""
+                logger.warning(f"Update check failed: {error}")
+
+            # Check for updates in background
+            updater.check_for_update(
+                on_update_available=on_update_available,
+                on_no_update=on_no_update,
+                on_error=on_error,
+            )
+
+        except ImportError as e:
+            logger.warning(f"Could not import updater: {e}")
+
     def _obtener_hoteles_para_busqueda(self):
         """
         Callback para obtener la lista de hoteles desde la pestaña Hoteles.
@@ -226,6 +310,47 @@ class HotelPriceApp(ctk.CTk):
             self.tab_resultados.cargar_resultados(resultados)
             # Cambiar a la pestaña de resultados
             self.cambiar_pestana("resultados")
+
+    def _manual_check_updates(self) -> None:
+        """Manually check for updates and show result."""
+        from tkinter import messagebox
+
+        try:
+            from ui.utils.updater import get_updater, UpdateInfo
+            from ui.components.update_dialog import show_update_dialog
+
+            self.btn_updates.configure(state="disabled")
+            updater = get_updater()
+
+            def on_update_available(info: UpdateInfo) -> None:
+                self.after(0, lambda: self.btn_updates.configure(state="normal"))
+                self.after(0, lambda: show_update_dialog(self, info))
+
+            def on_no_update() -> None:
+                self.after(0, lambda: self.btn_updates.configure(state="normal"))
+                self.after(0, lambda: messagebox.showinfo(
+                    "No Updates",
+                    f"You're running the latest version ({updater.get_current_version()}).",
+                    parent=self
+                ))
+
+            def on_error(error: str) -> None:
+                self.after(0, lambda: self.btn_updates.configure(state="normal"))
+                self.after(0, lambda: messagebox.showerror(
+                    "Update Check Failed",
+                    f"Could not check for updates:\n\n{error}",
+                    parent=self
+                ))
+
+            updater.check_for_update(
+                on_update_available=on_update_available,
+                on_no_update=on_no_update,
+                on_error=on_error,
+            )
+
+        except ImportError as e:
+            self.btn_updates.configure(state="normal")
+            messagebox.showerror("Error", f"Updater not available: {e}", parent=self)
 
     def _alternar_tema(self) -> None:
         """Alterna entre modo oscuro y claro."""
