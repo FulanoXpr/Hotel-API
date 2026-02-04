@@ -38,13 +38,15 @@ cp .env.example .env
 
 ### API Keys (Optional)
 
-The cascade pipeline works without API keys (Xotelo only), but additional sources require credentials:
+The cascade pipeline works without API keys (Xotelo only), but additional sources require credentials.
+
+**See [API_SETUP.md](API_SETUP.md) for detailed instructions on obtaining each API key (English/Spanish).**
 
 ```bash
 # .env file
-SERPAPI_KEY=your_key              # serpapi.com
-APIFY_TOKEN=your_token            # apify.com
-AMADEUS_CLIENT_ID=your_id         # developers.amadeus.com
+SERPAPI_KEY=your_key              # serpapi.com (100 free/month)
+APIFY_TOKEN=your_token            # apify.com ($5 free/month)
+AMADEUS_CLIENT_ID=your_id         # developers.amadeus.com (500 free/month)
 AMADEUS_CLIENT_SECRET=your_secret
 ```
 
