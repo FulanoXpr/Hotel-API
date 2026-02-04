@@ -47,6 +47,7 @@ cache/
 
 # Output files (generated)
 PRTC_Hotels_Prices_*.xlsx
+resultados_hoteles_*.xlsx
 
 # Logs
 logs/
