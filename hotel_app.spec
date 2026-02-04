@@ -22,6 +22,12 @@ is_mac = sys.platform == 'darwin'
 app_name = 'HotelPriceChecker'
 main_script = 'hotel_price_app.py'
 
+# Check if icon exists
+icon_path = Path('ui/assets/icon.ico')
+icon_file = str(icon_path) if icon_path.exists() and is_windows else None
+icon_path_mac = Path('ui/assets/icon.icns')
+icon_file_mac = str(icon_path_mac) if icon_path_mac.exists() and is_mac else None
+
 # Datos adicionales a incluir
 datas = [
     # Incluir archivos de configuración si existen
@@ -115,7 +121,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None,  # Agregar icono aquí si se tiene: icon='assets/icon.ico'
+    icon=icon_file,  # Uses ui/assets/icon.ico if it exists
 )
 
 # Recopilar todos los archivos
@@ -134,7 +140,7 @@ if is_mac:
     app = BUNDLE(
         coll,
         name=f'{app_name}.app',
-        icon=None,  # Agregar icono aquí si se tiene: icon='assets/icon.icns'
+        icon=icon_file_mac,  # Uses ui/assets/icon.icns if it exists
         bundle_identifier='com.hotelprices.checker',
         info_plist={
             'CFBundleName': app_name,

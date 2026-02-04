@@ -5,9 +5,10 @@ Build script for Hotel Price Checker.
 Verifies and installs dependencies, then builds the .exe file.
 
 Usage:
-    python build_exe.py           # Check dependencies and build
-    python build_exe.py --check   # Only check dependencies (no build)
-    python build_exe.py --install # Install missing dependencies only
+    python build_exe.py              # Check dependencies and build
+    python build_exe.py --check      # Only check dependencies (no build)
+    python build_exe.py --install    # Install missing dependencies only
+    python build_exe.py --installer  # Build + create Windows installer (requires Inno Setup)
 """
 
 import subprocess
@@ -222,6 +223,125 @@ def create_zip_distribution():
         return False
 
 
+def create_icon():
+    """Create Windows .ico file from PNG logo."""
+    print("\n=== Creating Application Icon ===")
+
+    base_path = Path(__file__).parent
+    png_path = base_path / "ui" / "assets" / "fpr_logo.png"
+    ico_path = base_path / "ui" / "assets" / "icon.ico"
+
+    if ico_path.exists():
+        print(f"  [OK] Icon already exists: {ico_path}")
+        return True
+
+    if not png_path.exists():
+        print(f"  [SKIP] Logo not found: {png_path}")
+        return False
+
+    try:
+        from PIL import Image
+
+        img = Image.open(png_path)
+        if img.mode != "RGBA":
+            img = img.convert("RGBA")
+
+        sizes = [16, 24, 32, 48, 64, 128, 256]
+        icons = [img.resize((s, s), Image.Resampling.LANCZOS) for s in sizes]
+
+        icons[0].save(
+            ico_path,
+            format="ICO",
+            sizes=[(s, s) for s in sizes],
+            append_images=icons[1:],
+        )
+        print(f"  [OK] Created: {ico_path}")
+        return True
+    except ImportError:
+        print("  [SKIP] Pillow not installed, skipping icon creation")
+        return False
+    except Exception as e:
+        print(f"  [ERROR] {e}")
+        return False
+
+
+def find_inno_setup():
+    """Find Inno Setup compiler (iscc.exe)."""
+    import os
+
+    # Common installation paths
+    possible_paths = [
+        Path(r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe"),
+        Path(r"C:\Program Files\Inno Setup 6\ISCC.exe"),
+        Path(r"C:\Program Files (x86)\Inno Setup 5\ISCC.exe"),
+        Path(r"C:\Program Files\Inno Setup 5\ISCC.exe"),
+    ]
+
+    # Also check user-specific installation (winget installs here)
+    local_app_data = os.environ.get("LOCALAPPDATA", "")
+    if local_app_data:
+        possible_paths.insert(0, Path(local_app_data) / "Programs" / "Inno Setup 6" / "ISCC.exe")
+
+    for path in possible_paths:
+        if path.exists():
+            return path
+
+    # Try to find in PATH
+    iscc = shutil.which("iscc")
+    if iscc:
+        return Path(iscc)
+
+    return None
+
+
+def create_installer():
+    """Create Windows installer using Inno Setup."""
+    print("\n=== Creating Windows Installer ===")
+
+    base_path = Path(__file__).parent
+    iss_file = base_path / "installer.iss"
+    dist_path = base_path / "dist" / "HotelPriceChecker"
+
+    if not iss_file.exists():
+        print(f"  [ERROR] Inno Setup script not found: {iss_file}")
+        return False
+
+    if not dist_path.exists():
+        print("  [ERROR] dist/HotelPriceChecker not found. Run build first.")
+        return False
+
+    iscc = find_inno_setup()
+    if not iscc:
+        print("  [ERROR] Inno Setup not found.")
+        print("  Download from: https://jrsoftware.org/isdl.php")
+        print("  Or install via: winget install JRSoftware.InnoSetup")
+        return False
+
+    print(f"  Using: {iscc}")
+
+    try:
+        result = subprocess.run(
+            [str(iscc), str(iss_file)],
+            cwd=str(base_path),
+            capture_output=False,
+        )
+
+        if result.returncode == 0:
+            installer_path = base_path / "dist" / "HotelPriceChecker-Setup.exe"
+            if installer_path.exists():
+                size_mb = installer_path.stat().st_size / (1024 * 1024)
+                print(f"\n  [OK] Created: {installer_path}")
+                print(f"  Size: {size_mb:.1f} MB")
+                return True
+
+        print("\n  [ERROR] Installer creation failed")
+        return False
+
+    except Exception as e:
+        print(f"\n  [ERROR] {e}")
+        return False
+
+
 def main():
     """Main entry point."""
     print("=" * 50)
@@ -231,6 +351,7 @@ def main():
     # Parse arguments
     check_only = "--check" in sys.argv
     install_only = "--install" in sys.argv
+    create_installer_flag = "--installer" in sys.argv
 
     # Check Python version
     if not check_python_version():
@@ -266,6 +387,9 @@ def main():
         print("\n[ERROR] Missing required files")
         sys.exit(1)
 
+    # Create icon if possible
+    create_icon()
+
     # Build
     if not build_exe():
         sys.exit(1)
@@ -273,11 +397,19 @@ def main():
     # Create ZIP
     create_zip_distribution()
 
+    # Create installer if requested
+    if create_installer_flag:
+        if not create_installer():
+            print("\n[WARNING] Installer creation failed, but ZIP is available")
+
     print("\n" + "=" * 50)
     print("  Build Complete!")
     print("=" * 50)
     print("\nTo run the application:")
     print("  dist\\HotelPriceChecker\\HotelPriceChecker.exe")
+    if create_installer_flag:
+        print("\nInstaller:")
+        print("  dist\\HotelPriceChecker-Setup.exe")
 
 
 if __name__ == "__main__":

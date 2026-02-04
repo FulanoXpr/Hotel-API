@@ -43,8 +43,37 @@ python hotel_price_app.py                             # Linux/Windows
 python -m pytest tests/ -v                              # All tests (no network)
 python -m pytest tests/ -v -k "test_xotelo"             # Single test file
 python -m pytest tests/test_config.py::test_defaults -v # Single test function
-RUN_API_SMOKE=1 python -m pytest tests/test_api_smoke.py -v -m smoke  # API smoke tests
+
+# API smoke tests (require network and credentials)
+RUN_API_SMOKE=1 python -m pytest tests/test_api_smoke.py -v -m smoke  # Linux/macOS
+$env:RUN_API_SMOKE=1; python -m pytest tests/test_api_smoke.py -v -m smoke  # Windows PowerShell
+
+# Build desktop executable (Windows)
+python build_exe.py                    # Check deps and build
+python build_exe.py --check            # Only check dependencies
+python build_exe.py --install          # Install missing deps only
+python build_exe.py --installer        # Build + create Windows installer
+
+# Create icon from logo (requires Pillow)
+python create_icon.py                  # Creates ui/assets/icon.ico
 ```
+
+## Releases
+
+GitHub Actions builds cross-platform releases when tags are pushed:
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+Outputs: `HotelPriceChecker-Setup.exe` (installer), `HotelPriceChecker-Windows.zip`, `HotelPriceChecker-macOS.dmg`
+
+## Windows Installer
+
+The installer is built with Inno Setup (`installer.iss`). To build locally:
+
+1. Install Inno Setup: `winget install JRSoftware.InnoSetup`
+2. Run: `python build_exe.py --installer`
+
+The installer preserves `.env` files during upgrades and supports per-user installation (no admin required).
 
 ## Architecture
 
@@ -161,14 +190,7 @@ The GUI uses FPR brand colors and logo:
 
 ## Cascade Behavior
 
-The cascade tries providers in order until a price is found:
-1. **Cache** - Returns cached price if TTL not expired
-2. **Xotelo** - Requires `xotelo_key`. Returns prices from Booking.com, Agoda, Trip.com, Vio.com, etc. (Xotelo is an aggregator)
-3. **SerpApi** - Searches by hotel name. Requires `SERPAPI_KEY`
-4. **Apify** - Searches by name or `booking_url`. Requires `APIFY_TOKEN`
-5. **Amadeus** - Requires `AMADEUS_CLIENT_ID` and `AMADEUS_CLIENT_SECRET`
-
-Hotels without `xotelo_key` will skip Xotelo and try other providers. If no API keys are configured, only hotels with Xotelo keys will get prices.
+Hotels without `xotelo_key` skip Xotelo and try other providers. If no API keys are configured, only hotels with Xotelo keys get prices. Xotelo is an aggregator returning prices from Booking.com, Agoda, Trip.com, Vio.com, etc.
 
 ## When Modifying Code
 

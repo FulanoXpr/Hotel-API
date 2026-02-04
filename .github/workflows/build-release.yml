@@ -20,7 +20,10 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements-app.txt
-          pip install pyinstaller
+          pip install pyinstaller Pillow
+
+      - name: Create application icon
+        run: python create_icon.py
 
       - name: Build Windows executable
         run: pyinstaller hotel_app.spec --clean --noconfirm
@@ -30,11 +33,23 @@ jobs:
           cd dist
           Compress-Archive -Path HotelPriceChecker -DestinationPath HotelPriceChecker-Windows.zip
 
-      - name: Upload Windows artifact
+      - name: Install Inno Setup
+        run: choco install innosetup -y
+
+      - name: Create Windows installer
+        run: iscc installer.iss
+
+      - name: Upload Windows ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: HotelPriceChecker-Windows
+          name: HotelPriceChecker-Windows-ZIP
           path: dist/HotelPriceChecker-Windows.zip
+
+      - name: Upload Windows Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: HotelPriceChecker-Windows-Setup
+          path: dist/HotelPriceChecker-Setup.exe
 
   build-macos:
     runs-on: macos-latest
@@ -83,6 +98,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            HotelPriceChecker-Windows/HotelPriceChecker-Windows.zip
+            HotelPriceChecker-Windows-ZIP/HotelPriceChecker-Windows.zip
+            HotelPriceChecker-Windows-Setup/HotelPriceChecker-Setup.exe
             HotelPriceChecker-macOS/HotelPriceChecker-macOS.dmg
           generate_release_notes: true
