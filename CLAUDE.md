@@ -62,9 +62,11 @@ python create_icon.py                  # Creates ui/assets/icon.ico
 
 GitHub Actions builds cross-platform releases when tags are pushed:
 ```bash
-git tag v1.0.0 && git push origin v1.0.0
+git tag v1.1.0 && git push origin v1.1.0
 ```
 Outputs: `HotelPriceChecker-Setup.exe` (installer), `HotelPriceChecker-Windows.zip`, `HotelPriceChecker-macOS.dmg`
+
+**Current version:** Update `APP_VERSION` in `ui/utils/updater.py` before creating a new release tag.
 
 ## Windows Installer
 
@@ -74,6 +76,35 @@ The installer is built with Inno Setup (`installer.iss`). To build locally:
 2. Run: `python build_exe.py --installer`
 
 The installer preserves `.env` files during upgrades and supports per-user installation (no admin required).
+
+## Auto-Update System
+
+The app checks for updates automatically on startup and can be triggered manually via the 🔄 button.
+
+**Version management:** `ui/utils/updater.py` contains `APP_VERSION`. Update this constant when releasing new versions.
+
+**Update flow:**
+1. App checks GitHub releases API for latest version
+2. Compares with `APP_VERSION` using `packaging.version`
+3. If newer version found, shows `UpdateDialog` with release notes
+4. User can download and install the update (runs installer, closes app)
+
+**Files:**
+- `ui/utils/updater.py` - `Updater` class, version checking, download logic
+- `ui/components/update_dialog.py` - Update notification dialog
+
+## Xotelo Hotel Cache
+
+On first use, the GUI needs to download all Puerto Rico hotels (~1,100) from Xotelo to enable key searching.
+
+**Cache file:** `xotelo_hotels_cache.json` (created by "Download PR Hotels" button)
+
+**GUI workflow:**
+1. Click "⬇️ Download PR Hotels" → downloads ~1,100 hotels from Xotelo `/list` API
+2. Click "📂 Load Excel" → import user's hotel list
+3. Click "🔍 Search All" → matches imported names against cache using fuzzy matching
+
+**API method:** `XoteloAPI.refresh_hotel_cache(progress_callback)` fetches all hotels paginated (100/request).
 
 ## Architecture
 
@@ -108,8 +139,8 @@ Cascade Pipeline (--cascade):
 **Desktop GUI (`ui/`):**
 - `ui/app.py` - Main application class `HotelPriceApp(CTk)`
 - `ui/tabs/` - Four tabs: API Keys, Hotels, Execute, Results
-- `ui/components/` - Reusable widgets: `HotelTable`, `ProgressBar`, `LogViewer`, `StatsPanel`
-- `ui/utils/` - Theme config, `.env` manager, Excel handler
+- `ui/components/` - Reusable widgets: `HotelTable`, `ProgressBar`, `LogViewer`, `StatsPanel`, `UpdateDialog`
+- `ui/utils/` - Theme config, `.env` manager, Excel handler, auto-updater
 
 **GUI Data Format (internal):**
 Hotel dictionaries use these standard field names throughout all UI modules:
@@ -206,3 +237,8 @@ Hotels without `xotelo_key` skip Xotelo and try other providers. If no API keys 
 **Type Hints:** Use `TypedDict` for structured dictionaries (see `RateInfo`, `HotelInfo` in `xotelo_api.py`). Use `Final` for constants in `config.py`.
 
 **Testing:** Add tests in `tests/` with mocked responses. Mark real API tests with `@pytest.mark.smoke`.
+
+**Versioning:** When releasing a new version:
+1. Update `APP_VERSION` in `ui/utils/updater.py`
+2. Commit changes
+3. Create and push tag: `git tag v1.x.0 && git push origin v1.x.0`
