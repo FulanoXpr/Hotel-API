@@ -10,8 +10,16 @@ Este script configura los paths necesarios y ejecuta la aplicación
 de escritorio para consultar precios de hoteles.
 """
 
+import logging
 import sys
 from pathlib import Path
+
+# Configure logging early for debugging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
 
 
 def configurar_paths() -> None:
@@ -69,6 +77,16 @@ def main() -> int:
     Returns:
         Código de salida (0 = éxito, 1 = error).
     """
+    logger = logging.getLogger(__name__)
+    logger.info("=" * 50)
+    logger.info("Hotel Price Checker - Starting")
+    logger.info(f"Python version: {sys.version}")
+    logger.info(f"Executable: {sys.executable}")
+    logger.info(f"Frozen: {getattr(sys, 'frozen', False)}")
+    if hasattr(sys, '_MEIPASS'):
+        logger.info(f"PyInstaller bundle: {sys._MEIPASS}")
+    logger.info("=" * 50)
+
     # Configurar paths
     configurar_paths()
 

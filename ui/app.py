@@ -4,6 +4,7 @@ Interfaz gráfica de escritorio usando CustomTkinter.
 """
 
 import logging
+import sys
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -13,6 +14,25 @@ from PIL import Image
 from ui.utils.theme import TAMANOS, TemaMode, aplicar_tema, obtener_fuente
 
 logger = logging.getLogger(__name__)
+
+
+def get_resource_path(relative_path: str) -> Path:
+    """
+    Get absolute path to resource, works for dev and PyInstaller bundle.
+
+    Args:
+        relative_path: Path relative to the application root.
+
+    Returns:
+        Absolute path to the resource.
+    """
+    if hasattr(sys, '_MEIPASS'):
+        # Running as PyInstaller bundle
+        base_path = Path(sys._MEIPASS)
+    else:
+        # Running in development
+        base_path = Path(__file__).parent.parent
+    return base_path / relative_path
 
 
 class HotelPriceApp(ctk.CTk):
@@ -31,8 +51,7 @@ class HotelPriceApp(ctk.CTk):
     ANCHO_MINIMO: int = 1000
     ALTO_MINIMO: int = 600
 
-    # Ruta al logo de FPR
-    LOGO_PATH: Path = Path(__file__).parent / "assets" / "fpr_logo.png"
+    # Altura del logo (el path se calcula dinámicamente para PyInstaller)
     LOGO_HEIGHT: int = 35
 
     # Tab names
@@ -46,6 +65,14 @@ class HotelPriceApp(ctk.CTk):
     def __init__(self) -> None:
         """Inicializa la aplicación principal."""
         super().__init__()
+
+        # Log startup info for debugging
+        logger.info(f"Starting Hotel Price Checker")
+        logger.info(f"Python: {sys.version}")
+        logger.info(f"Running as bundle: {hasattr(sys, '_MEIPASS')}")
+        if hasattr(sys, '_MEIPASS'):
+            logger.info(f"Bundle path: {sys._MEIPASS}")
+        logger.info(f"Working directory: {Path.cwd()}")
 
         # Estado inicial
         self.modo_tema: TemaMode = "dark"
@@ -103,8 +130,9 @@ class HotelPriceApp(ctk.CTk):
         self.barra_superior.grid_columnconfigure(2, weight=1)
 
         # Logo de FPR
-        if self.LOGO_PATH.exists():
-            logo_img = Image.open(self.LOGO_PATH)
+        logo_path = get_resource_path("ui/assets/fpr_logo.png")
+        if logo_path.exists():
+            logo_img = Image.open(logo_path)
             # Calcular ancho proporcional
             aspect_ratio = logo_img.width / logo_img.height
             logo_width = int(self.LOGO_HEIGHT * aspect_ratio)
