@@ -29,9 +29,9 @@ python xotelo_price_fixer.py --input "archivo.xlsx" --output "salida.xlsx"
 # Find Booking.com URLs (improves Apify accuracy)
 python booking_url_finder.py --limit 50
 
-# Desktop GUI application
-python hotel_price_app.py                             # Launch GUI
-# macOS with Homebrew Python: /opt/homebrew/bin/python3.12 hotel_price_app.py
+# Desktop GUI application (IMPORTANT: use Homebrew Python on macOS)
+/opt/homebrew/bin/python3.12 hotel_price_app.py       # macOS (recommended)
+python hotel_price_app.py                             # Linux/Windows
 
 # Run tests
 python -m pytest tests/ -v                              # All tests (no network)
@@ -76,6 +76,16 @@ Cascade Pipeline (--cascade):
 - `ui/components/` - Reusable widgets: `HotelTable`, `ProgressBar`, `LogViewer`, `StatsPanel`
 - `ui/utils/` - Theme config, `.env` manager, Excel handler
 
+**GUI Data Format (internal):**
+Hotel dictionaries use these standard field names throughout all UI modules:
+```python
+{
+    "nombre": "Hotel Name",
+    "xotelo_key": "g147319-d123456",  # NOT "key_xotelo"
+    "booking_url": "https://..."
+}
+```
+
 ## Key Data Formats
 
 **hotel_keys_db.json** (supports both formats):
@@ -118,3 +128,19 @@ CACHE_TTL_HOURS=24
 - Rate limiting: 0.5s between Xotelo requests (`REQUEST_DELAY` env var)
 - Xotelo keys format: `g{location}-d{hotel_id}` (e.g., `g147319-d1837036`)
 - Microsoft Fabric deployment: see `MICROSOFT_FABRIC_GUIDE.md`
+
+## macOS Notes
+
+- **Use Homebrew Python** (3.11+) for the GUI app. System Python 3.9.6 crashes with CustomTkinter due to Tkinter/macOS incompatibilities.
+- Install python-tk: `brew install python-tk@3.12`
+
+## Cascade Behavior
+
+The cascade tries providers in order until a price is found:
+1. **Cache** - Returns cached price if TTL not expired
+2. **Xotelo** - Requires `xotelo_key`. Returns prices from Booking.com, Agoda, Trip.com, Vio.com, etc. (Xotelo is an aggregator)
+3. **SerpApi** - Searches by hotel name. Requires `SERPAPI_KEY`
+4. **Apify** - Searches by name or `booking_url`. Requires `APIFY_TOKEN`
+5. **Amadeus** - Requires `AMADEUS_CLIENT_ID` and `AMADEUS_CLIENT_SECRET`
+
+Hotels without `xotelo_key` will skip Xotelo and try other providers. If no API keys are configured, only hotels with Xotelo keys will get prices.
