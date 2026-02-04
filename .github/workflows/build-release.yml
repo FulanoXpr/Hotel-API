@@ -1,0 +1,88 @@
+name: Build Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-app.txt
+          pip install pyinstaller
+
+      - name: Build Windows executable
+        run: pyinstaller hotel_app.spec --clean --noconfirm
+
+      - name: Create ZIP archive
+        run: |
+          cd dist
+          Compress-Archive -Path HotelPriceChecker -DestinationPath HotelPriceChecker-Windows.zip
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HotelPriceChecker-Windows
+          path: dist/HotelPriceChecker-Windows.zip
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements-app.txt
+          pip install pyinstaller
+
+      - name: Build macOS app
+        run: pyinstaller hotel_app.spec --clean --noconfirm
+
+      - name: Create DMG
+        run: |
+          cd dist
+          mkdir -p dmg_temp
+          cp -R HotelPriceChecker.app dmg_temp/
+          ln -s /Applications dmg_temp/Applications
+          hdiutil create -volname "Hotel Price Checker" -srcfolder dmg_temp -ov -format UDZO HotelPriceChecker-macOS.dmg
+          rm -rf dmg_temp
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HotelPriceChecker-macOS
+          path: dist/HotelPriceChecker-macOS.dmg
+
+  release:
+    needs: [build-windows, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            HotelPriceChecker-Windows/HotelPriceChecker-Windows.zip
+            HotelPriceChecker-macOS/HotelPriceChecker-macOS.dmg
+          generate_release_notes: true

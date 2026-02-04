@@ -26,6 +26,8 @@ main_script = 'hotel_price_app.py'
 datas = [
     # Incluir archivos de configuración si existen
     ('.env.example', '.'),
+    # Logo de FPR
+    ('ui/assets/fpr_logo.png', 'ui/assets'),
 ]
 
 # Módulos ocultos que PyInstaller no detecta automáticamente
@@ -36,6 +38,8 @@ hiddenimports = [
     'requests',
     'dotenv',
     'packaging',
+    'PIL',
+    'PIL.Image',
     # Proveedores de precios
     'price_providers',
     'price_providers.base',
@@ -71,7 +75,6 @@ excludes = [
     'numpy',
     'pandas',
     'scipy',
-    'PIL',
     'cv2',
     'torch',
     'tensorflow',
