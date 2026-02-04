@@ -48,7 +48,54 @@ AMADEUS_CLIENT_ID=your_id         # developers.amadeus.com
 AMADEUS_CLIENT_SECRET=your_secret
 ```
 
-## Usage
+## Desktop Application
+
+A graphical interface is available for users who prefer not to use the command line.
+
+### Download
+
+Download the latest release for your platform:
+
+| Platform | Download | Requirements |
+|----------|----------|--------------|
+| macOS | [HotelPriceChecker.dmg](https://github.com/FulanoXpr/Hotel-API/releases/latest) | macOS 10.13+ |
+| Windows | [HotelPriceChecker.zip](https://github.com/FulanoXpr/Hotel-API/releases/latest) | Windows 10+ |
+
+### Installation
+
+#### macOS
+
+1. Download `HotelPriceChecker-macOS.dmg`
+2. Open the DMG and drag the app to Applications
+3. On first launch, macOS will block the app (unsigned)
+4. Go to **System Settings → Privacy & Security** → Click "Open Anyway"
+
+Or remove the quarantine flag via Terminal:
+```bash
+xattr -cr /Applications/HotelPriceChecker.app
+```
+
+#### Windows
+
+1. Download `HotelPriceChecker-Windows.zip`
+2. Extract to a folder (e.g., `C:\Program Files\HotelPriceChecker`)
+3. Run `HotelPriceChecker.exe`
+4. Windows Defender SmartScreen may show a warning (unsigned app)
+5. Click "More info" → "Run anyway"
+
+### Features
+
+- Configure API keys with connection testing
+- Import hotels from Excel files
+- Visual progress tracking with live statistics
+- Export results to Excel
+- Dark/Light theme support
+
+![Hotel Price Checker](ui/assets/fpr_logo.png)
+
+---
+
+## Command Line Usage
 
 ### Basic Data Collection
 
