@@ -123,7 +123,7 @@ CACHE_TTL_HOURS=24
 
 ## Notes
 
-- UI prompts are in Spanish
+- GUI language: English (translated from Spanish)
 - Default search: +30 days, 1 night, 1 room, 2 adults
 - Rate limiting: 0.5s between Xotelo requests (`REQUEST_DELAY` env var)
 - Xotelo keys format: `g{location}-d{hotel_id}` (e.g., `g147319-d1837036`)
@@ -133,6 +133,25 @@ CACHE_TTL_HOURS=24
 
 - **Use Homebrew Python** (3.11+) for the GUI app. System Python 3.9.6 crashes with CustomTkinter due to Tkinter/macOS incompatibilities.
 - Install python-tk: `brew install python-tk@3.12`
+
+## Branding (Foundation for Puerto Rico)
+
+The GUI uses FPR brand colors and logo:
+
+**Color Palette:**
+| Color  | Hex       | Usage                    |
+|--------|-----------|--------------------------|
+| Blue   | `#3189A1` | Primary accent, buttons  |
+| Green  | `#B0CA5F` | Success states           |
+| Yellow | `#FCAF17` | Warning states           |
+| Red    | `#F04E37` | Error states             |
+| Grey   | `#3E4242` | Secondary backgrounds    |
+
+**Assets:**
+- `ui/assets/fpr_logo.png` - Logo displayed in header bar
+- `Branding/` - Source brand assets (excluded from git)
+
+**Theme configuration:** `ui/utils/theme.py` defines `FPR_*` color constants and applies them to `TEMA_OSCURO`/`TEMA_CLARO`.
 
 ## Cascade Behavior
 
