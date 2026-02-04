@@ -29,6 +29,12 @@ python xotelo_price_fixer.py --input "archivo.xlsx" --output "salida.xlsx"
 # Find Booking.com URLs (improves Apify accuracy)
 python booking_url_finder.py --limit 50
 
+# Find and validate Amadeus hotel IDs
+python amadeus_id_finder.py
+
+# Flask web UI for hotel key management (port 5000)
+python key_manager.py
+
 # Desktop GUI application (IMPORTANT: use Homebrew Python on macOS)
 /opt/homebrew/bin/python3.12 hotel_price_app.py       # macOS (recommended)
 python hotel_price_app.py                             # Linux/Windows
@@ -163,3 +169,18 @@ The cascade tries providers in order until a price is found:
 5. **Amadeus** - Requires `AMADEUS_CLIENT_ID` and `AMADEUS_CLIENT_SECRET`
 
 Hotels without `xotelo_key` will skip Xotelo and try other providers. If no API keys are configured, only hotels with Xotelo keys will get prices.
+
+## When Modifying Code
+
+**Rate Limiting:** Always call `api.wait()` between Xotelo API requests. The `XoteloAPI` class handles the 0.5s delay internally.
+
+**Provider Pattern:** When adding a new price provider, implement the `PriceProvider` ABC from `price_providers/base.py`:
+- `get_price(hotel_name, check_in, check_out, **kwargs) -> Optional[PriceResult]`
+- `get_name() -> str`
+- `is_available() -> bool`
+
+**GUI Field Names:** Hotel dictionaries in UI modules use `xotelo_key` (not `key_xotelo`) and `nombre` for hotel name. Keep this consistent.
+
+**Type Hints:** Use `TypedDict` for structured dictionaries (see `RateInfo`, `HotelInfo` in `xotelo_api.py`). Use `Final` for constants in `config.py`.
+
+**Testing:** Add tests in `tests/` with mocked responses. Mark real API tests with `@pytest.mark.smoke`.
