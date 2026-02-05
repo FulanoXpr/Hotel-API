@@ -1,335 +1,190 @@
 # API Setup Guide / Guía de Configuración de APIs
 
-This guide explains how to obtain API keys for the Hotel Price Checker cascade pipeline.
+This guide explains how to obtain free API keys to enable all price sources in Hotel Price Checker.
 
-Esta guía explica cómo obtener las claves API para el pipeline de Hotel Price Checker.
-
----
-
-## Table of Contents / Índice
-
-- [Xotelo](#xotelo) - No key required / No requiere clave
-- [SerpApi](#serpapi) - Google Hotels
-- [Apify](#apify) - Booking.com
-- [Amadeus](#amadeus) - GDS (Global Distribution System)
+Esta guía explica cómo obtener claves API gratuitas para habilitar todas las fuentes de precios en Hotel Price Checker.
 
 ---
 
-## Xotelo
+## Why do I need API keys? / ¿Por qué necesito claves API?
+
+Hotel Price Checker searches multiple sources to find the best hotel prices. Without API keys, only **Xotelo** (TripAdvisor) is available, covering about 64% of hotels. Adding more APIs increases coverage to **97%**.
+
+Hotel Price Checker busca en múltiples fuentes para encontrar los mejores precios de hoteles. Sin claves API, solo **Xotelo** (TripAdvisor) está disponible, cubriendo aproximadamente el 64% de los hoteles. Agregar más APIs aumenta la cobertura al **97%**.
+
+| Source / Fuente | Coverage / Cobertura | Free Tier / Plan Gratuito |
+|-----------------|---------------------|---------------------------|
+| Xotelo (TripAdvisor) | ~64% | Unlimited / Ilimitado |
+| SerpApi (Google Hotels) | +15% | 100/month / 100/mes |
+| Apify (Booking.com) | +12% | ~1,700/month / ~1,700/mes |
+| Amadeus (GDS) | +6% | 500/month / 500/mes |
+
+---
+
+## How to enter your keys / Cómo ingresar tus claves
+
+1. Open Hotel Price Checker / Abre Hotel Price Checker
+2. Go to the **"API Keys"** tab / Ve a la pestaña **"API Keys"**
+3. Enter each key in its corresponding field / Ingresa cada clave en su campo correspondiente
+4. Click **"Test"** to verify each key works / Haz clic en **"Test"** para verificar que cada clave funciona
+5. Click **"Save"** to store your keys / Haz clic en **"Save"** para guardar tus claves
+
+---
+
+## SerpApi (Google Hotels)
+
+**Free tier / Plan gratuito:** 100 searches per month / 100 búsquedas por mes
 
 ### English
-
-Xotelo aggregates hotel prices from TripAdvisor. **No API key is required** - it works out of the box.
-
-- **Free tier**: Unlimited requests
-- **Rate limit**: 0.5 seconds between requests (handled automatically)
-- **Coverage**: ~64% of Puerto Rico hotels
-
-### Español
-
-Xotelo agrega precios de hoteles de TripAdvisor. **No se requiere clave API** - funciona sin configuración.
-
-- **Plan gratuito**: Solicitudes ilimitadas
-- **Límite de velocidad**: 0.5 segundos entre solicitudes (manejado automáticamente)
-- **Cobertura**: ~64% de los hoteles de Puerto Rico
-
----
-
-## SerpApi
-
-### English
-
-SerpApi provides Google Hotels search results.
-
-**Free tier**: 100 searches/month
-
-#### Steps to get your API key:
 
 1. Go to [https://serpapi.com](https://serpapi.com)
-2. Click **"Register"** (top right)
-3. Create an account with email or Google sign-in
-4. Verify your email address
-5. Go to [Dashboard](https://serpapi.com/dashboard)
-6. Your **API Key** is displayed on the dashboard
-7. Copy the key and add it to your `.env` file:
+2. Click **"Register"** (top right corner)
+3. Create an account using your email or Google
+4. Check your email and click the verification link
+5. Once logged in, you'll see your dashboard
+6. Your **API Key** is displayed at the top of the dashboard
+7. Copy the key and paste it in Hotel Price Checker
 
-```bash
-SERPAPI_KEY=your_api_key_here
-```
-
-#### Free tier limits:
-- 100 searches per month
-- No credit card required
-- Searches reset on the 1st of each month
-
----
+**Note:** No credit card required. Your 100 searches reset on the 1st of each month.
 
 ### Español
-
-SerpApi proporciona resultados de búsqueda de Google Hotels.
-
-**Plan gratuito**: 100 búsquedas/mes
-
-#### Pasos para obtener tu clave API:
 
 1. Ve a [https://serpapi.com](https://serpapi.com)
-2. Haz clic en **"Register"** (arriba a la derecha)
-3. Crea una cuenta con email o inicio de sesión con Google
-4. Verifica tu dirección de email
-5. Ve al [Dashboard](https://serpapi.com/dashboard)
-6. Tu **API Key** se muestra en el dashboard
-7. Copia la clave y agrégala a tu archivo `.env`:
+2. Haz clic en **"Register"** (esquina superior derecha)
+3. Crea una cuenta usando tu email o Google
+4. Revisa tu email y haz clic en el enlace de verificación
+5. Una vez dentro, verás tu dashboard
+6. Tu **API Key** aparece en la parte superior del dashboard
+7. Copia la clave y pégala en Hotel Price Checker
 
-```bash
-SERPAPI_KEY=tu_clave_api_aqui
-```
-
-#### Límites del plan gratuito:
-- 100 búsquedas por mes
-- No se requiere tarjeta de crédito
-- Las búsquedas se reinician el 1ro de cada mes
+**Nota:** No se requiere tarjeta de crédito. Tus 100 búsquedas se reinician el 1ro de cada mes.
 
 ---
 
-## Apify
+## Apify (Booking.com)
+
+**Free tier / Plan gratuito:** $5 in credits per month (~1,700 searches) / $5 en créditos por mes (~1,700 búsquedas)
 
 ### English
 
-Apify runs the Booking.com scraper to extract hotel prices.
-
-**Free tier**: $5/month in credits (~1,700 searches)
-
-#### Steps to get your API token:
-
 1. Go to [https://apify.com](https://apify.com)
-2. Click **"Sign up"** (top right)
-3. Create an account with email, Google, or GitHub
-4. Verify your email address
-5. Go to [Settings → Integrations](https://console.apify.com/settings/integrations)
-6. Find your **Personal API Token**
-7. Copy the token and add it to your `.env` file:
+2. Click **"Sign up"** (top right corner)
+3. Create an account using email, Google, or GitHub
+4. Check your email and click the verification link
+5. Once logged in, click your profile icon (top right)
+6. Select **"Settings"**
+7. Click **"Integrations"** in the left menu
+8. Find **"Personal API Token"**
+9. Click **"Copy"** to copy your token
+10. Paste the token in Hotel Price Checker
 
-```bash
-APIFY_TOKEN=your_api_token_here
-```
-
-#### Free tier limits:
-- $5 free credits per month
-- Each Booking.com search costs ~$0.003
-- Approximately 1,700 searches per month
-- Credits reset monthly
-
-#### Note:
-The app uses the Booking.com scraper actor. On first use, you may need to approve its usage in your Apify console.
-
----
+**Note:** No credit card required. Each hotel search costs about $0.003, so $5 covers approximately 1,700 searches per month.
 
 ### Español
 
-Apify ejecuta el scraper de Booking.com para extraer precios de hoteles.
-
-**Plan gratuito**: $5/mes en créditos (~1,700 búsquedas)
-
-#### Pasos para obtener tu token API:
-
 1. Ve a [https://apify.com](https://apify.com)
-2. Haz clic en **"Sign up"** (arriba a la derecha)
-3. Crea una cuenta con email, Google o GitHub
-4. Verifica tu dirección de email
-5. Ve a [Settings → Integrations](https://console.apify.com/settings/integrations)
-6. Encuentra tu **Personal API Token**
-7. Copia el token y agrégalo a tu archivo `.env`:
+2. Haz clic en **"Sign up"** (esquina superior derecha)
+3. Crea una cuenta usando email, Google o GitHub
+4. Revisa tu email y haz clic en el enlace de verificación
+5. Una vez dentro, haz clic en tu icono de perfil (arriba a la derecha)
+6. Selecciona **"Settings"**
+7. Haz clic en **"Integrations"** en el menú izquierdo
+8. Encuentra **"Personal API Token"**
+9. Haz clic en **"Copy"** para copiar tu token
+10. Pega el token en Hotel Price Checker
 
-```bash
-APIFY_TOKEN=tu_token_api_aqui
-```
-
-#### Límites del plan gratuito:
-- $5 en créditos gratis por mes
-- Cada búsqueda de Booking.com cuesta ~$0.003
-- Aproximadamente 1,700 búsquedas por mes
-- Los créditos se reinician mensualmente
-
-#### Nota:
-La aplicación usa el actor scraper de Booking.com. En el primer uso, es posible que necesites aprobar su uso en tu consola de Apify.
+**Nota:** No se requiere tarjeta de crédito. Cada búsqueda de hotel cuesta aproximadamente $0.003, así que $5 cubre aproximadamente 1,700 búsquedas por mes.
 
 ---
 
-## Amadeus
+## Amadeus (GDS - Travel Agent System)
+
+**Free tier / Plan gratuito:** 500 searches per month (test environment) / 500 búsquedas por mes (ambiente de prueba)
 
 ### English
-
-Amadeus provides access to the Global Distribution System (GDS) used by travel agents.
-
-**Free tier**: 500 API calls/month (test environment)
-
-#### Steps to get your credentials:
 
 1. Go to [https://developers.amadeus.com](https://developers.amadeus.com)
 2. Click **"Register"** or **"Get Started"**
 3. Fill in the registration form:
-   - First/Last name
+   - Your name
    - Email address
-   - Company name (can be personal)
-   - Password
-4. Verify your email address
-5. Log in and go to [My Apps](https://developers.amadeus.com/my-apps)
+   - Company name (you can use your own name)
+   - Create a password
+4. Check your email and click the verification link
+5. Log in and click **"My Self-Service Workspace"**
 6. Click **"Create new app"**
-7. Fill in:
-   - **App name**: Hotel Price Checker (or any name)
-   - **Description**: Optional
-8. Select the APIs you need (Hotel Search is included by default)
-9. Click **"Create"**
-10. Your app will show:
-    - **API Key** (Client ID)
-    - **API Secret** (Client Secret)
-11. Copy both and add to your `.env` file:
+7. Enter an app name (e.g., "Hotel Price Checker")
+8. Click **"Create"**
+9. Your app page will show two values:
+   - **API Key** (also called Client ID)
+   - **API Secret** (also called Client Secret)
+10. Copy both values and paste them in Hotel Price Checker
 
-```bash
-AMADEUS_CLIENT_ID=your_client_id_here
-AMADEUS_CLIENT_SECRET=your_client_secret_here
-AMADEUS_USE_PRODUCTION=false
-```
-
-#### Free tier limits:
-- 500 API calls per month
-- Test environment only (limited hotel inventory)
-- ~21 Puerto Rico hotels available in test mode
-- Production access requires Amadeus approval
-
-#### Test vs Production:
-- **Test** (`AMADEUS_USE_PRODUCTION=false`): Free, limited data, for development
-- **Production** (`AMADEUS_USE_PRODUCTION=true`): Requires business approval from Amadeus
-
----
+**Note:** The free tier uses a test environment with limited hotels (~21 in Puerto Rico). This is normal - other APIs will cover the remaining hotels.
 
 ### Español
-
-Amadeus proporciona acceso al Sistema Global de Distribución (GDS) utilizado por agentes de viajes.
-
-**Plan gratuito**: 500 llamadas API/mes (ambiente de prueba)
-
-#### Pasos para obtener tus credenciales:
 
 1. Ve a [https://developers.amadeus.com](https://developers.amadeus.com)
 2. Haz clic en **"Register"** o **"Get Started"**
 3. Completa el formulario de registro:
-   - Nombre y apellido
+   - Tu nombre
    - Dirección de email
-   - Nombre de empresa (puede ser personal)
-   - Contraseña
-4. Verifica tu dirección de email
-5. Inicia sesión y ve a [My Apps](https://developers.amadeus.com/my-apps)
+   - Nombre de empresa (puedes usar tu propio nombre)
+   - Crea una contraseña
+4. Revisa tu email y haz clic en el enlace de verificación
+5. Inicia sesión y haz clic en **"My Self-Service Workspace"**
 6. Haz clic en **"Create new app"**
-7. Completa:
-   - **App name**: Hotel Price Checker (o cualquier nombre)
-   - **Description**: Opcional
-8. Selecciona las APIs que necesitas (Hotel Search está incluida por defecto)
-9. Haz clic en **"Create"**
-10. Tu aplicación mostrará:
-    - **API Key** (Client ID)
-    - **API Secret** (Client Secret)
-11. Copia ambos y agrégalos a tu archivo `.env`:
+7. Ingresa un nombre para la app (ej: "Hotel Price Checker")
+8. Haz clic en **"Create"**
+9. La página de tu app mostrará dos valores:
+   - **API Key** (también llamado Client ID)
+   - **API Secret** (también llamado Client Secret)
+10. Copia ambos valores y pégalos en Hotel Price Checker
 
-```bash
-AMADEUS_CLIENT_ID=tu_client_id_aqui
-AMADEUS_CLIENT_SECRET=tu_client_secret_aqui
-AMADEUS_USE_PRODUCTION=false
-```
-
-#### Límites del plan gratuito:
-- 500 llamadas API por mes
-- Solo ambiente de prueba (inventario de hoteles limitado)
-- ~21 hoteles de Puerto Rico disponibles en modo de prueba
-- Acceso a producción requiere aprobación de Amadeus
-
-#### Prueba vs Producción:
-- **Prueba** (`AMADEUS_USE_PRODUCTION=false`): Gratis, datos limitados, para desarrollo
-- **Producción** (`AMADEUS_USE_PRODUCTION=true`): Requiere aprobación comercial de Amadeus
-
----
-
-## Complete .env Example / Ejemplo completo de .env
-
-```bash
-# SerpApi - Google Hotels (100 free/month)
-SERPAPI_KEY=your_serpapi_key
-
-# Apify - Booking.com ($5 free/month)
-APIFY_TOKEN=your_apify_token
-
-# Amadeus - GDS (500 free/month)
-AMADEUS_CLIENT_ID=your_client_id
-AMADEUS_CLIENT_SECRET=your_client_secret
-AMADEUS_USE_PRODUCTION=false
-
-# Optional settings / Configuración opcional
-CASCADE_ENABLED=true
-CACHE_TTL_HOURS=24
-REQUEST_DELAY=0.5
-```
-
----
-
-## Testing Your Keys / Probando tus Claves
-
-### In the Desktop App / En la Aplicación de Escritorio
-
-1. Open Hotel Price Checker
-2. Go to the **"API Keys"** tab
-3. Enter your keys
-4. Click **"Test Connection"** for each API
-5. A green checkmark means the key is valid
-
-### From Command Line / Desde Línea de Comandos
-
-```bash
-# Run API smoke tests (requires keys in .env)
-# Ejecutar pruebas de API (requiere claves en .env)
-
-# Linux/macOS
-RUN_API_SMOKE=1 python -m pytest tests/test_api_smoke.py -v -m smoke
-
-# Windows PowerShell
-$env:RUN_API_SMOKE=1; python -m pytest tests/test_api_smoke.py -v -m smoke
-```
+**Nota:** El plan gratuito usa un ambiente de prueba con hoteles limitados (~21 en Puerto Rico). Esto es normal - las otras APIs cubrirán los hoteles restantes.
 
 ---
 
 ## Troubleshooting / Solución de Problemas
 
-### "Invalid API Key" error / Error "Clave API inválida"
+### "Invalid API Key" / "Clave API inválida"
 
-- Double-check you copied the entire key without extra spaces
-- Verify the key is in the correct `.env` variable
-- Make sure your `.env` file is in the project root folder
-
----
-
-- Verifica que copiaste la clave completa sin espacios extra
-- Verifica que la clave está en la variable `.env` correcta
-- Asegúrate de que tu archivo `.env` está en la carpeta raíz del proyecto
-
-### "Rate limit exceeded" / "Límite de velocidad excedido"
-
-- Wait for your monthly quota to reset
-- Use `--limit` flag to test with fewer hotels
-- Consider upgrading to a paid plan if you need more requests
+- Make sure you copied the entire key without extra spaces
+- Try generating a new key from the provider's website
 
 ---
 
-- Espera a que tu cuota mensual se reinicie
-- Usa el flag `--limit` para probar con menos hoteles
-- Considera actualizar a un plan de pago si necesitas más solicitudes
+- Asegúrate de que copiaste la clave completa sin espacios extra
+- Intenta generar una nueva clave desde el sitio web del proveedor
 
-### Amadeus returns no hotels / Amadeus no devuelve hoteles
+### "Test failed" / "Prueba fallida"
 
-- The test environment has limited inventory (~21 PR hotels)
-- This is normal - production requires business approval
-- The cascade will use other sources for remaining hotels
+- Check your internet connection
+- The service might be temporarily unavailable, try again later
 
 ---
 
-- El ambiente de prueba tiene inventario limitado (~21 hoteles de PR)
-- Esto es normal - producción requiere aprobación comercial
-- El cascade usará otras fuentes para los hoteles restantes
+- Verifica tu conexión a internet
+- El servicio podría estar temporalmente no disponible, intenta más tarde
+
+### Not finding all hotels / No encuentra todos los hoteles
+
+- This is normal - some small hotels aren't listed on major platforms
+- The cascade system finds prices for ~97% of hotels
+- Hotels without online presence may need manual price entry
+
+---
+
+- Esto es normal - algunos hoteles pequeños no están listados en plataformas grandes
+- El sistema encuentra precios para ~97% de los hoteles
+- Hoteles sin presencia en línea pueden necesitar entrada manual de precios
+
+---
+
+## Quick Reference / Referencia Rápida
+
+| API | Website | What to copy / Qué copiar |
+|-----|---------|---------------------------|
+| SerpApi | serpapi.com | API Key |
+| Apify | apify.com | Personal API Token |
+| Amadeus | developers.amadeus.com | API Key + API Secret |
