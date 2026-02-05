@@ -26,7 +26,7 @@ from ui.components.progress_bar import ProgressBar
 from ui.components.stats_panel import StatsPanel
 from ui.utils.date_picker import DateEntry
 from ui.utils.icons import get_icon
-from ui.utils.theme import FUENTES, TAMANOS, TemaMode, obtener_tema
+from ui.utils.theme import BOTONES, FUENTES, TAMANOS, TemaMode, obtener_tema
 
 
 class ExecuteTab(ctk.CTkFrame):
@@ -92,33 +92,34 @@ class ExecuteTab(ctk.CTkFrame):
         self.frame_config = ctk.CTkFrame(
             self,
             fg_color=self.tema["fondo_secundario"],
-            corner_radius=10,
+            corner_radius=TAMANOS["radio_borde"],
         )
         self.frame_config.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
 
-        # Título
+        # Título con icono
         ctk.CTkLabel(
             self.frame_config,
             text="Search Configuration",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
+            image=get_icon("calendar"),
+            compound="left",
         ).pack(anchor="w", padx=15, pady=(15, 10))
 
         # Frame de parámetros
         frame_params = ctk.CTkFrame(self.frame_config, fg_color="transparent")
         frame_params.pack(fill="x", padx=15, pady=(0, 15))
 
-        # Primera fila: Fecha de entrada y Noches
+        # Single row: Check-in, Nights, Rooms, Adults, Children
         fila1 = ctk.CTkFrame(frame_params, fg_color="transparent")
         fila1.pack(fill="x", pady=5)
 
-        # Fecha de entrada
+        # Check-in
         ctk.CTkLabel(
             fila1,
-            text="Check-in date:",
+            text="Check-in:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
         ).pack(side="left", padx=(0, 5))
 
-        # Fecha por defecto: mañana
         fecha_default = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
         self.date_entry = DateEntry(
             fila1,
@@ -126,11 +127,10 @@ class ExecuteTab(ctk.CTkFrame):
             modo_tema=self.modo_tema,
             width=150,
         )
-        self.date_entry.pack(side="left", padx=(0, 20))
-        # Alias for backwards compatibility
+        self.date_entry.pack(side="left", padx=(0, 15))
         self.entry_fecha = self.date_entry
 
-        # Noches
+        # Nights
         ctk.CTkLabel(
             fila1,
             text="Nights:",
@@ -140,69 +140,64 @@ class ExecuteTab(ctk.CTkFrame):
         self.combo_noches = ctk.CTkComboBox(
             fila1,
             values=[str(i) for i in range(1, 15)],
-            width=70,
+            width=60,
             font=FUENTES.get("normal", ("Segoe UI", 12)),
         )
-        self.combo_noches.pack(side="left", padx=(0, 20))
+        self.combo_noches.pack(side="left", padx=(0, 15))
         self.combo_noches.set("1")
 
-        # Segunda fila: Habitaciones, Adultos, Niños
-        fila2 = ctk.CTkFrame(frame_params, fg_color="transparent")
-        fila2.pack(fill="x", pady=5)
-
-        # Habitaciones
+        # Rooms
         ctk.CTkLabel(
-            fila2,
+            fila1,
             text="Rooms:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
         ).pack(side="left", padx=(0, 5))
 
         self.combo_habitaciones = ctk.CTkComboBox(
-            fila2,
+            fila1,
             values=[str(i) for i in range(1, 6)],
-            width=70,
+            width=60,
             font=FUENTES.get("normal", ("Segoe UI", 12)),
         )
-        self.combo_habitaciones.pack(side="left", padx=(0, 20))
+        self.combo_habitaciones.pack(side="left", padx=(0, 15))
         self.combo_habitaciones.set("1")
 
-        # Adultos
+        # Adults
         ctk.CTkLabel(
-            fila2,
+            fila1,
             text="Adults:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
         ).pack(side="left", padx=(0, 5))
 
         self.combo_adultos = ctk.CTkComboBox(
-            fila2,
+            fila1,
             values=[str(i) for i in range(1, 5)],
-            width=70,
+            width=60,
             font=FUENTES.get("normal", ("Segoe UI", 12)),
         )
-        self.combo_adultos.pack(side="left", padx=(0, 20))
+        self.combo_adultos.pack(side="left", padx=(0, 15))
         self.combo_adultos.set("2")
 
-        # Niños
+        # Children
         ctk.CTkLabel(
-            fila2,
+            fila1,
             text="Children:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
         ).pack(side="left", padx=(0, 5))
 
         self.combo_ninos = ctk.CTkComboBox(
-            fila2,
+            fila1,
             values=[str(i) for i in range(0, 5)],
-            width=70,
+            width=60,
             font=FUENTES.get("normal", ("Segoe UI", 12)),
         )
         self.combo_ninos.pack(side="left")
         self.combo_ninos.set("0")
 
-        # Tercera fila: Opciones y botones
+        # Options and buttons row
         fila3 = ctk.CTkFrame(frame_params, fg_color="transparent")
         fila3.pack(fill="x", pady=(10, 0))
 
-        # Checkbox usar cascade
         self.var_cascade = ctk.BooleanVar(value=True)
         self.check_cascade = ctk.CTkCheckBox(
             fila3,
@@ -212,7 +207,6 @@ class ExecuteTab(ctk.CTkFrame):
         )
         self.check_cascade.pack(side="left", padx=(0, 20))
 
-        # Botones Iniciar/Detener
         self.boton_detener = ctk.CTkButton(
             fila3,
             text="Stop",
@@ -233,8 +227,8 @@ class ExecuteTab(ctk.CTkFrame):
             image=get_icon("play"),
             compound="left",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
-            fg_color=self.tema["estados"]["exito"],
-            hover_color="#27ae60",
+            fg_color=BOTONES["exito"]["fg"],
+            hover_color=BOTONES["exito"]["hover"],
             width=140,
             command=self._iniciar_busqueda,
         )
@@ -245,7 +239,7 @@ class ExecuteTab(ctk.CTkFrame):
         self.frame_progreso = ctk.CTkFrame(
             self,
             fg_color=self.tema["fondo_secundario"],
-            corner_radius=10,
+            corner_radius=TAMANOS["radio_borde"],
         )
         self.frame_progreso.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 10))
 
@@ -253,6 +247,8 @@ class ExecuteTab(ctk.CTkFrame):
             self.frame_progreso,
             text="Progress",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
+            image=get_icon("chart"),
+            compound="left",
         ).pack(anchor="w", padx=15, pady=(15, 5))
 
         self.progress_bar = ProgressBar(
@@ -274,7 +270,7 @@ class ExecuteTab(ctk.CTkFrame):
         self.frame_log = ctk.CTkFrame(
             self.frame_log_stats,
             fg_color=self.tema["fondo_secundario"],
-            corner_radius=10,
+            corner_radius=TAMANOS["radio_borde"],
         )
         self.frame_log.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
 
@@ -282,6 +278,8 @@ class ExecuteTab(ctk.CTkFrame):
             self.frame_log,
             text="Search Log",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
+            image=get_icon("list"),
+            compound="left",
         ).pack(anchor="w", padx=15, pady=(15, 5))
 
         self.log_viewer = LogViewer(
@@ -360,6 +358,9 @@ class ExecuteTab(ctk.CTkFrame):
         self.log_viewer.agregar_log(
             f"Dates: {check_in} → {check_out} ({noches} nights)", "info"
         )
+        self.log_viewer.agregar_log(
+            f"Cascade: {'ON' if usar_cascade else 'OFF'} — Initializing providers...", "info"
+        )
 
         # Iniciar thread
         self._thread_busqueda = threading.Thread(
@@ -388,28 +389,50 @@ class ExecuteTab(ctk.CTkFrame):
             from price_providers.serpapi import SerpApiProvider
             from price_providers.xotelo import XoteloProvider
 
-            # Crear providers
+            # Crear providers y reportar disponibilidad
             providers = []
+            provider_classes = [
+                ("Xotelo", XoteloProvider),
+                ("SerpApi", SerpApiProvider),
+                ("Apify", ApifyProvider),
+                ("Amadeus", AmadeusProvider),
+            ]
+
             if usar_cascade:
+                for name, cls in provider_classes:
+                    try:
+                        p = cls()
+                        if p.is_available():
+                            providers.append(p)
+                            self._queue.put(("log", f"  ✓ {name}: ready", "success"))
+                        else:
+                            # Distinguish between missing package and missing key
+                            pkg_flags = {
+                                "Xotelo": True,
+                                "SerpApi": getattr(__import__("price_providers.serpapi", fromlist=["SERPAPI_AVAILABLE"]), "SERPAPI_AVAILABLE", False),
+                                "Apify": getattr(__import__("price_providers.apify", fromlist=["APIFY_AVAILABLE"]), "APIFY_AVAILABLE", False),
+                                "Amadeus": getattr(__import__("price_providers.amadeus", fromlist=["AMADEUS_AVAILABLE"]), "AMADEUS_AVAILABLE", False),
+                            }
+                            if not pkg_flags.get(name, True):
+                                self._queue.put(("log", f"  ✗ {name}: pip package not installed", "warning"))
+                            else:
+                                self._queue.put(("log", f"  ✗ {name}: missing API key (check API Keys tab)", "warning"))
+                    except Exception as e:
+                        self._queue.put(("log", f"  ✗ {name}: init error — {e}", "warning"))
+            else:
+                # Solo Xotelo cuando cascade está desactivado
                 try:
-                    providers.append(XoteloProvider())
-                except Exception:
-                    pass
-                try:
-                    providers.append(SerpApiProvider())
-                except Exception:
-                    pass
-                try:
-                    providers.append(ApifyProvider())
-                except Exception:
-                    pass
-                try:
-                    providers.append(AmadeusProvider())
-                except Exception:
-                    pass
+                    p = XoteloProvider()
+                    if p.is_available():
+                        providers.append(p)
+                        self._queue.put(("log", "  ✓ Xotelo: available", "success"))
+                except Exception as e:
+                    self._queue.put(("log", f"  ✗ Xotelo: init error — {e}", "warning"))
+
+            self._queue.put(("log", f"Active providers: {len(providers)} of {len(provider_classes) if usar_cascade else 1}", "info"))
 
             if not providers:
-                self._queue.put(("log", "No providers available", "error"))
+                self._queue.put(("log", "No providers available. Check API Keys tab.", "error"))
                 self._queue.put(("done", None, None))
                 return
 

@@ -9,7 +9,8 @@ from typing import Dict
 
 import customtkinter as ctk
 
-from ui.utils.theme import FUENTES, TemaMode, obtener_tema
+from ui.utils.icons import get_icon
+from ui.utils.theme import FUENTES, TAMANOS, TemaMode, obtener_tema
 
 
 class StatsPanel(ctk.CTkFrame):
@@ -43,7 +44,7 @@ class StatsPanel(ctk.CTkFrame):
         self.tema = obtener_tema(modo_tema)
 
         super().__init__(
-            master, fg_color=self.tema["fondo_secundario"], corner_radius=10, **kwargs
+            master, fg_color=self.tema["fondo_secundario"], corner_radius=TAMANOS["radio_borde"], **kwargs
         )
 
         # Inicializar estadísticas en cero
@@ -76,6 +77,8 @@ class StatsPanel(ctk.CTkFrame):
             self.frame_encabezado,
             text="Search Statistics",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
+            image=get_icon("chart"),
+            compound="left",
         )
         self.label_titulo.pack(side="left")
 

@@ -1,5 +1,71 @@
 # Session Changelog
 
+## 2026-02-04 — Visual Design Modernization (Figma Redesign)
+
+### What Was Done
+Implemented a comprehensive visual redesign based on 3 Figma screenshots, covering 10 changes across 7 files. All changes verified visually in both dark and light modes.
+
+### Phase 1: Theme Foundation (`ui/utils/theme.py`)
+- **3 new button color roles** in `BOTONES` dict:
+  - `violeta`: #8B5CF6 / #7C3AED (Download PR Hotels)
+  - `indigo`: #6366F1 / #4F46E5 (Load Database)
+  - `azul`: #3B82F6 / #2563EB (Load Excel, Copy, Add to List)
+- **Updated `exito` green**: #22C55E / #16A34A (Save Excel, Start Search, Export)
+- **New `BOTONES_OUTLINED` dict**: 3 outlined/ghost button styles (default, peligro, secundario) with `fg_color="transparent"`, `border_width=2`, and (light, dark) tuple colors
+- **Corner radius**: `TAMANOS["radio_borde"]` increased from 8 to 16
+
+### Phase 2: Moon/Sun Toggle (`ui/app.py`)
+- Replaced `CTkSwitch` theme toggle with circular `CTkButton` (36x36, corner_radius=18)
+- Moon icon in dark mode, sun icon in light mode
+- `_alternar_tema()` toggles icon dynamically
+
+### Phase 3: Hotels Tab Buttons (`ui/tabs/hotels_tab.py`)
+- **Fila 1 (Data)**: Solid buttons with new colors — violeta, indigo, azul, exito
+- **Fila 2 (Actions)**: Outlined buttons — default border, peligro border, secundario border
+- **Add to List**: Added plus icon + azul color
+- **Corner radius**: Updated on `barra_herramientas` and `panel_agregar`
+
+### Phase 4: Execute Tab Layout (`ui/tabs/execute_tab.py`)
+- **Single-row parameters**: Merged 2 rows into 1 (Check-in, Nights, Rooms, Adults, Children)
+- **Section header icons**: calendar → "Search Configuration", chart → "Progress", list → "Search Log"
+- **Corner radius**: Updated on all 3 section cards
+- **Start Search**: Updated to new green (`BOTONES["exito"]`)
+
+### Phase 5: Results Tab Filter Pills (`ui/tabs/results_tab.py`)
+- **Replaced RadioButtons** with `CTkSegmentedButton` (values: "All", "With Price", "No Price")
+- **Callback mapping**: `_FILTRO_MAP` dict + `_on_filtro_segmented()` method
+- **Theme support**: Segmented button colors update in `cambiar_tema()`
+- **Corner radius**: Updated on all cards
+
+### Phase 6: Empty State (`ui/components/hotel_table.py`)
+- Added empty state overlay with 48x48 list icon, title "No hotels added yet", subtitle guidance
+- `_actualizar_empty_state()` shows/hides based on hotel count
+- Integrated in `agregar_hotel()`, `cargar_hoteles()`, `limpiar()`, `eliminar_seleccionados()`
+
+### Phase 7: Stats Panel (`ui/components/stats_panel.py`)
+- Added chart icon to "Search Statistics" header
+- Updated corner radius to `TAMANOS["radio_borde"]`
+
+### Files Modified
+- `ui/utils/theme.py` — BOTONES (3 new + 1 updated), BOTONES_OUTLINED, radio_borde 16
+- `ui/app.py` — Moon/sun toggle button
+- `ui/tabs/hotels_tab.py` — Solid + outlined buttons, plus icon, corner radius
+- `ui/tabs/execute_tab.py` — Single-row params, section icons, corner radius, green button
+- `ui/tabs/results_tab.py` — Segmented filter pills, corner radius
+- `ui/components/hotel_table.py` — Empty state overlay
+- `ui/components/stats_panel.py` — Chart icon, corner radius
+
+### Design Decisions
+- **BOTONES_OUTLINED uses (light, dark) tuples** for border and text colors, ensuring visibility in both themes
+- **CTkSegmentedButton** replaces 3 RadioButtons for a more modern filter pill UX
+- **Corner radius 16** matches Figma's rounded-2xl design language
+- **Moon/sun circular button** replaces switch for cleaner, more intuitive theme toggle
+
+### Verified
+Screenshots captured for Hotels tab (dark + light), Execute tab, and Results tab confirming all visual changes.
+
+---
+
 ## 2026-02-04 — Light Mode Contrast Fix
 
 ### Problem

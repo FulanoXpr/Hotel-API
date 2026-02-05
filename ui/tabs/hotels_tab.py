@@ -23,7 +23,7 @@ sys.path.insert(
 from ui.components.hotel_table import HotelData, HotelTable
 from ui.utils.excel_handler import ExcelHandler
 from ui.utils.icons import get_icon
-from ui.utils.theme import BOTONES, TAMANOS, obtener_fuente
+from ui.utils.theme import BOTONES, BOTONES_OUTLINED, TAMANOS, obtener_fuente
 from ui.utils.tooltip import ToolTip
 
 
@@ -289,7 +289,7 @@ class HotelsTab(ctk.CTkFrame):
         """Crea la barra de herramientas superior en 2 filas."""
         padding = TAMANOS["padding_medio"]
 
-        self.barra_herramientas = ctk.CTkFrame(self)
+        self.barra_herramientas = ctk.CTkFrame(self, corner_radius=TAMANOS["radio_borde"])
         self.barra_herramientas.grid(
             row=0, column=0, sticky="ew", padx=padding, pady=(padding, 5)
         )
@@ -304,8 +304,8 @@ class HotelsTab(ctk.CTkFrame):
             image=get_icon("download"),
             compound="left",
             width=160,
-            fg_color=BOTONES["advertencia"]["fg"],
-            hover_color=BOTONES["advertencia"]["hover"],
+            fg_color=BOTONES["violeta"]["fg"],
+            hover_color=BOTONES["violeta"]["hover"],
             command=self._descargar_cache_hoteles,
         )
         self.btn_download_cache.pack(side="left", padx=5, pady=2)
@@ -316,6 +316,8 @@ class HotelsTab(ctk.CTkFrame):
             image=get_icon("database"),
             compound="left",
             width=TAMANOS["ancho_boton"],
+            fg_color=BOTONES["indigo"]["fg"],
+            hover_color=BOTONES["indigo"]["hover"],
             command=self._cargar_database,
         )
         self.btn_cargar_db.pack(side="left", padx=5, pady=2)
@@ -326,6 +328,8 @@ class HotelsTab(ctk.CTkFrame):
             image=get_icon("folder"),
             compound="left",
             width=TAMANOS["ancho_boton"],
+            fg_color=BOTONES["azul"]["fg"],
+            hover_color=BOTONES["azul"]["hover"],
             command=self._cargar_excel,
         )
         self.btn_cargar.pack(side="left", padx=5, pady=2)
@@ -336,6 +340,8 @@ class HotelsTab(ctk.CTkFrame):
             image=get_icon("save"),
             compound="left",
             width=TAMANOS["ancho_boton"],
+            fg_color=BOTONES["exito"]["fg"],
+            hover_color=BOTONES["exito"]["hover"],
             command=self._guardar_excel,
         )
         self.btn_guardar.pack(side="left", padx=5, pady=2)
@@ -350,8 +356,11 @@ class HotelsTab(ctk.CTkFrame):
             image=get_icon("search"),
             compound="left",
             width=120,
-            fg_color=BOTONES["primario"]["fg"],
-            hover_color=BOTONES["primario"]["hover"],
+            fg_color=BOTONES_OUTLINED["default"]["fg"],
+            hover_color=BOTONES_OUTLINED["default"]["hover"],
+            border_color=BOTONES_OUTLINED["default"]["border"],
+            text_color=BOTONES_OUTLINED["default"]["text"],
+            border_width=2,
             command=self._buscar_keys_faltantes,
         )
         self.btn_buscar_keys.pack(side="left", padx=5, pady=2)
@@ -362,8 +371,11 @@ class HotelsTab(ctk.CTkFrame):
             image=get_icon("search"),
             compound="left",
             width=160,
-            fg_color=BOTONES["exito"]["fg"],
-            hover_color=BOTONES["exito"]["hover"],
+            fg_color=BOTONES_OUTLINED["peligro"]["fg"],
+            hover_color=BOTONES_OUTLINED["peligro"]["hover"],
+            border_color=BOTONES_OUTLINED["peligro"]["border"],
+            text_color=BOTONES_OUTLINED["peligro"]["text"],
+            border_width=2,
             command=self._buscar_keys_seleccionados,
         )
         self.btn_buscar_keys_sel.pack(side="left", padx=5, pady=2)
@@ -379,8 +391,11 @@ class HotelsTab(ctk.CTkFrame):
             image=get_icon("trash"),
             compound="left",
             width=100,
-            fg_color=BOTONES["peligro"]["fg"],
-            hover_color=BOTONES["peligro"]["hover"],
+            fg_color=BOTONES_OUTLINED["secundario"]["fg"],
+            hover_color=BOTONES_OUTLINED["secundario"]["hover"],
+            border_color=BOTONES_OUTLINED["secundario"]["border"],
+            text_color=BOTONES_OUTLINED["secundario"]["text"],
+            border_width=2,
             command=self._eliminar_seleccionados,
         )
         self.btn_eliminar.pack(side="left", padx=5, pady=2)
@@ -388,9 +403,14 @@ class HotelsTab(ctk.CTkFrame):
         self.btn_limpiar = ctk.CTkButton(
             fila_acciones,
             text="Clear All",
+            image=get_icon("clear"),
+            compound="left",
             width=100,
-            fg_color=BOTONES["secundario"]["fg"],
-            hover_color=BOTONES["secundario"]["hover"],
+            fg_color=BOTONES_OUTLINED["secundario"]["fg"],
+            hover_color=BOTONES_OUTLINED["secundario"]["hover"],
+            border_color=BOTONES_OUTLINED["secundario"]["border"],
+            text_color=BOTONES_OUTLINED["secundario"]["text"],
+            border_width=2,
             command=self._limpiar_todo,
         )
         self.btn_limpiar.pack(side="left", padx=5, pady=2)
@@ -421,7 +441,7 @@ class HotelsTab(ctk.CTkFrame):
         padding = TAMANOS["padding_medio"]
 
         # Frame contenedor
-        self.panel_agregar = ctk.CTkFrame(self)
+        self.panel_agregar = ctk.CTkFrame(self, corner_radius=TAMANOS["radio_borde"])
         self.panel_agregar.grid(row=2, column=0, sticky="ew", padx=padding, pady=5)
         self.panel_agregar.grid_columnconfigure(1, weight=1)
         self.panel_agregar.grid_columnconfigure(3, weight=1)
@@ -468,7 +488,11 @@ class HotelsTab(ctk.CTkFrame):
         self.btn_agregar = ctk.CTkButton(
             self.panel_agregar,
             text="Add to List",
+            image=get_icon("plus"),
+            compound="left",
             width=120,
+            fg_color=BOTONES["azul"]["fg"],
+            hover_color=BOTONES["azul"]["hover"],
             command=self._agregar_hotel,
         )
         self.btn_agregar.grid(row=1, column=5, padx=5, pady=5)
@@ -578,8 +602,12 @@ class HotelsTab(ctk.CTkFrame):
 
     def _excel_cargado(self, hoteles: List[HotelData], ruta: str) -> None:
         """Callback cuando el Excel se cargó exitosamente."""
-        self._ocultar_loading()
+        self.label_busqueda.configure(
+            text=f"Rendering {len(hoteles)} hotels...", text_color="gray"
+        )
+        self.update_idletasks()
         self.tabla.cargar_hoteles(hoteles)
+        self._ocultar_loading()
         self._actualizar_contador()
         self.btn_cargar.configure(state="normal", text="Load Excel")
         self.label_busqueda.configure(
@@ -683,8 +711,12 @@ class HotelsTab(ctk.CTkFrame):
 
     def _database_cargada(self, hoteles: List[HotelData], ruta: Path) -> None:
         """Callback cuando la database se cargó exitosamente."""
-        self._ocultar_loading()
+        self.label_busqueda.configure(
+            text=f"Rendering {len(hoteles)} hotels...", text_color="gray"
+        )
+        self.update_idletasks()
         self.tabla.cargar_hoteles(hoteles)
+        self._ocultar_loading()
         self._actualizar_contador()
         self.btn_cargar_db.configure(state="normal", text="Load Database")
         self.label_busqueda.configure(

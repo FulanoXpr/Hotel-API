@@ -200,16 +200,20 @@ class HotelPriceApp(ctk.CTk):
         self.btn_updates.grid(row=0, column=2, padx=5, pady=10)
         ToolTip(self.btn_updates, "Check for updates")
 
-        # Toggle de tema (dark/light)
-        self.toggle_tema = ctk.CTkSwitch(
+        # Toggle de tema (moon/sun button)
+        self.btn_tema = ctk.CTkButton(
             self.barra_superior,
-            text="Dark Mode",
+            text="",
+            image=get_icon("moon"),
+            width=36,
+            height=36,
+            corner_radius=18,
+            fg_color="transparent",
+            hover_color="gray30",
             command=self._alternar_tema,
-            onvalue=True,
-            offvalue=False,
         )
-        self.toggle_tema.grid(row=0, column=3, padx=TAMANOS["padding_grande"], pady=10)
-        self.toggle_tema.select()  # Iniciar en modo oscuro
+        self.btn_tema.grid(row=0, column=3, padx=TAMANOS["padding_grande"], pady=10)
+        ToolTip(self.btn_tema, "Toggle dark/light mode")
 
     def _crear_tabview(self) -> None:
         """Crea el widget de pestañas principal."""
@@ -403,12 +407,12 @@ class HotelPriceApp(ctk.CTk):
 
     def _alternar_tema(self) -> None:
         """Alterna entre modo oscuro y claro."""
-        if self.toggle_tema.get():
-            self.modo_tema = "dark"
-            self.toggle_tema.configure(text="Dark Mode")
-        else:
+        if self.modo_tema == "dark":
             self.modo_tema = "light"
-            self.toggle_tema.configure(text="Light Mode")
+            self.btn_tema.configure(image=get_icon("sun"))
+        else:
+            self.modo_tema = "dark"
+            self.btn_tema.configure(image=get_icon("moon"))
 
         aplicar_tema(self.modo_tema)
 

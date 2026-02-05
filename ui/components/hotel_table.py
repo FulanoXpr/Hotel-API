@@ -9,6 +9,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 import customtkinter as ctk
 
+from ui.utils.icons import get_icon
 from ui.utils.theme import FUENTES, TAMANOS, obtener_fuente
 
 # Tipo para representar datos de un hotel
@@ -202,6 +203,39 @@ class HotelTable(ctk.CTkScrollableFrame):
         self.grid_columnconfigure(0, weight=1)
 
         self._crear_encabezados()
+        self._crear_empty_state()
+        self._actualizar_empty_state()
+
+    def _crear_empty_state(self) -> None:
+        """Crea el frame de estado vacío."""
+        self.frame_empty_state = ctk.CTkFrame(self, fg_color="transparent")
+
+        icon_label = ctk.CTkLabel(
+            self.frame_empty_state,
+            text="",
+            image=get_icon("list", size=(48, 48)),
+        )
+        icon_label.pack(pady=(30, 10))
+
+        ctk.CTkLabel(
+            self.frame_empty_state,
+            text="No hotels added yet",
+            font=obtener_fuente("encabezado"),
+        ).pack(pady=(0, 5))
+
+        ctk.CTkLabel(
+            self.frame_empty_state,
+            text="Load an Excel file or add hotels manually",
+            font=obtener_fuente("pequena"),
+            text_color="gray",
+        ).pack()
+
+    def _actualizar_empty_state(self) -> None:
+        """Muestra u oculta el empty state según la cantidad de hoteles."""
+        if len(self.hoteles) == 0:
+            self.frame_empty_state.grid(row=2, column=0, sticky="ew", pady=20)
+        else:
+            self.frame_empty_state.grid_forget()
 
     def _crear_encabezados(self) -> None:
         """Crea la fila de encabezados."""
@@ -293,6 +327,7 @@ class HotelTable(ctk.CTkScrollableFrame):
         }
         self.hoteles.append(hotel_data)
         self._agregar_fila(hotel_data, len(self.hoteles))
+        self._actualizar_empty_state()
 
     def _agregar_fila(self, hotel_data: HotelData, indice: int) -> None:
         """Crea y agrega una fila a la tabla."""
@@ -317,8 +352,14 @@ class HotelTable(ctk.CTkScrollableFrame):
         self.limpiar()
         self.hoteles = list(hoteles)
 
+        # Crear filas en lotes para no bloquear el UI
+        BATCH_SIZE = 20
         for idx, hotel in enumerate(self.hoteles, start=1):
             self._agregar_fila(hotel, idx)
+            if idx % BATCH_SIZE == 0:
+                self.update_idletasks()
+
+        self._actualizar_empty_state()
 
     def eliminar_seleccionados(self) -> int:
         """
@@ -349,6 +390,7 @@ class HotelTable(ctk.CTkScrollableFrame):
         # Resetear checkbox de seleccionar todos
         self.var_select_all.set(False)
         self._notificar_cambio_seleccion()
+        self._actualizar_empty_state()
 
         return len(indices_a_eliminar)
 
@@ -377,6 +419,7 @@ class HotelTable(ctk.CTkScrollableFrame):
         self.filas.clear()
         self.hoteles.clear()
         self.var_select_all.set(False)
+        self._actualizar_empty_state()
 
     def actualizar_hotel(self, indice: int, hotel_data: HotelData) -> None:
         """

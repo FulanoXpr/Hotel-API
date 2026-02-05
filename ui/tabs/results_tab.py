@@ -34,13 +34,31 @@ class ResultsTab(ctk.CTkFrame):
     - Copiar al portapapeles
     """
 
-    # Colores por proveedor
+    # Colores por proveedor (cascade + sub-proveedores Xotelo)
     COLORES_PROVEEDORES = {
+        # Cascade providers
         "xotelo": "#3498db",
         "serpapi": "#9b59b6",
         "apify": "#e67e22",
         "amadeus": "#1abc9c",
         "cache": "#95a5a6",
+        # Sub-proveedores Xotelo (OTAs)
+        "vio.com": "#E74C3C",
+        "booking.com": "#003580",
+        "agoda.com": "#5FC52E",
+        "trip.com": "#287DFA",
+        "official site": "#F39C12",
+        "google hotels": "#4285F4",
+        "hotels.com": "#D32F2F",
+        "expedia": "#FFCC00",
+        "priceline": "#1A4D8F",
+        "tripadvisor": "#34E0A1",
+        "il hotel": "#FF6B81",
+        "destinia": "#FF5722",
+        "zenhotels": "#8E44AD",
+        "prestigia": "#2ECC71",
+        "laterooms": "#E91E63",
+        "ostrovok": "#00BCD4",
     }
 
     def __init__(
@@ -83,7 +101,7 @@ class ResultsTab(ctk.CTkFrame):
         self.frame_resumen = ctk.CTkFrame(
             self,
             fg_color=self.tema["fondo_secundario"],
-            corner_radius=10,
+            corner_radius=TAMANOS["radio_borde"],
         )
         self.frame_resumen.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
 
@@ -135,62 +153,57 @@ class ResultsTab(ctk.CTkFrame):
 
             self._labels_metricas[key] = valor_label
 
-        # Barras de proveedores
-        frame_proveedores = ctk.CTkFrame(self.frame_resumen, fg_color="transparent")
-        frame_proveedores.pack(fill="x", padx=15, pady=(0, 15))
+        # Sección de distribución por proveedor
+        self._frame_distribucion = ctk.CTkFrame(self.frame_resumen, fg_color="transparent")
+        self._frame_distribucion.pack(fill="x", padx=15, pady=(0, 15))
 
         ctk.CTkLabel(
-            frame_proveedores,
+            self._frame_distribucion,
             text="Distribution by Provider:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
         ).pack(anchor="w", pady=(0, 5))
 
+        # Barra visual proporcional
         self._frame_barras_proveedores = ctk.CTkFrame(
-            frame_proveedores,
+            self._frame_distribucion,
             fg_color=self.tema["fondo_principal"],
             corner_radius=6,
-            height=30,
+            height=24,
         )
         self._frame_barras_proveedores.pack(fill="x")
         self._frame_barras_proveedores.pack_propagate(False)
+
+        # Leyenda debajo de la barra
+        self._frame_leyenda = ctk.CTkFrame(self._frame_distribucion, fg_color="transparent")
+        self._frame_leyenda.pack(fill="x", pady=(6, 0))
 
     def _crear_seccion_filtros(self) -> None:
         """Crea la sección de filtros y acciones."""
         self.frame_filtros = ctk.CTkFrame(
             self,
             fg_color=self.tema["fondo_secundario"],
-            corner_radius=10,
+            corner_radius=TAMANOS["radio_borde"],
         )
         self.frame_filtros.grid(row=1, column=0, sticky="ew", padx=10, pady=(0, 10))
 
         frame_inner = ctk.CTkFrame(self.frame_filtros, fg_color="transparent")
         frame_inner.pack(fill="x", padx=15, pady=10)
 
-        # Filtros
-        ctk.CTkLabel(
-            frame_inner,
-            text="Filter:",
-            font=FUENTES.get("normal", ("Segoe UI", 12)),
-        ).pack(side="left", padx=(0, 10))
-
+        # Filtros - segmented button (pills)
         self.var_filtro = ctk.StringVar(value="todos")
 
-        filtros = [
-            ("All", "todos"),
-            ("With Price", "con_precio"),
-            ("No Price", "sin_precio"),
-        ]
+        self._FILTRO_MAP = {"All": "todos", "With Price": "con_precio", "No Price": "sin_precio"}
 
-        for texto, valor in filtros:
-            radio = ctk.CTkRadioButton(
-                frame_inner,
-                text=texto,
-                variable=self.var_filtro,
-                value=valor,
-                font=FUENTES.get("normal", ("Segoe UI", 12)),
-                command=self._aplicar_filtro,
-            )
-            radio.pack(side="left", padx=10)
+        self.segmented_filtro = ctk.CTkSegmentedButton(
+            frame_inner,
+            values=["All", "With Price", "No Price"],
+            command=self._on_filtro_segmented,
+            selected_color=self.tema["acento"],
+            selected_hover_color=self.tema["acento_hover"],
+            font=FUENTES.get("normal", ("Segoe UI", 12)),
+        )
+        self.segmented_filtro.set("All")
+        self.segmented_filtro.pack(side="left", padx=(0, 10))
 
         # Botones de acción
         self.boton_copiar = ctk.CTkButton(
@@ -219,12 +232,17 @@ class ResultsTab(ctk.CTkFrame):
         )
         self.boton_exportar.pack(side="right")
 
+    def _on_filtro_segmented(self, value: str) -> None:
+        """Callback del segmented button de filtro."""
+        self.var_filtro.set(self._FILTRO_MAP.get(value, "todos"))
+        self._aplicar_filtro()
+
     def _crear_seccion_tabla(self) -> None:
         """Crea la sección de tabla de resultados."""
         self.frame_tabla = ctk.CTkFrame(
             self,
             fg_color=self.tema["fondo_secundario"],
-            corner_radius=10,
+            corner_radius=TAMANOS["radio_borde"],
         )
         self.frame_tabla.grid(row=2, column=0, sticky="nsew", padx=10, pady=(0, 10))
 
@@ -517,10 +535,12 @@ class ResultsTab(ctk.CTkFrame):
             print(f"Error al actualizar métricas: {e}")
 
     def _actualizar_barras_proveedores(self) -> None:
-        """Actualiza las barras de distribución por proveedor."""
+        """Actualiza las barras de distribución por proveedor con leyenda."""
         try:
-            # Limpiar barras existentes
+            # Limpiar barras y leyenda existentes
             for widget in self._frame_barras_proveedores.winfo_children():
+                widget.destroy()
+            for widget in self._frame_leyenda.winfo_children():
                 widget.destroy()
 
             if not self._resultados:
@@ -530,21 +550,21 @@ class ResultsTab(ctk.CTkFrame):
             conteo: Dict[str, int] = {}
             for r in self._resultados:
                 if r and r.get("proveedor"):
-                    proveedor = str(r.get("proveedor")).lower()
+                    proveedor = str(r.get("proveedor"))
                     conteo[proveedor] = conteo.get(proveedor, 0) + 1
 
             total_con_precio = sum(conteo.values())
             if total_con_precio == 0:
                 return
 
-            # Crear barras proporcionales
-            proveedores_lista = list(conteo.keys())
-            relx_actual = 0.0
+            # Ordenar por cantidad descendente
+            proveedores_ordenados = sorted(conteo.items(), key=lambda x: x[1], reverse=True)
 
-            for proveedor in proveedores_lista:
-                cantidad = conteo[proveedor]
+            # Crear barras proporcionales
+            relx_actual = 0.0
+            for proveedor, cantidad in proveedores_ordenados:
                 proporcion = cantidad / total_con_precio
-                color = self.COLORES_PROVEEDORES.get(proveedor, self.tema["acento"])
+                color = self.COLORES_PROVEEDORES.get(proveedor.lower(), self.tema["acento"])
 
                 barra = ctk.CTkFrame(
                     self._frame_barras_proveedores,
@@ -552,11 +572,32 @@ class ResultsTab(ctk.CTkFrame):
                     corner_radius=0,
                 )
                 barra.place(
-                    relwidth=proporcion,
+                    relwidth=max(proporcion, 0.01),  # mínimo visible
                     relheight=1.0,
                     relx=relx_actual,
                 )
                 relx_actual += proporcion
+
+            # Crear leyenda con dot + nombre + conteo + porcentaje
+            for proveedor, cantidad in proveedores_ordenados:
+                pct = cantidad / total_con_precio * 100
+                color = self.COLORES_PROVEEDORES.get(proveedor.lower(), self.tema["acento"])
+
+                item = ctk.CTkFrame(self._frame_leyenda, fg_color="transparent")
+                item.pack(side="left", padx=(0, 16))
+
+                # Dot de color
+                dot = ctk.CTkFrame(item, width=10, height=10, corner_radius=5, fg_color=color)
+                dot.pack(side="left", padx=(0, 4))
+                dot.pack_propagate(False)
+
+                # Texto: "Provider 25 (31.6%)"
+                ctk.CTkLabel(
+                    item,
+                    text=f"{proveedor}  {cantidad} ({pct:.0f}%)",
+                    font=FUENTES.get("pequena", ("Segoe UI", 10)),
+                ).pack(side="left")
+
         except Exception as e:
             print(f"Error al actualizar barras de proveedores: {e}")
 
@@ -675,6 +716,12 @@ class ResultsTab(ctk.CTkFrame):
         self.frame_metricas.configure(fg_color=self.tema["fondo_principal"])
         self.frame_header.configure(fg_color=self.tema["fondo_principal"])
         self._frame_barras_proveedores.configure(fg_color=self.tema["fondo_principal"])
+
+        # Actualizar segmented button
+        self.segmented_filtro.configure(
+            selected_color=self.tema["acento"],
+            selected_hover_color=self.tema["acento_hover"],
+        )
 
         # Actualizar colores de métricas (valores con colores semánticos)
         colores_metricas = {

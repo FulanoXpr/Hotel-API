@@ -106,8 +106,33 @@ BOTONES: Dict[str, Dict[str, str]] = {
     "primario": {"fg": FPR_BLUE, "hover": FPR_BLUE_LIGHT},
     "peligro": {"fg": FPR_RED, "hover": "#c0392b"},
     "secundario": {"fg": FPR_GREY, "hover": "#555555"},
-    "exito": {"fg": FPR_GREEN, "hover": "#8fb34a"},
+    "exito": {"fg": "#22C55E", "hover": "#16A34A"},
     "advertencia": {"fg": FPR_YELLOW, "hover": "#e09a10"},
+    "violeta": {"fg": "#8B5CF6", "hover": "#7C3AED"},
+    "indigo": {"fg": "#6366F1", "hover": "#4F46E5"},
+    "azul": {"fg": "#3B82F6", "hover": "#2563EB"},
+}
+
+# Estilos de botones outlined (ghost/border)
+BOTONES_OUTLINED: Dict[str, Dict[str, any]] = {
+    "default": {
+        "fg": "transparent",
+        "hover": ("gray90", "gray25"),
+        "border": "#d1d5db",
+        "text": ("#374151", "#d1d5db"),
+    },
+    "peligro": {
+        "fg": "transparent",
+        "hover": ("gray90", "gray25"),
+        "border": "#f87171",
+        "text": ("#ef4444", "#f87171"),
+    },
+    "secundario": {
+        "fg": "transparent",
+        "hover": ("gray90", "gray25"),
+        "border": "#9ca3af",
+        "text": ("#6b7280", "#9ca3af"),
+    },
 }
 
 # Constantes de tamaño
@@ -115,7 +140,7 @@ TAMANOS: Dict[str, int] = {
     "padding_grande": 20,
     "padding_medio": 10,
     "padding_pequeno": 5,
-    "radio_borde": 8,
+    "radio_borde": 16,
     "ancho_boton": 120,
     "alto_boton": 32,
 }
