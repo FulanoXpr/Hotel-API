@@ -72,6 +72,9 @@ hiddenimports = [
     'ui.utils.env_manager',
     'ui.utils.excel_handler',
     'ui.utils.updater',
+    'ui.utils.icons',
+    'ui.utils.tooltip',
+    'ui.utils.date_picker',
     'ui.components',
     'ui.components.api_key_frame',
     'ui.components.hotel_table',
@@ -156,8 +159,8 @@ if is_mac:
         info_plist={
             'CFBundleName': app_name,
             'CFBundleDisplayName': 'Hotel Price Checker',
-            'CFBundleVersion': '1.0.0',
-            'CFBundleShortVersionString': '1.0.0',
+            'CFBundleVersion': '1.2.1',
+            'CFBundleShortVersionString': '1.2.1',
             'NSHighResolutionCapable': True,
             'NSRequiresAquaSystemAppearance': False,  # Soporte para Dark Mode
         },

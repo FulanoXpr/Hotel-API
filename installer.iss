@@ -8,7 +8,7 @@
 ; Output: dist/HotelPriceChecker-Setup.exe
 
 #define MyAppName "Hotel Price Checker"
-#define MyAppVersion "1.2.1"
+#define MyAppVersion "1.2.2"
 #define MyAppPublisher "Foundation for Puerto Rico"
 #define MyAppURL "https://github.com/FulanoXpr/Hotel-API"
 #define MyAppExeName "HotelPriceChecker.exe"
