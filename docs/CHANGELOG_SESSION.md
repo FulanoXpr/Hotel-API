@@ -1,5 +1,49 @@
 # Session Changelog
 
+## 2026-02-05 — v1.3.0 Release
+
+### Summary
+Visual redesign and UX improvements. Builds on v1.2.2 with modernized UI.
+
+### Changes vs v1.2.2 (Windows Release)
+
+| Feature | v1.2.2 | v1.3.0 |
+|---------|--------|--------|
+| Theme toggle | CTkSwitch | Moon/Sun circular button |
+| Button colors | Default CTk blue | New palette (violeta, indigo, azul) |
+| Button styles | Solid only | Solid + Outlined ghost buttons |
+| Corner radius | 8px | 16px (rounded-2xl) |
+| Search params | 2 rows | Single row layout |
+| Section headers | Text only | Icons + text (calendar, chart, list) |
+| Results filter | RadioButtons | Segmented pill buttons |
+| Provider distribution | Colored bar only | Bar + legend with colors per OTA |
+| Empty hotel table | Blank | Empty state with icon and guidance |
+| Load Database | Blocks UI | Batch rendering (20 rows at a time) |
+| Cascade logging | Silent failures | Detailed provider availability status |
+
+### New Provider Colors (OTA sub-providers)
+- Vio.com: #E74C3C (red)
+- Booking.com: #003580 (dark blue)
+- Agoda.com: #5FC52E (green)
+- Trip.com: #287DFA (blue)
+- Official Site: #F39C12 (yellow)
+- Google Hotels: #4285F4 (Google blue)
+- Hotels.com: #D32F2F (red)
+- Expedia: #FFCC00 (yellow)
+- TripAdvisor: #34E0A1 (teal)
+
+### Files Modified (8 files, 369 insertions, 126 deletions)
+- `ui/utils/theme.py` — BOTONES, BOTONES_OUTLINED, corner radius
+- `ui/utils/updater.py` — Version 1.3.0
+- `ui/app.py` — Moon/sun toggle
+- `ui/tabs/hotels_tab.py` — Button colors and styles
+- `ui/tabs/execute_tab.py` — Single-row params, icons, cascade logging
+- `ui/tabs/results_tab.py` — Filter pills, provider legend with colors
+- `ui/components/hotel_table.py` — Empty state, batch rendering
+- `ui/components/stats_panel.py` — Header icon
+
+---
+
 ## 2026-02-04 — Visual Design Modernization (Figma Redesign)
 
 ### What Was Done
