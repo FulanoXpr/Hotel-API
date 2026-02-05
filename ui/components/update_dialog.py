@@ -10,7 +10,8 @@ from typing import Any, Optional
 
 import customtkinter as ctk
 
-from ui.utils.theme import TAMANOS, obtener_fuente
+from ui.utils.icons import get_icon
+from ui.utils.theme import BOTONES, TAMANOS, obtener_fuente
 from ui.utils.updater import UpdateInfo, Updater, get_updater
 
 
@@ -135,17 +136,20 @@ class UpdateDialog(ctk.CTkToplevel):
             self.button_frame,
             text="Later",
             width=100,
-            fg_color="gray50",
+            fg_color=BOTONES["secundario"]["fg"],
+            hover_color=BOTONES["secundario"]["hover"],
             command=self.destroy,
         )
         self.btn_later.pack(side="left", padx=5)
 
         self.btn_download = ctk.CTkButton(
             self.button_frame,
-            text="⬇️ Download & Install",
+            text="Download & Install",
+            image=get_icon("download"),
+            compound="left",
             width=180,
-            fg_color="green",
-            hover_color="darkgreen",
+            fg_color=BOTONES["exito"]["fg"],
+            hover_color=BOTONES["exito"]["hover"],
             command=self._start_download,
         )
         self.btn_download.pack(side="right", padx=5)
@@ -157,7 +161,7 @@ class UpdateDialog(ctk.CTkToplevel):
         self.label_progress.pack(pady=2)
 
         # Update buttons
-        self.btn_download.configure(state="disabled", text="⬇️ Downloading...")
+        self.btn_download.configure(state="disabled", text="Downloading...")
         self.btn_later.configure(text="Cancel", command=self._cancel_download)
 
         # Start download
@@ -198,7 +202,7 @@ class UpdateDialog(ctk.CTkToplevel):
             self.btn_later.configure(text="Close", command=self.destroy)
             self.btn_download.configure(
                 state="normal",
-                text="🚀 Install Now",
+                text="Install Now",
                 command=self._install_update,
             )
 
@@ -214,7 +218,7 @@ class UpdateDialog(ctk.CTkToplevel):
             self.btn_later.configure(text="Close", command=self.destroy)
             self.btn_download.configure(
                 state="normal",
-                text="🔄 Retry",
+                text="Retry",
                 command=self._start_download,
             )
 

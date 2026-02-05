@@ -76,7 +76,6 @@ class StatsPanel(ctk.CTkFrame):
             self.frame_encabezado,
             text="Search Statistics",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
-            text_color=self.tema["texto_principal"],
         )
         self.label_titulo.pack(side="left")
 
@@ -130,7 +129,6 @@ class StatsPanel(ctk.CTkFrame):
                 frame_contador,
                 text=label,
                 font=FUENTES.get("pequena", ("Segoe UI", 10)),
-                text_color=self.tema["texto_secundario"],
             )
             label_nombre.pack()
 
@@ -149,7 +147,6 @@ class StatsPanel(ctk.CTkFrame):
             self,
             text="By Provider",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
-            text_color=self.tema["texto_principal"],
         )
         self.label_proveedores.pack(anchor="w", padx=15, pady=(0, 5))
 
@@ -182,7 +179,6 @@ class StatsPanel(ctk.CTkFrame):
             frame_fila,
             text=nombre,
             font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_principal"],
             width=70,
             anchor="w",
         )
@@ -306,8 +302,6 @@ class StatsPanel(ctk.CTkFrame):
         self.frame_contadores.configure(fg_color=self.tema["fondo_principal"])
         self.frame_proveedores.configure(fg_color=self.tema["fondo_principal"])
         self.separador.configure(fg_color=self.tema["borde"])
-        self.label_titulo.configure(text_color=self.tema["texto_principal"])
-        self.label_proveedores.configure(text_color=self.tema["texto_principal"])
 
         self.boton_reiniciar.configure(
             fg_color=self.tema["acento"],

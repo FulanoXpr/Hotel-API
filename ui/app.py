@@ -11,7 +11,9 @@ from typing import Any, Dict, Optional
 import customtkinter as ctk
 from PIL import Image
 
+from ui.utils.icons import get_icon
 from ui.utils.theme import TAMANOS, TemaMode, aplicar_tema, obtener_fuente
+from ui.utils.tooltip import ToolTip
 
 logger = logging.getLogger(__name__)
 
@@ -54,12 +56,12 @@ class HotelPriceApp(ctk.CTk):
     # Altura del logo (el path se calcula dinámicamente para PyInstaller)
     LOGO_HEIGHT: int = 35
 
-    # Tab names
+    # Tab names (clean text — icons are on buttons, not tab labels)
     PESTANAS: Dict[str, str] = {
-        "api_keys": "🔑 API Keys",
-        "hoteles": "📋 Hotels",
-        "ejecutar": "▶ Execute",
-        "resultados": "📊 Results",
+        "api_keys": "API Keys",
+        "hoteles": "Hotels",
+        "ejecutar": "Execute",
+        "resultados": "Results",
     }
 
     def __init__(self) -> None:
@@ -100,6 +102,32 @@ class HotelPriceApp(ctk.CTk):
         # Check for updates (async, non-blocking)
         self._check_for_updates()
 
+        # Keyboard shortcuts
+        self._configurar_atajos()
+
+    def _configurar_atajos(self) -> None:
+        """Configura atajos de teclado globales."""
+        # Cmd/Ctrl modifier según plataforma
+        mod = "Command" if sys.platform == "darwin" else "Control"
+
+        self.bind_all(f"<{mod}-o>", lambda e: self._atajo_cargar_excel())
+        self.bind_all(f"<{mod}-s>", lambda e: self._atajo_guardar_excel())
+        self.bind_all(f"<{mod}-Key-1>", lambda e: self.cambiar_pestana("api_keys"))
+        self.bind_all(f"<{mod}-Key-2>", lambda e: self.cambiar_pestana("hoteles"))
+        self.bind_all(f"<{mod}-Key-3>", lambda e: self.cambiar_pestana("ejecutar"))
+        self.bind_all(f"<{mod}-Key-4>", lambda e: self.cambiar_pestana("resultados"))
+
+    def _atajo_cargar_excel(self) -> None:
+        """Atajo Cmd/Ctrl+O: abre Excel en pestaña Hotels."""
+        self.cambiar_pestana("hoteles")
+        if self.tab_hoteles and hasattr(self.tab_hoteles, '_cargar_excel'):
+            self.tab_hoteles._cargar_excel()
+
+    def _atajo_guardar_excel(self) -> None:
+        """Atajo Cmd/Ctrl+S: guarda Excel desde pestaña Hotels."""
+        if self.tab_hoteles and hasattr(self.tab_hoteles, '_guardar_excel'):
+            self.tab_hoteles._guardar_excel()
+
     def _configurar_ventana(self) -> None:
         """Configura las propiedades de la ventana principal."""
         self.title(self.TITULO_APP)
@@ -127,7 +155,7 @@ class HotelPriceApp(ctk.CTk):
         # Frame de la barra superior
         self.barra_superior = ctk.CTkFrame(self, height=50, corner_radius=0)
         self.barra_superior.grid(row=0, column=0, sticky="ew", padx=0, pady=0)
-        self.barra_superior.grid_columnconfigure(2, weight=1)
+        self.barra_superior.grid_columnconfigure(1, weight=1)
 
         # Logo de FPR
         logo_path = get_resource_path("ui/assets/fpr_logo.png")
@@ -146,48 +174,41 @@ class HotelPriceApp(ctk.CTk):
             )
             self.label_logo.grid(row=0, column=0, padx=(TAMANOS["padding_grande"], 10), pady=8)
 
-        # Título de la aplicación
-        self.label_titulo = ctk.CTkLabel(
-            self.barra_superior, text=self.TITULO_APP, font=obtener_fuente("subtitulo")
-        )
-        self.label_titulo.grid(row=0, column=1, padx=0, pady=10)
-
-        # Version label
+        # Título con versión integrada
         try:
             from ui.utils.updater import APP_VERSION
-            version_text = f"v{APP_VERSION}"
+            titulo_texto = f"{self.TITULO_APP}  v{APP_VERSION}"
         except ImportError:
-            version_text = ""
+            titulo_texto = self.TITULO_APP
 
-        self.label_version = ctk.CTkLabel(
-            self.barra_superior,
-            text=version_text,
-            font=obtener_fuente("pequena"),
-            text_color="gray",
+        self.label_titulo = ctk.CTkLabel(
+            self.barra_superior, text=titulo_texto, font=obtener_fuente("subtitulo")
         )
-        self.label_version.grid(row=0, column=2, padx=5, pady=10, sticky="e")
+        self.label_titulo.grid(row=0, column=1, padx=0, pady=10, sticky="w")
 
         # Check updates button
         self.btn_updates = ctk.CTkButton(
             self.barra_superior,
-            text="🔄",
+            text="",
+            image=get_icon("refresh"),
             width=30,
             height=30,
             command=self._manual_check_updates,
             fg_color="transparent",
             hover_color="gray30",
         )
-        self.btn_updates.grid(row=0, column=3, padx=5, pady=10)
+        self.btn_updates.grid(row=0, column=2, padx=5, pady=10)
+        ToolTip(self.btn_updates, "Check for updates")
 
         # Toggle de tema (dark/light)
         self.toggle_tema = ctk.CTkSwitch(
             self.barra_superior,
-            text="🌙 Dark Mode",
+            text="Dark Mode",
             command=self._alternar_tema,
             onvalue=True,
             offvalue=False,
         )
-        self.toggle_tema.grid(row=0, column=4, padx=TAMANOS["padding_grande"], pady=10)
+        self.toggle_tema.grid(row=0, column=3, padx=TAMANOS["padding_grande"], pady=10)
         self.toggle_tema.select()  # Iniciar en modo oscuro
 
     def _crear_tabview(self) -> None:
@@ -384,12 +405,18 @@ class HotelPriceApp(ctk.CTk):
         """Alterna entre modo oscuro y claro."""
         if self.toggle_tema.get():
             self.modo_tema = "dark"
-            self.toggle_tema.configure(text="🌙 Dark Mode")
+            self.toggle_tema.configure(text="Dark Mode")
         else:
             self.modo_tema = "light"
-            self.toggle_tema.configure(text="☀️ Light Mode")
+            self.toggle_tema.configure(text="Light Mode")
 
         aplicar_tema(self.modo_tema)
+
+        # Propagar tema a pestañas que manejan colores propios
+        if self.tab_ejecutar and hasattr(self.tab_ejecutar, 'cambiar_tema'):
+            self.tab_ejecutar.cambiar_tema(self.modo_tema)
+        if self.tab_resultados and hasattr(self.tab_resultados, 'cambiar_tema'):
+            self.tab_resultados.cambiar_tema(self.modo_tema)
 
     def cambiar_pestana(self, nombre: str) -> None:
         """

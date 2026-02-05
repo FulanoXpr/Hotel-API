@@ -22,7 +22,9 @@ sys.path.insert(
 
 from ui.components.hotel_table import HotelData, HotelTable
 from ui.utils.excel_handler import ExcelHandler
-from ui.utils.theme import TAMANOS, obtener_fuente
+from ui.utils.icons import get_icon
+from ui.utils.theme import BOTONES, TAMANOS, obtener_fuente
+from ui.utils.tooltip import ToolTip
 
 
 class EditarHotelDialog(ctk.CTkToplevel):
@@ -118,7 +120,8 @@ class EditarHotelDialog(ctk.CTkToplevel):
         self.entry_key.insert(0, key)
 
         self.btn_buscar = ctk.CTkButton(
-            frame_key, text="🔍 Search", width=80, command=self._buscar_key
+            frame_key, text="Search", image=get_icon("search"), compound="left",
+            width=80, command=self._buscar_key,
         )
         self.btn_buscar.grid(row=0, column=1, padx=(5, 0))
 
@@ -153,12 +156,14 @@ class EditarHotelDialog(ctk.CTkToplevel):
             frame_botones,
             text="Cancel",
             width=100,
-            fg_color="gray50",
+            fg_color=BOTONES["secundario"]["fg"],
+            hover_color=BOTONES["secundario"]["hover"],
             command=self.destroy,
         ).pack(side="left", padx=5)
 
         ctk.CTkButton(
-            frame_botones, text="💾 Save", width=100, command=self._guardar
+            frame_botones, text="Save", image=get_icon("save"), compound="left",
+            width=100, command=self._guardar,
         ).pack(side="left", padx=5)
 
     def _buscar_key(self) -> None:
@@ -281,7 +286,7 @@ class HotelsTab(ctk.CTkFrame):
         self._crear_barra_estado()
 
     def _crear_barra_herramientas(self) -> None:
-        """Crea la barra de herramientas superior."""
+        """Crea la barra de herramientas superior en 2 filas."""
         padding = TAMANOS["padding_medio"]
 
         self.barra_herramientas = ctk.CTkFrame(self)
@@ -289,91 +294,116 @@ class HotelsTab(ctk.CTkFrame):
             row=0, column=0, sticky="ew", padx=padding, pady=(padding, 5)
         )
 
-        # Botón Descargar Cache de hoteles PR (importante para primer uso)
+        # --- Fila 1: Data (cargar/guardar) ---
+        fila_data = ctk.CTkFrame(self.barra_herramientas, fg_color="transparent")
+        fila_data.pack(fill="x", padx=2, pady=(5, 0))
+
         self.btn_download_cache = ctk.CTkButton(
-            self.barra_herramientas,
-            text="⬇️ Download PR Hotels",
+            fila_data,
+            text="Download PR Hotels",
+            image=get_icon("download"),
+            compound="left",
             width=160,
-            fg_color="darkorange",
-            hover_color="orange",
+            fg_color=BOTONES["advertencia"]["fg"],
+            hover_color=BOTONES["advertencia"]["hover"],
             command=self._descargar_cache_hoteles,
         )
-        self.btn_download_cache.pack(side="left", padx=5, pady=5)
+        self.btn_download_cache.pack(side="left", padx=5, pady=2)
 
-        # Botón Cargar Database (hotel_keys_db.json)
         self.btn_cargar_db = ctk.CTkButton(
-            self.barra_herramientas,
-            text="🗄️ Load Database",
+            fila_data,
+            text="Load Database",
+            image=get_icon("database"),
+            compound="left",
             width=TAMANOS["ancho_boton"],
             command=self._cargar_database,
         )
-        self.btn_cargar_db.pack(side="left", padx=5, pady=5)
+        self.btn_cargar_db.pack(side="left", padx=5, pady=2)
 
-        # Botón Cargar Excel
         self.btn_cargar = ctk.CTkButton(
-            self.barra_herramientas,
-            text="📂 Load Excel",
+            fila_data,
+            text="Load Excel",
+            image=get_icon("folder"),
+            compound="left",
             width=TAMANOS["ancho_boton"],
             command=self._cargar_excel,
         )
-        self.btn_cargar.pack(side="left", padx=5, pady=5)
+        self.btn_cargar.pack(side="left", padx=5, pady=2)
 
-        # Botón Guardar Excel
         self.btn_guardar = ctk.CTkButton(
-            self.barra_herramientas,
-            text="💾 Save Excel",
+            fila_data,
+            text="Save Excel",
+            image=get_icon("save"),
+            compound="left",
             width=TAMANOS["ancho_boton"],
             command=self._guardar_excel,
         )
-        self.btn_guardar.pack(side="left", padx=5, pady=5)
+        self.btn_guardar.pack(side="left", padx=5, pady=2)
+
+        # --- Fila 2: Actions (buscar/editar/eliminar) ---
+        fila_acciones = ctk.CTkFrame(self.barra_herramientas, fg_color="transparent")
+        fila_acciones.pack(fill="x", padx=2, pady=(0, 5))
+
+        self.btn_buscar_keys = ctk.CTkButton(
+            fila_acciones,
+            text="Search All",
+            image=get_icon("search"),
+            compound="left",
+            width=120,
+            fg_color=BOTONES["primario"]["fg"],
+            hover_color=BOTONES["primario"]["hover"],
+            command=self._buscar_keys_faltantes,
+        )
+        self.btn_buscar_keys.pack(side="left", padx=5, pady=2)
+
+        self.btn_buscar_keys_sel = ctk.CTkButton(
+            fila_acciones,
+            text="Search Keys (Selection)",
+            image=get_icon("search"),
+            compound="left",
+            width=160,
+            fg_color=BOTONES["exito"]["fg"],
+            hover_color=BOTONES["exito"]["hover"],
+            command=self._buscar_keys_seleccionados,
+        )
+        self.btn_buscar_keys_sel.pack(side="left", padx=5, pady=2)
 
         # Separador visual
         ctk.CTkFrame(
-            self.barra_herramientas, width=2, height=25, fg_color="gray50"
-        ).pack(side="left", padx=10, pady=5)
+            fila_acciones, width=2, height=25, fg_color="gray50"
+        ).pack(side="left", padx=10, pady=2)
 
-        # Botón Eliminar seleccionados
         self.btn_eliminar = ctk.CTkButton(
-            self.barra_herramientas,
-            text="🗑️ Delete",
+            fila_acciones,
+            text="Delete",
+            image=get_icon("trash"),
+            compound="left",
             width=100,
-            fg_color="firebrick",
-            hover_color="darkred",
+            fg_color=BOTONES["peligro"]["fg"],
+            hover_color=BOTONES["peligro"]["hover"],
             command=self._eliminar_seleccionados,
         )
-        self.btn_eliminar.pack(side="left", padx=5, pady=5)
+        self.btn_eliminar.pack(side="left", padx=5, pady=2)
 
-        # Botón Limpiar todo
         self.btn_limpiar = ctk.CTkButton(
-            self.barra_herramientas,
+            fila_acciones,
             text="Clear All",
             width=100,
-            fg_color="gray50",
+            fg_color=BOTONES["secundario"]["fg"],
+            hover_color=BOTONES["secundario"]["hover"],
             command=self._limpiar_todo,
         )
-        self.btn_limpiar.pack(side="left", padx=5, pady=5)
+        self.btn_limpiar.pack(side="left", padx=5, pady=2)
 
-        # Botón Buscar Keys de seleccionados (a la derecha)
-        self.btn_buscar_keys_sel = ctk.CTkButton(
-            self.barra_herramientas,
-            text="🔍 Search Keys (Selection)",
-            width=160,
-            fg_color="green",
-            hover_color="darkgreen",
-            command=self._buscar_keys_seleccionados,
-        )
-        self.btn_buscar_keys_sel.pack(side="right", padx=5, pady=5)
-
-        # Botón Buscar Keys de todos los faltantes
-        self.btn_buscar_keys = ctk.CTkButton(
-            self.barra_herramientas,
-            text="🔍 Search All",
-            width=120,
-            fg_color="gray50",
-            hover_color="gray40",
-            command=self._buscar_keys_faltantes,
-        )
-        self.btn_buscar_keys.pack(side="right", padx=5, pady=5)
+        # Tooltips
+        ToolTip(self.btn_download_cache, "Download ~1,100 PR hotels from Xotelo for key matching")
+        ToolTip(self.btn_cargar_db, "Load hotels from hotel_keys_db.json")
+        ToolTip(self.btn_cargar, "Import hotel list from Excel file")
+        ToolTip(self.btn_guardar, "Export current hotel list to Excel")
+        ToolTip(self.btn_buscar_keys, "Search Xotelo keys for all hotels without a key")
+        ToolTip(self.btn_buscar_keys_sel, "Search Xotelo keys only for selected hotels")
+        ToolTip(self.btn_eliminar, "Remove selected hotels from the list")
+        ToolTip(self.btn_limpiar, "Remove all hotels from the list")
 
     def _crear_tabla(self) -> None:
         """Crea la tabla de hoteles."""
@@ -399,7 +429,7 @@ class HotelsTab(ctk.CTkFrame):
         # Título del panel
         ctk.CTkLabel(
             self.panel_agregar,
-            text="➕ Add Hotel Manually",
+            text="Add Hotel Manually",
             font=obtener_fuente("encabezado"),
         ).grid(row=0, column=0, columnspan=6, pady=(5, 10))
 
@@ -411,7 +441,7 @@ class HotelsTab(ctk.CTkFrame):
         self.entry_nombre = ctk.CTkEntry(
             self.panel_agregar,
             font=obtener_fuente("normal"),
-            placeholder_text="Hotel name",
+            placeholder_text="e.g., Hilton Ponce Golf & Casino",
         )
         self.entry_nombre.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
@@ -423,13 +453,14 @@ class HotelsTab(ctk.CTkFrame):
         self.entry_key = ctk.CTkEntry(
             self.panel_agregar,
             font=obtener_fuente("codigo"),
-            placeholder_text="(optional) g147319-d123456",
+            placeholder_text="e.g., g147319-d1837036",
         )
         self.entry_key.grid(row=1, column=3, padx=5, pady=5, sticky="ew")
 
         # Botón buscar key
         self.btn_buscar = ctk.CTkButton(
-            self.panel_agregar, text="🔍 Search", width=80, command=self._buscar_key
+            self.panel_agregar, text="Search", image=get_icon("search"),
+            compound="left", width=80, command=self._buscar_key,
         )
         self.btn_buscar.grid(row=1, column=4, padx=5, pady=5)
 
@@ -469,6 +500,22 @@ class HotelsTab(ctk.CTkFrame):
         )
         self.label_seleccion.pack(side="right", padx=10, pady=5)
 
+        # Progress bar indeterminada (oculta por defecto)
+        self.progress_bar = ctk.CTkProgressBar(
+            self.barra_estado, mode="indeterminate", height=3
+        )
+        # No se empaqueta hasta que se necesite
+
+    def _mostrar_loading(self) -> None:
+        """Muestra la barra de progreso indeterminada."""
+        self.progress_bar.pack(side="bottom", fill="x", padx=5, pady=(2, 0))
+        self.progress_bar.start()
+
+    def _ocultar_loading(self) -> None:
+        """Oculta la barra de progreso indeterminada."""
+        self.progress_bar.stop()
+        self.progress_bar.pack_forget()
+
     def _actualizar_contador(self) -> None:
         """Actualiza el contador de hoteles en la barra de estado."""
         stats = self.tabla.obtener_estadisticas()
@@ -507,10 +554,11 @@ class HotelsTab(ctk.CTkFrame):
             return
 
         # Deshabilitar botón y mostrar estado de carga
-        self.btn_cargar.configure(state="disabled", text="⏳ Loading...")
+        self.btn_cargar.configure(state="disabled", text="Loading...")
         self.label_busqueda.configure(
             text=f"Loading {os.path.basename(ruta)}...", text_color="gray"
         )
+        self._mostrar_loading()
         self.update_idletasks()
 
         def cargar_en_background() -> None:
@@ -530,9 +578,10 @@ class HotelsTab(ctk.CTkFrame):
 
     def _excel_cargado(self, hoteles: List[HotelData], ruta: str) -> None:
         """Callback cuando el Excel se cargó exitosamente."""
+        self._ocultar_loading()
         self.tabla.cargar_hoteles(hoteles)
         self._actualizar_contador()
-        self.btn_cargar.configure(state="normal", text="📂 Load Excel")
+        self.btn_cargar.configure(state="normal", text="Load Excel")
         self.label_busqueda.configure(
             text=f"✅ Loaded {len(hoteles)} hotels from {os.path.basename(ruta)}",
             text_color="green",
@@ -540,7 +589,8 @@ class HotelsTab(ctk.CTkFrame):
 
     def _excel_error(self, mensaje: str) -> None:
         """Callback cuando hay error al cargar Excel."""
-        self.btn_cargar.configure(state="normal", text="📂 Load Excel")
+        self._ocultar_loading()
+        self.btn_cargar.configure(state="normal", text="Load Excel")
         self.label_busqueda.configure(text="", text_color="gray")
         messagebox.showerror("Error", mensaje)
 
@@ -583,8 +633,9 @@ class HotelsTab(ctk.CTkFrame):
             )
             return
 
-        self.btn_cargar_db.configure(state="disabled", text="⏳ Loading...")
+        self.btn_cargar_db.configure(state="disabled", text="Loading...")
         self.label_busqueda.configure(text="Loading database...", text_color="gray")
+        self._mostrar_loading()
         self.update_idletasks()
 
         def cargar_en_background() -> None:
@@ -632,9 +683,10 @@ class HotelsTab(ctk.CTkFrame):
 
     def _database_cargada(self, hoteles: List[HotelData], ruta: Path) -> None:
         """Callback cuando la database se cargó exitosamente."""
+        self._ocultar_loading()
         self.tabla.cargar_hoteles(hoteles)
         self._actualizar_contador()
-        self.btn_cargar_db.configure(state="normal", text="🗄️ Load Database")
+        self.btn_cargar_db.configure(state="normal", text="Load Database")
         self.label_busqueda.configure(
             text=f"✅ Loaded {len(hoteles)} hotels from {ruta.name}",
             text_color="green",
@@ -642,7 +694,8 @@ class HotelsTab(ctk.CTkFrame):
 
     def _database_error(self, mensaje: str) -> None:
         """Callback cuando hay error al cargar la database."""
-        self.btn_cargar_db.configure(state="normal", text="🗄️ Load Database")
+        self._ocultar_loading()
+        self.btn_cargar_db.configure(state="normal", text="Load Database")
         self.label_busqueda.configure(text="", text_color="gray")
         messagebox.showerror("Error", f"Error loading database: {mensaje}")
 
@@ -718,7 +771,7 @@ class HotelsTab(ctk.CTkFrame):
             eliminados = self.tabla.eliminar_seleccionados()
             self._actualizar_contador()
             self.label_busqueda.configure(
-                text=f"🗑️ Deleted {eliminados} hotels", text_color="orange"
+                text=f"Deleted {eliminados} hotels", text_color="orange"
             )
 
     def _limpiar_todo(self) -> None:
@@ -835,7 +888,8 @@ class HotelsTab(ctk.CTkFrame):
             return
 
         self.btn_buscar_keys_sel.configure(state="disabled", text="Searching...")
-        self._ejecutar_busqueda_keys(seleccionados, self.btn_buscar_keys_sel, "🔍 Search Keys (Selection)")
+        self._mostrar_loading()
+        self._ejecutar_busqueda_keys(seleccionados, self.btn_buscar_keys_sel, "Search Keys (Selection)")
 
     def _buscar_keys_faltantes(self) -> None:
         """Busca keys de Xotelo para todos los hoteles sin key."""
@@ -860,7 +914,8 @@ class HotelsTab(ctk.CTkFrame):
             return
 
         self.btn_buscar_keys.configure(state="disabled", text="Searching...")
-        self._ejecutar_busqueda_keys(hoteles, self.btn_buscar_keys, "🔍 Search All")
+        self._mostrar_loading()
+        self._ejecutar_busqueda_keys(hoteles, self.btn_buscar_keys, "Search All")
 
     def _ejecutar_busqueda_keys(
         self,
@@ -939,6 +994,7 @@ class HotelsTab(ctk.CTkFrame):
         texto_boton_original: str,
     ) -> None:
         """Callback cuando termina la búsqueda masiva de keys."""
+        self._ocultar_loading()
         boton.configure(state="normal", text=texto_boton_original)
         self._actualizar_contador()
         self.label_busqueda.configure(
@@ -996,8 +1052,9 @@ class HotelsTab(ctk.CTkFrame):
         if not confirmar:
             return
 
-        self.btn_download_cache.configure(state="disabled", text="⬇️ Downloading...")
+        self.btn_download_cache.configure(state="disabled", text="Downloading...")
         self.label_busqueda.configure(text="Downloading hotel cache...", text_color="gray")
+        self._mostrar_loading()
 
         def descargar() -> None:
             try:
@@ -1018,7 +1075,7 @@ class HotelsTab(ctk.CTkFrame):
     def _actualizar_progreso_descarga(self, current: int, total: int) -> None:
         """Actualiza el progreso de descarga en la UI."""
         pct = (current / total * 100) if total > 0 else 0
-        self.btn_download_cache.configure(text=f"⬇️ {current}/{total} ({pct:.0f}%)")
+        self.btn_download_cache.configure(text=f"{current}/{total} ({pct:.0f}%)")
         self.label_busqueda.configure(
             text=f"Downloading: {current} of {total} hotels...",
             text_color="gray",
@@ -1026,7 +1083,8 @@ class HotelsTab(ctk.CTkFrame):
 
     def _descarga_completada(self, total: int) -> None:
         """Callback cuando la descarga se completó."""
-        self.btn_download_cache.configure(state="normal", text="⬇️ Download PR Hotels")
+        self._ocultar_loading()
+        self.btn_download_cache.configure(state="normal", text="Download PR Hotels")
         self.label_busqueda.configure(
             text=f"✅ Downloaded {total} Puerto Rico hotels to cache",
             text_color="green",
@@ -1040,7 +1098,8 @@ class HotelsTab(ctk.CTkFrame):
 
     def _descarga_error(self, error: str) -> None:
         """Callback cuando hay error en la descarga."""
-        self.btn_download_cache.configure(state="normal", text="⬇️ Download PR Hotels")
+        self._ocultar_loading()
+        self.btn_download_cache.configure(state="normal", text="Download PR Hotels")
         self.label_busqueda.configure(text=f"❌ Download failed: {error}", text_color="red")
         messagebox.showerror("Download Error", f"Failed to download hotel cache:\n\n{error}")
 

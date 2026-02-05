@@ -10,6 +10,7 @@ import requests
 
 from ui.components.api_key_frame import AmadeusKeyFrame, ApiKeyFrame
 from ui.utils.env_manager import EnvManager
+from ui.utils.icons import get_icon
 from ui.utils.theme import FUENTES, TAMANOS
 
 
@@ -214,7 +215,9 @@ class ApiKeysTab(ctk.CTkFrame):
         # Botón de guardar
         self.boton_guardar = ctk.CTkButton(
             self.frame_inferior,
-            text="💾 Save Configuration",
+            text="Save Configuration",
+            image=get_icon("save"),
+            compound="left",
             width=180,
             height=35,
             font=FUENTES["normal"],

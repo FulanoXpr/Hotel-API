@@ -24,6 +24,8 @@ sys.path.insert(
 from ui.components.log_viewer import LogViewer
 from ui.components.progress_bar import ProgressBar
 from ui.components.stats_panel import StatsPanel
+from ui.utils.date_picker import DateEntry
+from ui.utils.icons import get_icon
 from ui.utils.theme import FUENTES, TAMANOS, TemaMode, obtener_tema
 
 
@@ -99,7 +101,6 @@ class ExecuteTab(ctk.CTkFrame):
             self.frame_config,
             text="Search Configuration",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
-            text_color=self.tema["texto_principal"],
         ).pack(anchor="w", padx=15, pady=(15, 10))
 
         # Frame de parámetros
@@ -115,26 +116,25 @@ class ExecuteTab(ctk.CTkFrame):
             fila1,
             text="Check-in date:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_principal"],
         ).pack(side="left", padx=(0, 5))
 
         # Fecha por defecto: mañana
         fecha_default = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-        self.entry_fecha = ctk.CTkEntry(
+        self.date_entry = DateEntry(
             fila1,
-            width=120,
-            font=FUENTES.get("normal", ("Segoe UI", 12)),
-            placeholder_text="YYYY-MM-DD",
+            initial_date=fecha_default,
+            modo_tema=self.modo_tema,
+            width=150,
         )
-        self.entry_fecha.pack(side="left", padx=(0, 20))
-        self.entry_fecha.insert(0, fecha_default)
+        self.date_entry.pack(side="left", padx=(0, 20))
+        # Alias for backwards compatibility
+        self.entry_fecha = self.date_entry
 
         # Noches
         ctk.CTkLabel(
             fila1,
             text="Nights:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_principal"],
         ).pack(side="left", padx=(0, 5))
 
         self.combo_noches = ctk.CTkComboBox(
@@ -155,7 +155,6 @@ class ExecuteTab(ctk.CTkFrame):
             fila2,
             text="Rooms:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_principal"],
         ).pack(side="left", padx=(0, 5))
 
         self.combo_habitaciones = ctk.CTkComboBox(
@@ -172,7 +171,6 @@ class ExecuteTab(ctk.CTkFrame):
             fila2,
             text="Adults:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_principal"],
         ).pack(side="left", padx=(0, 5))
 
         self.combo_adultos = ctk.CTkComboBox(
@@ -189,7 +187,6 @@ class ExecuteTab(ctk.CTkFrame):
             fila2,
             text="Children:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_principal"],
         ).pack(side="left", padx=(0, 5))
 
         self.combo_ninos = ctk.CTkComboBox(
@@ -212,14 +209,15 @@ class ExecuteTab(ctk.CTkFrame):
             text="Use cascade (all providers)",
             variable=self.var_cascade,
             font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_principal"],
         )
         self.check_cascade.pack(side="left", padx=(0, 20))
 
         # Botones Iniciar/Detener
         self.boton_detener = ctk.CTkButton(
             fila3,
-            text="⏹ Stop",
+            text="Stop",
+            image=get_icon("stop"),
+            compound="left",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             fg_color=self.tema["estados"]["error"],
             hover_color="#c0392b",
@@ -231,7 +229,9 @@ class ExecuteTab(ctk.CTkFrame):
 
         self.boton_iniciar = ctk.CTkButton(
             fila3,
-            text="▶ Start Search",
+            text="Start Search",
+            image=get_icon("play"),
+            compound="left",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             fg_color=self.tema["estados"]["exito"],
             hover_color="#27ae60",
@@ -253,7 +253,6 @@ class ExecuteTab(ctk.CTkFrame):
             self.frame_progreso,
             text="Progress",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
-            text_color=self.tema["texto_principal"],
         ).pack(anchor="w", padx=15, pady=(15, 5))
 
         self.progress_bar = ProgressBar(
@@ -272,22 +271,21 @@ class ExecuteTab(ctk.CTkFrame):
         self.frame_log_stats.grid_rowconfigure(0, weight=1)
 
         # Log viewer (izquierda)
-        frame_log = ctk.CTkFrame(
+        self.frame_log = ctk.CTkFrame(
             self.frame_log_stats,
             fg_color=self.tema["fondo_secundario"],
             corner_radius=10,
         )
-        frame_log.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+        self.frame_log.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
 
         ctk.CTkLabel(
-            frame_log,
+            self.frame_log,
             text="Search Log",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
-            text_color=self.tema["texto_principal"],
         ).pack(anchor="w", padx=15, pady=(15, 5))
 
         self.log_viewer = LogViewer(
-            frame_log,
+            self.frame_log,
             modo_tema=self.modo_tema,
             altura=250,
         )
@@ -570,11 +568,13 @@ class ExecuteTab(ctk.CTkFrame):
         # Actualizar frames
         self.frame_config.configure(fg_color=self.tema["fondo_secundario"])
         self.frame_progreso.configure(fg_color=self.tema["fondo_secundario"])
+        self.frame_log.configure(fg_color=self.tema["fondo_secundario"])
 
         # Actualizar componentes
         self.progress_bar.cambiar_tema(modo_tema)
         self.log_viewer.cambiar_tema(modo_tema)
         self.stats_panel.cambiar_tema(modo_tema)
+        self.date_entry.cambiar_tema(modo_tema)
 
     def set_obtener_hoteles(self, callback: Callable[[], List[Dict]]) -> None:
         """Establece el callback para obtener hoteles."""

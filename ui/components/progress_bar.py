@@ -79,7 +79,6 @@ class ProgressBar(ctk.CTkFrame):
                     frame_info,
                     text="0%",
                     font=FUENTES.get("normal", ("Segoe UI", 12)),
-                    text_color=self._tema["texto_principal"],
                 )
                 self._label_porcentaje.grid(row=0, column=0, sticky="w")
             else:
@@ -91,7 +90,6 @@ class ProgressBar(ctk.CTkFrame):
                     frame_info,
                     text="Estimated time: --:--",
                     font=FUENTES.get("pequena", ("Segoe UI", 10)),
-                    text_color=self._tema["texto_secundario"],
                 )
                 self._label_eta.grid(row=0, column=2, sticky="e")
             else:
@@ -251,9 +249,3 @@ class ProgressBar(ctk.CTkFrame):
         self._progress_bar.configure(
             progress_color=self._tema["acento"], fg_color=self._tema["fondo_principal"]
         )
-
-        if self._label_porcentaje is not None:
-            self._label_porcentaje.configure(text_color=self._tema["texto_principal"])
-
-        if self._label_eta is not None:
-            self._label_eta.configure(text_color=self._tema["texto_secundario"])

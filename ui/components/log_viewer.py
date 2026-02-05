@@ -79,7 +79,6 @@ class LogViewer(ctk.CTkFrame):
             width=ancho,
             font=FUENTES.get("codigo", ("Consolas", 11)),
             fg_color=self._tema["fondo_principal"],
-            text_color=self._tema["texto_principal"],
             corner_radius=6,
             wrap="word",
             state="disabled",

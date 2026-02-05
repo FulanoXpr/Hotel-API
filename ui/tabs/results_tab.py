@@ -17,6 +17,7 @@ sys.path.insert(
     0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 )
 
+from ui.utils.icons import get_icon
 from ui.utils.theme import FUENTES, TAMANOS, TemaMode, obtener_tema
 
 
@@ -91,19 +92,18 @@ class ResultsTab(ctk.CTkFrame):
             self.frame_resumen,
             text="Results Summary",
             font=FUENTES.get("encabezado", ("Segoe UI", 14, "bold")),
-            text_color=self.tema["texto_principal"],
         ).pack(anchor="w", padx=15, pady=(15, 10))
 
         # Frame de métricas
-        frame_metricas = ctk.CTkFrame(
+        self.frame_metricas = ctk.CTkFrame(
             self.frame_resumen,
             fg_color=self.tema["fondo_principal"],
             corner_radius=8,
         )
-        frame_metricas.pack(fill="x", padx=15, pady=(0, 15))
+        self.frame_metricas.pack(fill="x", padx=15, pady=(0, 15))
 
         for i in range(5):
-            frame_metricas.grid_columnconfigure(i, weight=1)
+            self.frame_metricas.grid_columnconfigure(i, weight=1)
 
         metricas = [
             ("total", "Total", self.tema["texto_principal"]),
@@ -116,7 +116,7 @@ class ResultsTab(ctk.CTkFrame):
         self._labels_metricas: Dict[str, ctk.CTkLabel] = {}
 
         for col, (key, label, color) in enumerate(metricas):
-            frame = ctk.CTkFrame(frame_metricas, fg_color="transparent")
+            frame = ctk.CTkFrame(self.frame_metricas, fg_color="transparent")
             frame.grid(row=0, column=col, padx=10, pady=10)
 
             valor_label = ctk.CTkLabel(
@@ -131,7 +131,6 @@ class ResultsTab(ctk.CTkFrame):
                 frame,
                 text=label,
                 font=FUENTES.get("pequena", ("Segoe UI", 10)),
-                text_color=self.tema["texto_secundario"],
             ).pack()
 
             self._labels_metricas[key] = valor_label
@@ -144,7 +143,6 @@ class ResultsTab(ctk.CTkFrame):
             frame_proveedores,
             text="Distribution by Provider:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_principal"],
         ).pack(anchor="w", pady=(0, 5))
 
         self._frame_barras_proveedores = ctk.CTkFrame(
@@ -173,7 +171,6 @@ class ResultsTab(ctk.CTkFrame):
             frame_inner,
             text="Filter:",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_principal"],
         ).pack(side="left", padx=(0, 10))
 
         self.var_filtro = ctk.StringVar(value="todos")
@@ -191,7 +188,6 @@ class ResultsTab(ctk.CTkFrame):
                 variable=self.var_filtro,
                 value=valor,
                 font=FUENTES.get("normal", ("Segoe UI", 12)),
-                text_color=self.tema["texto_principal"],
                 command=self._aplicar_filtro,
             )
             radio.pack(side="left", padx=10)
@@ -199,7 +195,9 @@ class ResultsTab(ctk.CTkFrame):
         # Botones de acción
         self.boton_copiar = ctk.CTkButton(
             frame_inner,
-            text="📋 Copy",
+            text="Copy",
+            image=get_icon("copy"),
+            compound="left",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             fg_color=self.tema["acento"],
             hover_color=self.tema["acento_hover"],
@@ -210,7 +208,9 @@ class ResultsTab(ctk.CTkFrame):
 
         self.boton_exportar = ctk.CTkButton(
             frame_inner,
-            text="📥 Export Excel",
+            text="Export Excel",
+            image=get_icon("export"),
+            compound="left",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
             fg_color=self.tema["estados"]["exito"],
             hover_color="#27ae60",
@@ -229,35 +229,39 @@ class ResultsTab(ctk.CTkFrame):
         self.frame_tabla.grid(row=2, column=0, sticky="nsew", padx=10, pady=(0, 10))
 
         # Encabezado
-        frame_header = ctk.CTkFrame(
+        self.frame_header = ctk.CTkFrame(
             self.frame_tabla,
             fg_color=self.tema["fondo_principal"],
             corner_radius=0,
         )
-        frame_header.pack(fill="x", padx=10, pady=(10, 0))
+        self.frame_header.pack(fill="x", padx=10, pady=(10, 0))
 
-        columnas = [
-            ("#", 40, "center"),
-            ("Hotel", 300, "w"),
-            ("Price", 100, "e"),
-            ("Currency", 60, "center"),
-            ("Provider", 100, "center"),
-            ("Check-in", 100, "center"),
-            ("Check-out", 100, "center"),
+        # Column definitions: (name, weight, anchor)
+        # Weights determine proportional width allocation
+        self._columnas = [
+            ("#", 0.05, "center"),
+            ("Hotel", 0.35, "w"),
+            ("Price", 0.12, "e"),
+            ("Currency", 0.08, "center"),
+            ("Provider", 0.13, "center"),
+            ("Check-in", 0.13, "center"),
+            ("Check-out", 0.13, "center"),
         ]
+
+        # Use grid for proportional columns
+        for i, (_, weight, _) in enumerate(self._columnas):
+            self.frame_header.grid_columnconfigure(i, weight=int(weight * 100))
 
         self._header_labels: List[ctk.CTkLabel] = []
 
-        for texto, ancho, anchor in columnas:
+        for col_idx, (texto, weight, anchor) in enumerate(self._columnas):
             label = ctk.CTkLabel(
-                frame_header,
+                self.frame_header,
                 text=texto,
                 font=FUENTES.get("encabezado", ("Segoe UI", 12, "bold")),
-                text_color=self.tema["texto_principal"],
-                width=ancho,
                 anchor=anchor,
             )
-            label.pack(side="left", padx=5, pady=8)
+            label.grid(row=0, column=col_idx, sticky="ew", padx=5, pady=8)
             self._header_labels.append(label)
 
             # Hacer clickeable para ordenar
@@ -279,11 +283,10 @@ class ResultsTab(ctk.CTkFrame):
             self.scroll_frame,
             text="No results to display.\nRun a search in the 'Execute' tab.",
             font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_secundario"],
         )
 
     def _crear_fila(self, idx: int, resultado: Dict) -> ctk.CTkFrame:
-        """Crea una fila de resultado."""
+        """Crea una fila de resultado con columnas proporcionales."""
         color_fondo = (
             self.tema["fondo_principal"]
             if idx % 2 == 0
@@ -296,25 +299,11 @@ class ResultsTab(ctk.CTkFrame):
             corner_radius=0,
         )
 
-        # Número
-        ctk.CTkLabel(
-            fila,
-            text=str(idx + 1),
-            font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_secundario"],
-            width=40,
-            anchor="center",
-        ).pack(side="left", padx=5, pady=6)
+        # Configure grid columns with same weights as header
+        for i, (_, weight, _) in enumerate(self._columnas):
+            fila.grid_columnconfigure(i, weight=int(weight * 100))
 
-        # Hotel
-        ctk.CTkLabel(
-            fila,
-            text=resultado.get("hotel", "")[:40],
-            font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_principal"],
-            width=300,
-            anchor="w",
-        ).pack(side="left", padx=5, pady=6)
+        font = FUENTES.get("normal", ("Segoe UI", 12))
 
         # Precio (con manejo de errores para formatos inesperados)
         precio = resultado.get("precio")
@@ -330,59 +319,31 @@ class ResultsTab(ctk.CTkFrame):
             precio_texto = str(precio) if precio else "-"
             precio_color = self.tema["texto_secundario"]
 
-        ctk.CTkLabel(
-            fila,
-            text=precio_texto,
-            font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=precio_color,
-            width=100,
-            anchor="e",
-        ).pack(side="left", padx=5, pady=6)
-
-        # Moneda
-        ctk.CTkLabel(
-            fila,
-            text=resultado.get("moneda") or "-",
-            font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_secundario"],
-            width=60,
-            anchor="center",
-        ).pack(side="left", padx=5, pady=6)
-
         # Proveedor
         proveedor = resultado.get("proveedor") or "-"
         proveedor_color = self.COLORES_PROVEEDORES.get(
             proveedor.lower() if proveedor != "-" else "", self.tema["texto_secundario"]
         )
 
-        ctk.CTkLabel(
-            fila,
-            text=proveedor.capitalize() if proveedor != "-" else "-",
-            font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=proveedor_color,
-            width=100,
-            anchor="center",
-        ).pack(side="left", padx=5, pady=6)
+        # Cell data: (text, color, anchor)
+        cells = [
+            (str(idx + 1), self.tema["texto_secundario"], "center"),
+            (resultado.get("hotel", "")[:50], self.tema["texto_principal"], "w"),
+            (precio_texto, precio_color, "e"),
+            (resultado.get("moneda") or "-", self.tema["texto_secundario"], "center"),
+            (proveedor.capitalize() if proveedor != "-" else "-", proveedor_color, "center"),
+            (resultado.get("check_in") or "-", self.tema["texto_secundario"], "center"),
+            (resultado.get("check_out") or "-", self.tema["texto_secundario"], "center"),
+        ]
 
-        # Check-in
-        ctk.CTkLabel(
-            fila,
-            text=resultado.get("check_in") or "-",
-            font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_secundario"],
-            width=100,
-            anchor="center",
-        ).pack(side="left", padx=5, pady=6)
-
-        # Check-out
-        ctk.CTkLabel(
-            fila,
-            text=resultado.get("check_out") or "-",
-            font=FUENTES.get("normal", ("Segoe UI", 12)),
-            text_color=self.tema["texto_secundario"],
-            width=100,
-            anchor="center",
-        ).pack(side="left", padx=5, pady=6)
+        for col_idx, (text, color, anchor) in enumerate(cells):
+            ctk.CTkLabel(
+                fila,
+                text=text,
+                font=font,
+                text_color=color,
+                anchor=anchor,
+            ).grid(row=0, column=col_idx, sticky="ew", padx=5, pady=6)
 
         return fila
 
@@ -463,7 +424,6 @@ class ResultsTab(ctk.CTkFrame):
                     self.scroll_frame,
                     text="No results to display.",
                     font=FUENTES.get("normal", ("Segoe UI", 12)),
-                    text_color=self.tema["texto_secundario"],
                 )
                 self.label_sin_resultados.pack(pady=50)
                 return
@@ -706,9 +666,27 @@ class ResultsTab(ctk.CTkFrame):
         self.modo_tema = modo_tema
         self.tema = obtener_tema(modo_tema)
 
+        # Frames principales
         self.frame_resumen.configure(fg_color=self.tema["fondo_secundario"])
         self.frame_filtros.configure(fg_color=self.tema["fondo_secundario"])
         self.frame_tabla.configure(fg_color=self.tema["fondo_secundario"])
+
+        # Nested frames con colores explícitos
+        self.frame_metricas.configure(fg_color=self.tema["fondo_principal"])
+        self.frame_header.configure(fg_color=self.tema["fondo_principal"])
+        self._frame_barras_proveedores.configure(fg_color=self.tema["fondo_principal"])
+
+        # Actualizar colores de métricas (valores con colores semánticos)
+        colores_metricas = {
+            "total": self.tema["texto_principal"],
+            "con_precio": self.tema["estados"]["exito"],
+            "sin_precio": self.tema["estados"]["error"],
+            "precio_min": self.tema["estados"]["info"],
+            "precio_max": self.tema["estados"]["warning"],
+        }
+        for key, label in self._labels_metricas.items():
+            if key in colores_metricas:
+                label.configure(text_color=colores_metricas[key])
 
     def limpiar_resultados(self) -> None:
         """Limpia todos los resultados."""

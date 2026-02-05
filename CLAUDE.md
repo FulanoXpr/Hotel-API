@@ -223,6 +223,16 @@ The GUI uses FPR brand colors and logo:
 
 Hotels without `xotelo_key` skip Xotelo and try other providers. If no API keys are configured, only hotels with Xotelo keys get prices. Xotelo is an aggregator returning prices from Booking.com, Agoda, Trip.com, Vio.com, etc.
 
+## Change Documentation
+
+**MANDATORY:** Every time you make changes to this project, document them in `docs/CHANGELOG_SESSION.md`:
+- Date, what was changed, and why
+- Files added/modified/deleted
+- Design decisions made and rationale
+- Any pending work or next steps
+
+This ensures continuity across sessions.
+
 ## When Modifying Code
 
 **Rate Limiting:** Always call `api.wait()` between Xotelo API requests. The `XoteloAPI` class handles the 0.5s delay internally.

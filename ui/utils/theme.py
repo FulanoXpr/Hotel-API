@@ -3,6 +3,7 @@ Configuración de tema para Hotel Price Checker.
 Define colores, fuentes y funciones para aplicar temas oscuro/claro.
 """
 
+import platform
 from typing import Dict, Literal, TypedDict
 
 import customtkinter as ctk
@@ -48,7 +49,7 @@ TEMA_OSCURO: ConfiguracionTema = {
     "fondo_principal": "#1a2528",
     "fondo_secundario": FPR_GREY,
     "texto_principal": "#f0f4f5",
-    "texto_secundario": "#a8b5b8",
+    "texto_secundario": "#c4cfd2",
     "acento": FPR_BLUE,
     "acento_hover": FPR_BLUE_LIGHT,
     "borde": "#4a5354",
@@ -77,14 +78,36 @@ TEMA_CLARO: ConfiguracionTema = {
     },
 }
 
+# Fuentes por plataforma
+_SISTEMA = platform.system()
+_FUENTE_UI = (
+    "SF Pro Display" if _SISTEMA == "Darwin"
+    else "Segoe UI" if _SISTEMA == "Windows"
+    else "Ubuntu"
+)
+_FUENTE_MONO = (
+    "Menlo" if _SISTEMA == "Darwin"
+    else "Consolas" if _SISTEMA == "Windows"
+    else "Ubuntu Mono"
+)
+
 # Constantes de fuentes
 FUENTES: Dict[str, tuple] = {
-    "titulo": ("Segoe UI", 24, "bold"),
-    "subtitulo": ("Segoe UI", 18, "bold"),
-    "encabezado": ("Segoe UI", 14, "bold"),
-    "normal": ("Segoe UI", 12),
-    "pequena": ("Segoe UI", 10),
-    "codigo": ("Consolas", 11),
+    "titulo": (_FUENTE_UI, 24, "bold"),
+    "subtitulo": (_FUENTE_UI, 18, "bold"),
+    "encabezado": (_FUENTE_UI, 14, "bold"),
+    "normal": (_FUENTE_UI, 12),
+    "pequena": (_FUENTE_UI, 10),
+    "codigo": (_FUENTE_MONO, 11),
+}
+
+# Colores de botones por rol
+BOTONES: Dict[str, Dict[str, str]] = {
+    "primario": {"fg": FPR_BLUE, "hover": FPR_BLUE_LIGHT},
+    "peligro": {"fg": FPR_RED, "hover": "#c0392b"},
+    "secundario": {"fg": FPR_GREY, "hover": "#555555"},
+    "exito": {"fg": FPR_GREEN, "hover": "#8fb34a"},
+    "advertencia": {"fg": FPR_YELLOW, "hover": "#e09a10"},
 }
 
 # Constantes de tamaño
